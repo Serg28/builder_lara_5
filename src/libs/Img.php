@@ -197,6 +197,10 @@ class Img
     // Function to check if the browser supports WebP
     private function supportsWebP()
     {
-        return strpos($_SERVER['HTTP_ACCEPT'], 'image/webp') !== false;
+        if (config('builder.optimization_img.active')) {
+            //return true;
+            return (strpos($_SERVER['HTTP_ACCEPT'], 'image/webp') !== false ||
+                strpos(request()->header('Accept'), 'image/webp') !== false);
+        }
     }
 }
