@@ -12,9 +12,10 @@ class Img
     private $pathFolder;
     private $width = null;
     private $height = null;
-    private $quality = 80;
+    private $quality = 90;
 
-    public function get($source, $options)
+    //Оригинал
+    /*public function _get($source, $options)
     {
         if (! $source) {
             return;
@@ -24,11 +25,15 @@ class Img
         $source = '/'.ltrim($source, '/');
         $sourceArray = pathinfo($source);
 
+        if (!$this->checkFileCorrect($sourceArray)) {
+            return false;
+        }
+
         $filename = $sourceArray['filename'];
         $extension = $sourceArray['extension'];
         $dirname = $sourceArray['dirname'];
 
-        $this->nameFile = $this->quality == 80 ?
+        $this->nameFile = $this->quality == 90 ?
                 $filename.'.'.$extension :
                 $filename.'_'.$this->quality.'.'.$extension;
 
@@ -44,21 +49,104 @@ class Img
         }
 
         try {
-            $img = Image::make(public_path().$source);
+            $img = Image::make(public_path($source));
+
+            if (config('builder.watermark.active') && file_exists(config('builder.watermark.path'))) {
+                $img->insert(
+                    config('builder.watermark.path'),
+                    config('builder.watermark.position'),
+                    config('builder.watermark.x'),
+                    config('builder.watermark.y')
+                );
+            }
 
             $this->createRatioImg($img, $options);
 
-            @mkdir(public_path().$this->pathFolder);
+            @mkdir(public_path($this->pathFolder));
 
-            $pathSmallImg = public_path().'/'.$this->picturePath;
+            $pathSmallImg = public_path('/' . $this->picturePath);
             $img->save($pathSmallImg, $this->quality);
 
             OptmizationImg::run($this->picturePath);
 
-            return  $this->picturePath;
+            return $this->picturePath;
         } catch (\Exception $e) {
             return $e->getMessage();
         }
+    }*/
+
+    //Подмена на webp, если поддерживается и существует сгенерированное фото webp
+    public function get($source, $options)
+    {
+        if (!$source) {
+            return;
+        }
+
+        $this->setOptions($options);
+        $source = '/' . ltrim($source, '/');
+        $sourceArray = pathinfo($source);
+
+        if (!$this->checkFileCorrect($sourceArray)) {
+            return false;
+        }
+
+        $filename = $sourceArray['filename'];
+        $extension = $sourceArray['extension'];
+        $dirname = $sourceArray['dirname'];
+
+        $this->nameFile = $this->quality == 90 ?
+            $filename . '.' . $extension :
+            $filename . '_' . $this->quality . '.' . $extension;
+
+        $this->pathFolder = $dirname . '/' . $this->size;
+        $this->picturePath = $this->pathFolder . '/' . $this->nameFile;
+
+        if ($extension == 'svg') {
+            return $source;
+        }
+
+        // Check if webp version exists and browser supports webp
+        $webpFileName = $filename . '.webp';
+        $webpPicturePath = $this->pathFolder . '/' . $webpFileName;
+
+        if ($this->supportsWebP()) {
+            $this->picturePath = $webpPicturePath;
+        }
+
+        if (self::checkExistPicture()) {
+            return $this->picturePath;
+        }
+
+        try {
+            $img = Image::make(public_path($source));
+
+            if (config('builder.watermark.active') && file_exists(config('builder.watermark.path'))) {
+                $img->insert(
+                    config('builder.watermark.path'),
+                    config('builder.watermark.position'),
+                    config('builder.watermark.x'),
+                    config('builder.watermark.y')
+                );
+            }
+
+            $this->createRatioImg($img, $options);
+
+            @mkdir(public_path($this->pathFolder), 0777, true);
+
+            $pathSmallImg = public_path('/' . $this->picturePath);
+            $img->save($pathSmallImg, $this->quality);
+
+            OptmizationImg::run($this->picturePath);
+
+            return $this->picturePath;
+        } catch (\Exception $e) {
+            return $e->getMessage();
+        }
+    }
+
+    private function checkFileCorrect($sourceArray)
+    {
+       return !isset($sourceArray['extension']) || !isset($sourceArray['dirname']) ? false : true;
     }
 
     protected function setOptions($options)
@@ -87,20 +175,28 @@ class Img
                     $constraint->upsize();
                 }
             );
-        } else {
-            $img->resize(
-                $this->width,
-                $this->height,
-                function ($constraint) {
-                    $constraint->aspectRatio();
-                    $constraint->upsize();
-                }
-            );
+
+            return;
         }
+
+        $img->resize(
+            $this->width,
+            $this->height,
+            function ($constraint) {
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            }
+        );
     }
 
     protected function checkExistPicture()
     {
-        return file_exists(public_path().$this->picturePath);
+        return file_exists(public_path($this->picturePath));
+    }
+
+    // Function to check if the browser supports WebP
+    private function supportsWebP()
+    {
+        return strpos($_SERVER['HTTP_ACCEPT'], 'image/webp') !== false;
     }
 }
