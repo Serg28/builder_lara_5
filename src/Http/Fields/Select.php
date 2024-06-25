@@ -1,78 +1,82 @@
-<?php
+<section class="{{$field->getClassName()}}">
+    <label class="label" for="{{ $field->getNameField()}}">{{$field->getName()}}</label>
+    <div style="position: relative;">
+        <div class="div_input">
+            <div class="input_content">
+                <label class="select">
+                    <select
+                            @if ($field->isSaveOnChange())
+                                onchange="TableBuilder.doSaveOnChange($(this), '{{request('id')}}')"
+                            @endif
 
-namespace Vis\Builder\Fields;
+                            name="{{ $field->getNameField() }}" class="dblclick-edit-input form-control input-small unselectable
+                        {{$field->getNameFieldWithDefinition($definition)}}
+                            ">
+                        @foreach ($field->getOptions() as $value => $caption)
+                            <option value="{{ $value }}"
+                                    {{$value == $field->getValue() ? 'selected' : ''}}
+                            >{{ $caption }}</option>
+                        @endforeach
+                    </select>
+                    <i></i>
+                </label>
 
-use Illuminate\Support\Arr;
+                @if ($field->getComment())
+                    <div class="note">
+                        {{$field->getComment()}}
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+</section>
 
-class Select extends Field
-{
-    private $options = [];
-    private $isAction = false;
-    private $actionSelect = false;
+@if ($field->getActionSelect())
 
-    public function options($arrayList)
-    {
-        $this->options = $arrayList;
+    <script>
+        $('select[name={{ $field->getNameField() }}]').change(function () {
 
-        return $this;
-    }
-
-    public function optionsWithAttributes($arrayList)
-    {
-        foreach ($arrayList as $key => $arrayValues) {
-            if (is_array($arrayValues) && isset($arrayValues['value'])) {
-                $this->options[$key] = $arrayValues['value'];
-                unset($arrayList[$key]['value']);
+            if (!$(this).val()) {
+                $('select[name={{ $field->getActionSelect() }}] option').show();
+                return;
             }
+
+            $('select[name={{ $field->getActionSelect() }}] option').hide();
+            $('select[name={{ $field->getActionSelect() }}] option[data-class=' + $(this).val() + ']').show();
+            $('select[name={{ $field->getActionSelect() }}] option[value=""').show();
+            $('select[name={{ $field->getActionSelect() }}]').prop("selected", true).val('').change();
+
+        });
+
+        if ($('select[name={{ $field->getNameField() }}]').val()) {
+            $('select[name={{ $field->getActionSelect() }}] option').hide();
+            $('select[name={{ $field->getActionSelect() }}] option[data-class=' + $('select[name={{ $field->getNameField() }}]').val() + ']').show();
+            $('select[name={{ $field->getActionSelect() }}] option[value=""').show();
         }
 
-        $this->attributes = $arrayList;
+    </script>
+@endif
 
-        return $this;
-    }
+@if ($field->getAction())
 
-    public function getOptions()
-    {
-        return $this->options;
-    }
+    <script>
+        $(document).ready(function() {
+            setTimeout(function(){
+                var selectClass = '{{$field->getNameFieldWithDefinition($definition)}}';
+                var formClass = 'modal_form_{{$definition->model()->getTable()}}';
 
-    public function getAttributes()
-    {
-        return $this->attributes;
-    }
+                $('.' + formClass + ' select.' + selectClass).change(function () {
+                    $("." + formClass + " section.section_field").hide();
+                    $("." + formClass + " section.section_field." + $(this).val()).show();
+                });
 
-    public function action(bool $isAction = true)
-    {
-        $this->isAction = $isAction;
+                $("." + formClass + " section.section_field").hide();
 
-        return $this;
-    }
+                if ($('.' + formClass + ' select.' + selectClass).val()) {
+                    $("." + formClass + " section.section_field." + $('select.' + selectClass).val()).show();
+                }
+            },200);
+        });
+    </script>
 
-    public function actionSelect($nameSelect)
-    {
-        $this->actionSelect = $nameSelect;
-
-        return $this;
-    }
-
-    public function getActionSelect()
-    {
-        return $this->actionSelect;
-    }
-
-    public function getAction() : bool
-    {
-        return $this->isAction;
-    }
-
-    public function getValueForList($definition)
-    {
-        $value = $this->getValue();
-        $options = $this->getOptions();
-
-        if (isset($options[$value]) && Arr::get($options, $value)) {
-            return $options[$value];
-        }
-    }
-
-}
+@endif
