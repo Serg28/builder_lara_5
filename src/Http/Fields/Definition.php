@@ -9,11 +9,22 @@ class Definition extends Field
     protected $definitionRelation;
     protected $relation;
     protected $onlyForm = true;
+    protected $typeRelative;
 
     public function hasMany($relation, $classDefinitionRelation = null)
     {
         $this->relation = $relation;
         $this->definitionRelation = $classDefinitionRelation;
+        $this->typeRelative = 'hasMany';
+
+        return $this;
+    }
+
+    public function morphMany($relation, $classDefinitionRelation = null)
+    {
+        $this->relation = $relation;
+        $this->definitionRelation = $classDefinitionRelation;
+        $this->typeRelative = 'morphMany';
 
         return $this;
     }
@@ -43,10 +54,17 @@ class Definition extends Field
             'ident' => $this->getNameField(),
             'foreign_field' => $this->getFieldForeignKeyName($definition),
             'path_definition' => addslashes($this->definitionRelation),
+            'model_parent' => addslashes($definition->getFullPathDefinition()),
+            'type_relation' => $this->typeRelative,
         ];
 
         if ($definitionRelation->getIsSortable()) {
             $attributes['sortable'] = 'priority';
+        }
+
+        if ($this->typeRelative == 'morphMany') {
+            $attributes['morph_type'] = $definition->model()->{$this->relation}()->getMorphType();
+            $attributes['model_base'] = addslashes($definition->model);
         }
 
         return json_encode($attributes);
@@ -60,11 +78,22 @@ class Definition extends Field
     public function getTable($definition, $parseJsonData)
     {
         $attributes = json_encode($parseJsonData);
+        $definitionRelation = $this->getDefinitionRelation($definition);
+        $perPage = $definitionRelation->getPerPage();
+
+        if (request('count')) {
+
+            session()->put($definitionRelation->getSessionKeyPerPage(), ['per_page' => request('count')]);
+        }
+
+        $count = $definitionRelation->getPerPageThis();
 
         $model = $definition->model();
 
-        $list = request('id') ? $model::find(request('id'))->{$this->relation}
-                                   : (new $model())->{$this->relation};
+        $listModel = request('id') ? $model::find(request('id')) : (new $model());
+
+        $list = $listModel->{$this->relation}()->paginate($count);
+        $list->appends(['count' => $count]);
         
         $fieldsDefinition = $this->head($definition);
 
@@ -80,9 +109,10 @@ class Definition extends Field
         $urlAction = 'actions/'. $definition->getNameDefinition();
         $isSortable = $this->getDefinitionRelation($definition)->getIsSortable();
 
+
         return [
-            'html' => view('admin::new.form.fields.partials.input_definition_table_data',
-                            compact('fieldsDefinition', 'list', 'attributes', 'urlAction', 'isSortable'))->render(),
+            'html' => view('admin::form.fields.partials.input_definition_table_data',
+                            compact('definitionRelation', 'fieldsDefinition', 'list', 'attributes', 'urlAction', 'isSortable', 'perPage', 'count'))->render(),
             'count_records' => 0
         ];
     }
@@ -90,6 +120,8 @@ class Definition extends Field
     public function remove($definition, $parseJsonData)
     {
         $this->getDefinitionRelation($definition)->model()->destroy(request('idDelete'));
+
+        $this->getDefinitionRelation($definition)->clearCache();
 
         return $this->getTable($definition, $parseJsonData);
     }
@@ -99,13 +131,14 @@ class Definition extends Field
         $fields = $this->getDefinitionRelation($definition)->getAllFields();
 
         return collect($fields)->reject(function ($name) {
-            return $name->onlyForm == true;
+            return $name->isOnlyForm();
         });
     }
 
     public function getNameField() : string
     {
-        return Str::slug(parent::getNameField());
+        //return Str::slug(parent::getNameField());
+        return Str::slug(parent::getNameField(),'_');
     }
 
 }
