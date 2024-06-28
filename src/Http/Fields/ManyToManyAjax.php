@@ -18,20 +18,13 @@ class ManyToManyAjax extends ManyToMany
         return $this->getDataWithWhereAndOrder($definition)->toArray();
     }
 
-    public function save($collectionString, $model)
-    {
-        $collectionString = explode(',', $collectionString);
-
-        $model->{$this->options->getRelation()}()->sync($collectionString);
-    }
-
     public function getOptionsSelected(Resource $definition)
     {
         if (request()->id) {
             $table = $definition->model()->{$this->options->getRelation()}()->getRelated()->getTable();
 
             $selected = $definition->model()->find(request()->id)->{$this->options->getRelation()}()
-                ->select([ "{$table}.id", "{$table}.{$this->options->getKeyField()} as name"])->get()->toArray();
+                ->select([ "{$table}.id", "{$table}.{$this->options->getKeyField()} as name"])->get([ "{$table}.id", "{$table}.{$this->options->getKeyField()} as name"])->toArray();
 
             return json_encode($selected);
         }
