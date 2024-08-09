@@ -11,12 +11,19 @@
                     <div class="input input-file">
 
                          <span class="button">
-                             <input type="file" onchange="TableBuilder.uploadFile(this, '{{$field->getNameField()}}');"  {!! $field->getAccept() !!} >
+                             <input type="file" onchange="TableBuilder.uploadFile(this, '{{$field->getNameField()}}');"  {!! $field->getAccept() !!}
+                             data-name-model="{{$definition->getFullPathDefinition()}}"
+                             >
                              {{__cms('Загрузить')}}
                          </span>
-                         <span class="button select_with_uploaded" onclick="TableBuilder.selectWithUploaded('{{$field->getNameField()}}', 'one_file', $(this))">
+
+                        @if ($field->checkSelectionFiles())
+                         <span class="button select_with_uploaded"
+                               data-name-model = "{{$definition->getFullPathDefinition()}}"
+                               onclick="TableBuilder.selectWithUploaded('{{$field->getNameField()}}', 'one_file', $(this))">
                             {{__cms('Выбрать из загруженных')}}
                          </span>
+                        @endif
 
                         <input type="text"
                                id="{{ $field->getNameField() }}"
@@ -28,7 +35,7 @@
 
                     @if ($field->getComment())
                         <div class="note">
-                            {{$field->getComment()}}
+                            {!! $field->getComment() !!}
                         </div>
                     @endif
 
@@ -39,10 +46,9 @@
                         @endif
                     </div>
                     
-                    @include('admin::new.form.fields.partials.select_files', ['isMultiple' => false])
+                    @include('admin::form.fields.partials.select_files', ['isMultiple' => false])
 
                 </div>
-
 
             </div>
 

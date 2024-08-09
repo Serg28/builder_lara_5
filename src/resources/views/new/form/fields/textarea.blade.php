@@ -16,7 +16,7 @@
                 </label>
                 @if ($field->getComment())
                     <div class="note">
-                        {{$field->getComment()}}
+                        {!! $field->getComment() !!}
                     </div>
                 @endif
             </div>

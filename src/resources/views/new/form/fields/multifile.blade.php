@@ -27,7 +27,7 @@
 
                         @if ($field->getComment())
                             <div class="note">
-                                {{$field->getComment()}}
+                                {!! $field->getComment() !!}
                             </div>
                         @endif
 
@@ -49,7 +49,7 @@
                         </div>
                     </div>
 
-                    @include('admin::new.form.fields.partials.select_files', ['isMultiple' => true])
+                    @include('admin::form.fields.partials.select_files', ['isMultiple' => true])
 
                 </div>
 

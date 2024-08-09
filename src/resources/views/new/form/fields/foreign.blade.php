@@ -6,7 +6,10 @@
 
                 <label class="select">
                     <select
-                        {{request("id") && $field->isReadonlyForEdit() ? 'disabled' : ''}}
+                        {{request("id") && $field->getReadonlyForEdit() ? 'disabled' : ''}}
+                        @if ($field->isSaveOnChange())
+                            onchange="TableBuilder.doSaveOnChange($(this), '{{request('id')}}')"
+                        @endif
 
                         name="{{ $field->getNameField() }}" class="dblclick-edit-input form-control input-small unselectable {{ $field->getNameField() }}_foreign">
                         @if ($field->isNullAble())
@@ -14,7 +17,7 @@
                         @endif
 
                         @foreach ($field->getOptions($definition) as $value => $caption)
-                            <option value="{{ $value }}" {{$value == $field->getValue()? "selected" : ""}} >{{ __cms($caption) }}</option>
+                            <option value="{{ $value }}" {{$value == $field->getValue()? "selected" : ""}} >{{ $caption }}</option>
                         @endforeach
 
                     </select>

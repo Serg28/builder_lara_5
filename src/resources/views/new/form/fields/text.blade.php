@@ -6,7 +6,11 @@
                 <label class="input">
                     <input
                         @if ($field->isDisabled())
-                        disabled="disabled"
+                            disabled="disabled"
+                        @endif
+
+                        @if ($field->getValue() && $field->getReadonlyForEdit())
+                            readonly
                         @endif
 
                         type="text"
@@ -14,10 +18,11 @@
                         name="{{ $field->getNameField() }}"
                         placeholder="{{ $field->getPlaceholder() }}"
                         class="dblclick-edit-input form-control input-sm unselectable"
+                        data-name-input="{{$definition->getNameDefinition().$field->getNameField()}}"
                     />
                     @if ($field->getComment())
                         <div class="note">
-                            {{$field->getComment()}}
+                            {!! $field->getComment() !!}
                         </div>
                     @endif
                 </label>
@@ -25,5 +30,5 @@
         </div>
     </div>
 </section>
-@include('admin::new.form.fields.partials.traslation')
+@include('admin::form.fields.partials.traslation')
 

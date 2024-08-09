@@ -1,5 +1,12 @@
 <section class="{{$field->getClassName()}}">
-    <label class="label" for="{{ $field->getNameField()}}">{{$field->getName()}}</label>
+    <label class="label" for="{{ $field->getNameField()}}">{{$field->getName()}}
+
+        @if ($field->getComment())
+            <div class="note">
+                {!! $field->getComment() !!}
+            </div>
+        @endif
+    </label>
     <div style="position: relative;">
         <div class="div_input">
             <div class="input_content">
@@ -10,16 +17,21 @@
                                  style="width: 0%;"></div>
                         </div>
                         <div class="input input-file">
-                            <span class="button select_with_uploaded" onclick="TableBuilder.selectWithUploadedImages('{{$field->getNameField()}}', 'one_file', $(this), '{{$field->getNameField()}}', '{{request('id_tree')}}')"> {{__cms('Выбрать из загруженных')}}</span>
+                            <span class="button select_with_uploaded"
+                                  onclick="TableBuilder.selectWithUploadedImages('{{$field->getNameField()}}', 'one_file', $(this), '{{$field->getNameField()}}', '{{request('id_tree')}}')"
+                                  data-name-model="{{$definition->getFullPathDefinition()}}"
+                            > {{__cms('Выбрать из загруженных')}}</span>
                             <span class="button">
-                                <input type="file" accept="image/*" onchange="TableBuilder.uploadImage(this, '{{$field->getNameField()}}', '{{$field->getNameField()}}');">
+                                <input type="file" accept="image/*" onchange="TableBuilder.uploadImage(this, '{{$field->getNameField()}}', '{{$field->getNameField()}}');"
+                                       data-name-model="{{$definition->getFullPathDefinition()}}"
+                                >
                                 {{__cms('Загрузить')}}
                             </span>
                             <input type="text" id="{{$field->getNameField()}}" placeholder="{{__cms('Выберите изображение для загрузки')}}" readonly="readonly">
-                            <input type="hidden" value="{{$field->getValue()}}" name="{{ $field->getNameField() }}">
+                            <input type="hidden" data-id-picture="{{$field->getNameField()}}" value="{{$field->getValue()}}" name="{{ $field->getNameField() }}">
                         </div>
                         <div class="tb-uploaded-image-container image-container_{{ $field->getNameField() }}">
-                            @include('admin::new.form.fields.partials.image_single', ['field' => $field])
+                            @include('admin::form.fields.partials.image_single', ['field' => $field])
                         </div>
                     </div>
 
@@ -46,6 +58,8 @@
                     </div>
 
                 </div>
+
+
             </div>
         </div>
     </div>

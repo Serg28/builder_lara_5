@@ -16,7 +16,14 @@
 
                            value = '1'
                     >
-                    <i></i>{{$field->getName()}}</label>
+                    <i></i>{{$field->getName()}}
+
+                </label>
+                @if ($field->getComment())
+                    <div class="note">
+                        {!! $field->getComment() !!}
+                    </div>
+                @endif
             </div>
         </div>
     </div>

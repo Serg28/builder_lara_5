@@ -23,7 +23,8 @@
                             data: function (term, page) {
                                 return {
                                     q: term,
-                                    limit: 20,
+                                    //limit: 20,
+                                    limit: {{ $search['per_page'] ?? '20' }}, // page size
                                     page: page,
                                     ident: '{!! $field->getNameField() !!}',
                                     query_type: 'foreign_ajax_search',
