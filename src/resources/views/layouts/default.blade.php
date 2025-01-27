@@ -3,6 +3,7 @@
     <head>
         <meta charset="utf-8">
         <title> @yield('title') - {{ __cms(config('builder.admin.caption')) }}</title>
+        <meta name="robots" content="noindex, nofollow">
         <meta name="description" content="">
         <meta name="author" content="VIS-A-VIS">
         <meta name="HandheldFriendly" content="True">
