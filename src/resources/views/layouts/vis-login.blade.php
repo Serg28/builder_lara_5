@@ -7,7 +7,7 @@
         <!--<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">-->
 
         <title>{{ $admin->getCaption()}}</title>
-
+        <meta name="robots" content="noindex, nofollow">
         <meta name="HandheldFriendly" content="True">
         <meta name="MobileOptimized" content="320">
         
