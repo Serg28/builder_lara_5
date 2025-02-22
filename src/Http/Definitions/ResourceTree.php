@@ -3,6 +3,7 @@
 namespace Vis\Builder\Definitions;
 
 use App\Models\Tree;
+use Vis\Builder\Services\Listing;
 
 class ResourceTree extends Resource
 {
@@ -27,13 +28,13 @@ class ResourceTree extends Resource
 
     public function saveEditForm($request) : array
     {
-        $record = $this->model()->find($request['id']);
+        $record = $this->model()->withCount('children')->find($request['id']);
         $item = $this->saveActive($record, $request);
         $definition = $this;
 
         return [
             'id' => $item->id,
-            'html' => view('admin::new.tree.row', compact('item', 'definition'))->render()
+            'html' => view('admin::tree.row', compact('item', 'definition'))->render()
         ];
     }
 

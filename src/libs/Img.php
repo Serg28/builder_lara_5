@@ -109,6 +109,8 @@ class Img
         $webpFileName = $filename . '.webp';
         $webpPicturePath = $this->pathFolder . '/' . $webpFileName;
 
+        //Временно отключено из-за некорректной обработки webp
+        //TODO: проверить генерацию webp для логотипов
         if ($this->supportsWebP()) {
             $this->picturePath = $webpPicturePath;
         }
@@ -146,7 +148,7 @@ class Img
 
     private function checkFileCorrect($sourceArray)
     {
-       return !isset($sourceArray['extension']) || !isset($sourceArray['dirname']) ? false : true;
+        return !isset($sourceArray['extension']) || !isset($sourceArray['dirname']) ? false : true;
     }
 
     protected function setOptions($options)
@@ -191,16 +193,16 @@ class Img
 
     protected function checkExistPicture()
     {
-        return file_exists(public_path($this->picturePath));
-    }
+        //return file_exists(public_path($this->picturePath));
+        $filePath = public_path($this->picturePath);
 
+        return file_exists($filePath) && filesize($filePath) > 0;
+    }
+    
     // Function to check if the browser supports WebP
     private function supportsWebP()
     {
-        if (config('builder.optimization_img.active')) {
-            //return true;
-            return (strpos($_SERVER['HTTP_ACCEPT'], 'image/webp') !== false ||
-                strpos(request()->header('Accept'), 'image/webp') !== false);
-        }
+        //return strpos($_SERVER['HTTP_ACCEPT'], 'image/webp') !== false;
+        return strpos(request()->header('Accept'), 'image/webp') !== false;
     }
 }

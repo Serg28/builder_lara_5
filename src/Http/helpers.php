@@ -1,100 +1,83 @@
 <?php
 
+use Vis\Builder\Models\TranslationsCms;
+use Vis\Builder\Models\TranslationsPhrasesCms;
+use Vis\Builder\Models\Language;
+use Illuminate\Support\Facades\Cache;
+use App\Cms\Definitions\Settings;
+use Illuminate\Support\Facades\App;
+use Vis\Builder\Services\Translate;
+
+if (! function_exists('defaultLanguage')) {
+
+    function defaultLanguage() : ?string
+    {
+        try {
+            return Cache::tags('language')->rememberForever('default_language', function() {
+                $defaultLanguage = Language::getDefaultLanguage();
+
+                if ($defaultLanguage) {
+                    return Language::getDefaultLanguage()->language;
+                }
+            });
+
+        } catch (\Exception $e) {
+            config('app.locale');
+        }
+
+        return config('app.locale');
+    }
+}
+
+/*
+if (! function_exists('languagesOfSite')) {
+    function languagesOfSite()
+    {
+        return (new Language())->getLanguages()->pluck('language');
+    }
+}*/
+if (! function_exists('languagesOfSite')) {
+    function languagesOfSite()
+    {
+        try {
+            return (new Language())->getLanguages()->pluck('language');
+        } catch (QueryException $e) {
+            // Возвращаем пустую коллекцию, если таблицы нет
+            return collect();
+        }
+    }
+}
+
+/*
 if (! function_exists('setting')) {
-    /**
-     * @param string $value
-     * @param string $default
-     * @param bool   $useLocale
-     *
-     * @return mixed|string
-     */
-    function setting($value, $default = '', $useLocale = false)
-    {
-        return Vis\Builder\Setting::get($value, $default, $useLocale);
-    }
-}
 
-if (! function_exists('settingWithLang')) {
-    /**
-     * @param string $value
-     * @param string $default
-     *
-     * @return mixed|string
-     */
-    function settingWithLang($value, $default = '')
+    function setting(string $slug)
     {
-        return setting($value, $default, true);
+        return Cache::tags('settings')->rememberForever($slug . App::getLocale(), function() use ($slug) {
+            return (new Settings())->model()->getValue($slug);
+        });
     }
-}
-
-if (! function_exists('dr')) {
-    /**
-     * @param $array
-     */
-    function dr($array)
+}*/
+if (! function_exists('setting')) {
+    function setting(string $slug)
     {
-        echo '<pre>';
-        die(print_r($array));
-    }
-}
-
-if (! function_exists('print_arr')) {
-    /**
-     * @param $array
-     */
-    function print_arr($array)
-    {
-        echo '<pre>';
-        print_r($array);
-        echo '</pre>';
-    }
-}
-
-if (! function_exists('remove_bom')) {
-    /**
-     * @param $val
-     *
-     * @return bool|string
-     */
-    function remove_bom($val)
-    {
-        if (substr($val, 0, 3) == pack('CCC', 0xef, 0xbb, 0xbf)) {
-            $val = substr($val, 3);
+        try {
+            //return Cache::tags('settings')->rememberForever($slug . App::getLocale(), function() use ($slug) {
+            return Cache::tags('settings')->remember('setting_'.$slug . App::getLocale(), 1200, function() use ($slug) {
+                return (new Settings())->model()->getValue($slug);
+            });
+        } catch (QueryException $e) {
+            // Возвращаем null, если возникла ошибка работы с таблицей
+            return null;
+        } catch (Exception $e) {
+            // Перехватываем любые другие ошибки (например, связанные с кешем)
+            return null;
         }
-
-        return $val;
-    }
-}
-
-if (! function_exists('glide')) {
-    /**
-     * @param $source
-     * @param array $options
-     *
-     * @return mixed|string
-     */
-    function glide($source, $options = [])
-    {
-        if (
-            env('IMG_PLACEHOLDER', true)
-            && (env('APP_ENV') === 'local' || env('APP_ENV') === 'testing')
-        ) {
-            $width = $options['w'] ?? 100;
-            $height = $options['h'] ?? 100;
-
-            return "//via.placeholder.com/{$width}x{$height}";
-        }
-
-        return (new Vis\Builder\Img())->get($source, $options);
     }
 }
 
 if (! function_exists('filesize_format')) {
-    /**
-     * @param $bytes
-     *
-     * @return string
-     */
+
     function filesize_format($bytes)
     {
         if ($bytes >= 1073741824) {
@@ -115,14 +98,51 @@ if (! function_exists('filesize_format')) {
     }
 }
 
-/*
- * @param $url
- * @param bool $locale
- * @param array $attributes
- * @return false|string
- */
+if (! function_exists('settingForMail')) {
+
+    function settingForMail(string $value)
+    {
+        return array_map('trim', explode(',', setting($value)));
+    }
+}
+
+if (! function_exists('dr')) {
+    function dr($array)
+    {
+        echo '<pre>';
+        die(print_r($array));
+    }
+}
+
+if (! function_exists('print_arr')) {
+    function print_arr($array)
+    {
+        echo '<pre>';
+        print_r($array);
+        echo '</pre>';
+    }
+}
+
+if (! function_exists('glide')) {
+
+    function glide($source, array $options = [])
+    {
+        if (
+            env('IMG_PLACEHOLDER', true)
+            && (env('APP_ENV') === 'local' || env('APP_ENV') === 'testing')
+        ) {
+            $width = $options['w'] ?? 100;
+            $height = $options['h'] ?? 100;
+
+            return "//via.placeholder.com/{$width}x{$height}";
+        }
+
+        return (new Vis\Builder\Img())->get($source, $options);
+    }
+}
+
 if (! function_exists('geturl')) {
-    function geturl($url, $locale = false, $attributes = [])
+    function geturl( string $url, $locale = false, array $attributes = []) : string
     {
         if (! $locale) {
             $locale = App::getLocale();
@@ -132,20 +152,16 @@ if (! function_exists('geturl')) {
     }
 }
 
-/*
- * @param $phrase
- * @return mixed
- */
 if (! function_exists('__cms')) {
-    function __cms($phrase)
+    function __cms($phrase) : ?string
     {
         $thisLang = Cookie::get('lang_admin', config('builder.translations.cms.language_default'));
 
-        $arrayTranslate = Vis\TranslationsCMS\Trans::fillCacheTrans();
+        $arrayTranslate = TranslationsPhrasesCms::fillCacheTrans();
 
         if (!isset($arrayTranslate[$phrase][$thisLang])) {
             if ($phrase) {
-                (new \Vis\TranslationsCMS\Translate())->createNewTranslate($phrase);
+                (new TranslationsCms())->createNewTranslate($phrase);
             }
         }
 
@@ -153,82 +169,9 @@ if (! function_exists('__cms')) {
     }
 }
 
-/*
- * get realy ip user
- *
- * @return string
- */
-if (! function_exists('getIp')) {
-    function getIp()
+if (! function_exists('__t')) {
+    function __t(string $phrase, array $replacePhrase = []) : ?string
     {
-        if (! empty($_SERVER['HTTP_CLIENT_IP'])) {
-            $ip = $_SERVER['HTTP_CLIENT_IP'];
-        } elseif (! empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-        } else {
-            $ip = $_SERVER['REMOTE_ADDR'];
-        }
-
-        return $ip;
-    }
-}
-
-/*
- * @param $tree
- * @param $node
- * @param array $slugs
- * @return string
- */
-if (! function_exists('recurseMyTree')) {
-    function recurseMyTree($tree, $node, &$slugs = [])
-    {
-        if (! $node['parent_id']) {
-            return $node['slug'];
-        }
-
-        $slugs[] = $node['slug'];
-        $idParent = $node['parent_id'];
-        if ($idParent) {
-            $parent = $tree[$idParent];
-            recurseMyTree($tree, $parent, $slugs);
-        }
-
-        return implode('/', array_reverse($slugs));
-    }
-}
-
-/*
- * Returns entire string with current locale postfix, ex. string_ua
- *
- * @param  string
- * @return string
- */
-if (! function_exists('getWithLocalePostfix')) {
-    function getWithLocalePostfix($string)
-    {
-        $currentLocale = LaravelLocalization::getCurrentLocale();
-
-        return $currentLocale == LaravelLocalization::getDefaultLocale() ? $string : $string.'_'.$currentLocale;
-    }
-}
-
-if (! function_exists('getLocalePostfix')) {
-    function getLocalePostfix($locale = null)
-    {
-        if (! $locale) {
-            $locale = app()->getLocale();
-        }
-
-        $languages = config('translations.config.languages');
-
-        if (is_array($languages)) {
-            foreach ($languages as $language) {
-                if ($language['caption'] === $locale) {
-                    return $language['postfix'];
-                }
-            }
-        }
-
-        return '';
+        return (new Translate())->returnPhrase($phrase, $replacePhrase);
     }
 }
