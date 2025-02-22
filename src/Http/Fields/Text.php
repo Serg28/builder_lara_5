@@ -6,6 +6,7 @@ class Text extends Field
 {
     protected $transliterationField;
     protected $transliterationOnlyEmpty;
+    protected $isAutoTranslate = false;
 
     public function transliteration(string $field, bool $onlyEmpty = false)
     {

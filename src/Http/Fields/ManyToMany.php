@@ -27,7 +27,7 @@ class ManyToMany extends Field
         $data = [];
 
         foreach ($collection as $item) {
-            $data[$item->id] = $item->name;
+            $data[$item->id] = $item->t('name');
         }
 
         return $data;
@@ -36,7 +36,7 @@ class ManyToMany extends Field
     public function getDataWithWhereAndOrder(Resource $definition)
     {
         $modelRelated = $definition->model()->{$this->options->getRelation()}()->getRelated();
-        $collection = $modelRelated::select(['id', $this->options->getKeyField() . ' as name']);
+        $collection = $modelRelated::select(['id', $this->options->getKeyField().' as name']);
         $where = $this->options->getWhereCollection();
         $order = $this->options->getOrderCollection();
 
@@ -74,9 +74,15 @@ class ManyToMany extends Field
         return [];
     }
 
-    public function save($collectionIds, Model $model)
+    public function save($collectionString, $model)
     {
-        $model->{$this->options->getRelation()}()->sync($collectionIds);
+        $collectionArray = explode(',', $collectionString);
+
+        $model->{$this->options->getRelation()}()->detach();
+
+        if ($collectionString) {
+            $model->{$this->options->getRelation()}()->syncWithoutDetaching($collectionArray);
+        }
     }
 
     public function getNameField() : string

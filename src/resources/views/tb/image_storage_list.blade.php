@@ -29,7 +29,7 @@
             </label>
         </section>
         <input type="hidden" value="{{request('ident')}}" name="ident">
-        <input type="hidden" value="{{request('baseName')}}" name="baseName">
+        <input type="hidden" value="{{$definition->getFullPathDefinition()}}" name="path_model">
 
     </div>
 </div>
@@ -45,10 +45,18 @@
 
             ?>
 
-            <div class="one_img_uploaded is_wrapper" onclick="TableBuilder.selectImgInStorage($(this))">
+            <div class="one_img_uploaded is_wrapper <?=strpos($img->file_source, '.svg') ? 'transparent-image' : '' ?>" onclick="TableBuilder.selectImgInStorage($(this))" style="position:relative">
+                <button class="btn btn-default btn-sm tb-btn-image-delete"
+                        type="button"
+                        onclick="deleteImage({{$img->id}},'picture', 'one_file', $(this), 'picture', '')"
+                        style="position: absolute; top:2px;right: 2px;left: auto"
+                >
+                    <i class="fa fa-times"></i>
+                </button>
+
                 <div class="one_img_uploaded_content">
                     <img src="{{glide($img->file_folder . $img->file_source, ['w'=>100, 'h' => 100])}}"
-                         data-path = '{{trim($img->file_folder . $img->file_source, '/')}}'
+                         data-path = '/{{trim($img->file_folder . $img->file_source, '/')}}'
                       >
                 </div>
                 <div class="one_img_uploaded_label">
@@ -94,6 +102,7 @@
     </style>
 
     <script>
+
         $(".paginator_pictures a").click(function(e) {
             var href = $(this).attr('href');
             e.preventDefault();
@@ -103,6 +112,7 @@
                     section.html(response.data);
             });
         });
+
         $('[name=q]').keyup(function (e) {
             var code = (e.keyCode ? e.keyCode : e.which);
 

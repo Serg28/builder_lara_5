@@ -4,6 +4,15 @@ namespace Vis\Builder;
 
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\View;
+use Vis\Builder\Http\ViewComposers\ActivitiesTree;
+use Vis\Builder\Http\ViewComposers\ChangeLang;
+use Vis\Builder\Http\ViewComposers\Languages;
+use Vis\Builder\Http\ViewComposers\LayoutDefault;
+use Vis\Builder\Http\ViewComposers\Navigation;
+use Vis\Builder\Http\ViewComposers\NavigationBadge;
+use Vis\Builder\Models\TranslationsPhrases;
+use Cartalyst\Sentinel\Laravel\Facades\Sentinel;
 
 /**
  * Class BuilderServiceProvider.
@@ -22,12 +31,13 @@ class BuilderServiceProvider extends ServiceProvider
      */
     public function boot(\Illuminate\Routing\Router $router)
     {
-        $router->middleware('auth.admin', \Vis\Builder\Authenticate::class);
-        $router->middleware('auth.user', \Vis\Builder\AuthenticateFrontend::class);
-
         require __DIR__.'/../vendor/autoload.php';
         require __DIR__.'/Http/helpers.php';
-        require __DIR__.'/Http/view_composers.php';
+
+        $this->app->setLocale(defaultLanguage());
+
+        $router->middleware('auth.admin', \Vis\Builder\Authenticate::class);
+        $router->middleware('auth.user', \Vis\Builder\AuthenticateFrontend::class);
 
         $this->setupRoutes($this->app->router);
 
@@ -47,6 +57,40 @@ class BuilderServiceProvider extends ServiceProvider
         $this->publishes([
             realpath(__DIR__.'/Migrations') => $this->app->databasePath().'/migrations',
         ]);
+
+        $this->viewComposersInit();
+    }
+
+    private function viewComposersInit()
+    {
+        View::composer([
+            'admin::partials.change_lang',
+            'admin::partials.scripts'
+        ],
+            ChangeLang::class);
+
+        View::composer('admin::partials.navigation_badge', NavigationBadge::class);
+        View::composer('admin::partials.navigation', Navigation::class);
+
+        View::composer(['admin::tree.partials.update',
+            'admin::tree.partials.preview',
+            'admin::tree.partials.clone',
+            'admin::tree.partials.revisions',
+            'admin::tree.partials.delete',
+            'admin::tree.partials.constructor',
+        ], ActivitiesTree::class);
+
+        View::composer([
+            'admin::translations.part.form_trans',
+            'admin::translations.part.result_search',
+            'admin::translations.part.table_center',
+            'admin::translations.trans'
+        ], Languages::class);
+
+
+
+
+        View::composer('admin::layouts.default',  LayoutDefault::class);
     }
 
     /**
@@ -59,9 +103,9 @@ class BuilderServiceProvider extends ServiceProvider
     public function setupRoutes(Router $router)
     {
         require __DIR__.'/Http/route_frontend.php';
-        require __DIR__.'/Http/route_translation.php';
-        require __DIR__.'/Http/route_settings.php';
+        require __DIR__.'/Http/routers_translation_cms.php';
         require __DIR__.'/Http/routers.php';
+        require __DIR__.'/Http/routers_translation.php';
     }
 
     /**
@@ -99,6 +143,10 @@ class BuilderServiceProvider extends ServiceProvider
 
         $this->app->singleton($this->commandAdminCreateImgWebp, function () {
             return new CreateImgWebp();
+        });
+
+        $this->app->singleton('arrayTranslate', function () {
+            return TranslationsPhrases::fillCacheTrans();
         });
 
         $this->commands($this->commandAdminInstall);

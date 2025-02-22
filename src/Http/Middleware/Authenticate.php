@@ -2,69 +2,77 @@
 
 namespace Vis\Builder;
 
-use Cartalyst\Sentinel\Laravel\Facades\Sentinel;
+use Cartalyst\Sentinel\Laravel\Facades\{Sentinel, Activation};
 use Closure;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Session;
+use App\Cms\Admin;
 
 class Authenticate
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param \Closure                 $next
-     * @param string|null              $guard
-     *
-     * @return mixed
-     */
+    private $adminClass;
+
+    public function __construct(Admin $admin)
+    {
+        $this->adminClass = $admin;
+    }
+
     public function handle($request, Closure $next)
     {
         if (! $this->checkIp($request)) {
             return redirect()->to('/');
         }
 
-        try {
-            if (! Sentinel::check()) {
-                if (Request::ajax()) {
-                    $data = [
-                        'status'  => 'error',
-                        'code'    => '401',
-                        'message' => 'Unauthorized',
-                    ];
+        $user = Sentinel::getUser();
 
-                    return Response::json($data, '401');
-                } else {
-                    return redirect()->guest('login');
-                }
-            }
-            //check access
-            $user = Sentinel::getUser();
-            if (! $user->hasAccess(['admin.access'])) {
-                Session::flash('login_not_found', 'Нет прав на вход в админку');
-                Sentinel::logout();
-
-                return Redirect::route('login_show');
+        if (! $user) {
+            if (Request::ajax()) {
+                return Response::json([
+                    'status'  => 'error',
+                    'code'    => '401',
+                    'message' => __cms('Нет прав на вход в cms'),
+                ], '401');
             }
 
-            \App::singleton('user', function () use ($user) {
-                return $user;
-            });
-
-        } catch (\Cartalyst\Sentinel\Checkpoints\NotActivatedException $e) {
-            Session::flash('login_not_found', 'Пользователь не активирован');
-            Sentinel::logout();
-
-            return Redirect::route('login_show');
+            return redirect()->guest('login');
         }
+
+        if (!Activation::completed($user)) {
+            return $this->returnIfNotHasAccess(__cms('Пользователь не активирован'));
+        }
+
+        if (! $user->hasAccess(['admin.access'])) {
+            return $this->returnIfNotHasAccess(__cms('Нет прав на вход в cms'));
+        }
+
+        \App::singleton('user', function () use ($user) {
+            return $user;
+        });
 
         return $next($request);
     }
 
+    private function returnIfNotHasAccess(string $message)
+    {
+        Session::flash('login_not_found', $message);
+        Sentinel::logout();
+
+        return Redirect::route('cms.login.index');
+    }
+
     private function checkIp($request)
     {
+        $ip = $this->adminClass->accessIp();
+
+        if (count($ip)) {
+
+            if (!in_array($request->ip(), $ip)) {
+                return abort(403);
+            }
+        }
+
         return true;
     }
 }

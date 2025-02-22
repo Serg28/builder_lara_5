@@ -20,6 +20,13 @@ class Foreign extends Field
     {
         $collection = $this->getDataWithWhereAndOrder($definition);
         $data = [];
+
+        if ($this->defaultValue) {
+            $data = [
+                '' => $this->defaultValue
+            ];
+        }
+
         foreach ($collection as $item) {
             $data[$item->id] = $item->name;
         }
@@ -27,10 +34,23 @@ class Foreign extends Field
         return $data;
     }
 
+    public function prepareSave($request)
+    {
+        $nameField = $this->getNameField();
+
+        if (isset($request[$nameField]) && $request[$nameField]) {
+            return $request[$nameField];
+        }
+
+        return null;
+    }
+
     public function getDataWithWhereAndOrder(Resource $definition)
     {
+        $definition = $this->getDefinition($definition);
         $modelRelated = $definition->model()->{$this->options->getRelation()}()->getRelated();
         $collection = $modelRelated::select(['id', $this->options->getKeyField() . ' as name']);
+
         $where = $this->options->getWhereCollection();
         $order = $this->options->getOrderCollection();
 
@@ -46,17 +66,55 @@ class Foreign extends Field
             }
         }
 
-        return $collection->get();
+        return $collection->rememberForever()->cacheTags($this->getCacheArray($definition, $modelRelated))->get();
     }
-
 
     public function getValueForList($definition)
     {
         $value = $this->getValue();
-        $options = $this->getOptions($definition);
+        $optionsArray = $this->getOptions($definition);
 
-        if (isset($options[$value]) && Arr::get($options, $value)) {
-            return $options[$value];
+        if ($this->fastEdit) {
+
+            $idRecord = $this->getId();
+            $field = $this->getNameFieldInBd();
+
+            return view('admin::list.fast_edit.select', compact('idRecord', 'value', 'field', 'optionsArray'));
         }
+        
+        $definition = $this->getDefinition($definition);
+        $modelRelated = $definition->model()->{$this->options->getRelation()}()->getRelated();
+        $record = $modelRelated::select(['id', $this->options->getKeyField() . ' as name']);
+
+        $recordThis = $record->rememberForever()
+                             ->cacheTags($this->getCacheArray($definition, $modelRelated))
+                             ->find($value);
+
+        return optional($recordThis)->name;
+    }
+
+    public function getValueForExel($definition)
+    {
+        return $this->getValueForList($definition);
+    }
+
+    protected function getCacheArray($definition, $modelRelated)
+    {
+        $cacheArray[] = $definition->getCacheKey();
+        $cacheArray[] = $modelRelated->getTable();
+
+        return $cacheArray;
+    }
+
+    protected function getDefinition($definition)
+    {
+        if (request('paramsJson')) {
+            $listParams = json_decode(request('paramsJson'));
+            $definitionPath = $listParams->path_definition;
+
+            return new $definitionPath();
+        }
+
+        return $definition;
     }
 }

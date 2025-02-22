@@ -50,4 +50,14 @@ class BaseTree
 
         return $templatesModels;
     }
+
+    public function clearCache()
+    {
+        $this->model()->clearCache();
+    }
+
+    public function definition()
+    {
+        return \App\Cms\Definitions\Tree::class;
+    }
 }

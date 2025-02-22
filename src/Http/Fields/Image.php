@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\File;
 class Image extends Field
 {
     protected $path = '/storage/editor/fotos/';
+    protected $isAutoTranslate = false;
 
     public function isTransparent()
     {
@@ -18,15 +19,29 @@ class Image extends Field
 
     public function getValueForList($definition)
     {
-        $img = glide($this->getValue(), ['w' => 50, 'h' => 50]);
-        $imgHover = glide($this->getValue(), ['w' => 350, 'h' => 350]);
+        $value = $this->getValue();
+
+        if ($this->getLanguage()) {
+            $language = $this->getLanguage()->first();
+            $value = $this->getValueLanguage($language->language);
+        }
+
+        $img = glide($value, ['w' => 50, 'h' => 50]);
+        $imgHover = glide($value, ['w' => 350, 'h' => 350]);
 
         return "<a class='screenshot' rel='{$imgHover}'><img src='{$img}'></a>";
     }
 
+    public function uploadPath(string $path)
+    {
+        $this->path = $path;
+
+        return $this;
+    }
+
     public function selectWithUploadedImages($definition)
     {
-        return $this->getImagesWithImageStorage();
+        return $this->getImagesWithImageStorage($definition);
     }
 
     public function upload($definition)
@@ -44,7 +59,7 @@ class Image extends Field
 
         if ($model && request('page_id')) {
             $infoPage = $model::find(request('page_id'));
-            $slugPage = isset($infoPage->title) ? Str::slug($infoPage->title) : request('page_id');
+            $slugPage = isset($infoPage->title) ? Str::slug($infoPage->t('title')) : request('page_id');
             $fileName = $slugPage.'.'.$extension;
             $fullFileName = $this->path . $fileName;
 
@@ -54,7 +69,7 @@ class Image extends Field
             }
         }
 
-        $status = $file->move(ltrim($this->path, '/'), $fileName);
+        $status = $file->move(public_path($this->path), $fileName);
 
         $data = [];
         $data['sizes']['original'] = $fullFileName;
@@ -110,40 +125,38 @@ class Image extends Field
         $imgStorage->save();
     }
 
-    private function getImagesWithImageStorage() : array
+    private function getImagesWithImageStorage($definition) : array
     {
-        if (class_exists('\Vis\ImageStorage\Image')) {
-            $list = \Vis\ImageStorage\Image::orderBy('created_at', 'desc');
-
-            if (request('tag')) {
-                $list->leftJoin('vis_tags2entities', 'id_entity', '=', 'vis_images.id')->where('entity_type', 'Vis\ImageStorage\Image')->where('id_tag', request('tag'));
-            }
-
-            if (request('gallary')) {
-                $list->leftJoin('vis_images2galleries', 'id_image', '=', 'vis_images.id')->where('id_gallery', request('gallary'));
-            }
-
-            if (request('q')) {
-                $list->where('vis_images.title', 'like', request('q').'%');
-            }
-
-            $list = $list->groupBy('vis_images.id')->paginate(18);
-
-            $tags = \Vis\ImageStorage\Tag::where('is_active', 1)->orderBy('title', 'asc')->get();
-            $galleries = \Vis\ImageStorage\Gallery::where('is_active', 1)->orderBy('title', 'asc')->get();
-
-            $data = [
-                'status' => 'success',
-                'data'   => view('admin::tb.image_storage_list', compact('list', 'tags', 'galleries'))->render(),
-            ];
-        } else {
-            $data = [
+        if (!class_exists('\Vis\ImageStorage\Image')) {
+            return [
                 'status' => 'success',
                 'data'   => 'Не подключен пакет ImageStorage',
             ];
         }
 
-        return $data;
+        $list = \Vis\ImageStorage\Image::orderBy('created_at', 'desc');
+
+        if (request('tag')) {
+            $list->leftJoin('vis_tags2entities', 'id_entity', '=', 'vis_images.id')->where('entity_type', 'Vis\ImageStorage\Image')->where('id_tag', request('tag'));
+        }
+
+        if (request('gallary')) {
+            $list->leftJoin('vis_images2galleries', 'id_image', '=', 'vis_images.id')->where('id_gallery', request('gallary'));
+        }
+
+        if (request('q')) {
+            $list->where('vis_images.title', 'like', request('q').'%');
+        }
+
+        $list = $list->groupBy('vis_images.id')->paginate(18);
+
+        $tags = \Vis\ImageStorage\Tag::where('is_active', 1)->orderBy('title', 'asc')->get();
+        $galleries = \Vis\ImageStorage\Gallery::where('is_active', 1)->orderBy('title', 'asc')->get();
+
+        return [
+            'status' => 'success',
+            'data'   => view('admin::tb.image_storage_list', compact('list', 'tags', 'galleries', 'definition'))->render(),
+        ];
     }
 
 }

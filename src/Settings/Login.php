@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Redirect;
 
 class Login
 {
-    protected $backgroundUrl = '/packages/vis/builder/img/vis-admin-lock.jpg';
+    protected $backgroundUrl = '/packages/vis/builder/img/vis-admin-lock.jpg?1';
     protected $css;
 
     public function onLogin()
