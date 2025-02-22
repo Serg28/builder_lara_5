@@ -10,7 +10,7 @@
     ],
     "require": {
         "cartalyst/sentinel": "^6.0",
-        "mcamara/laravel-localization": "^2.*",
+        "mcamara/laravel-localization": "^2.0",
         "kalnoy/nestedset": "^6.0",
         "venturecraft/revisionable": "1.*",
         "intervention/image": "2.*",
