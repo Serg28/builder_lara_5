@@ -6,7 +6,7 @@
             height='120'
             src="/{{$value}}"
          @else
-            src="{{glide($value, ['w'=>'120','h'=>'120']) }}"
+            src="{{glide($value, ['w'=>'130','h'=>'130']) }}"
          @endif
          data_src_original= "{{$value}}"
          src_original = "{{$value}}"

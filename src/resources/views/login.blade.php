@@ -20,12 +20,21 @@
                             </header>
     
                             <fieldset>
-                                
+
+                                {{--
                                 <section>
                                     <label class="label">{{(__cms('Эл.почта'))}}</label>
                                     <label class="input"> <i class="icon-append fa fa-user"></i>
                                         <input type="email" name="email" email_required = "{{__cms('Введите адрес эл.почты')}}" email_email = "{{__cms('Введите валидный адрес эл.почты')}}">
                                        </label>
+                                </section>
+                                <section>{{__cms('или')}}</section> --}}
+                                <section>
+                                    <label class="label">{{(__cms('Телефон'))}}</label>
+                                    <label class="input"> <i class="icon-append fa fa-user"></i>
+                                        <input type="tel" name="phone" phone_required = "{{__cms('Введите телефон')}}" email_phone = "{{__cms('Введите валидный телефон')}}">
+                                    </label>
+                                    <span class="note">{{__cms('Формат')}} +38XXXXXXXXX</span>
                                 </section>
     
                                 <section>

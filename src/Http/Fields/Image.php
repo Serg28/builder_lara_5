@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\File;
 
 class Image extends Field
 {
-    protected $path = '/storage/editor/fotos/';
+    protected $path = '/storage/editor/photos/';
     protected $isAutoTranslate = false;
 
     public function isTransparent()

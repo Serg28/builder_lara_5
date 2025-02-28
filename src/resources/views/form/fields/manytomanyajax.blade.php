@@ -10,6 +10,11 @@ $selected = $field->getOptionsSelected($definition);
                 <input class="select2-enabled" type="hidden" id="{{$field->getNameField()}}" name="{{$field->getNameField()}}" style="width:100%;">
             </div>
         </div>
+        @if ($field->getComment())
+            <div class="note">
+                {!! $field->getComment() !!}
+            </div>
+        @endif
     </div>
 </section>
 <script>

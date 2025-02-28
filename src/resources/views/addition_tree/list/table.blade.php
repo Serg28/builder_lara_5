@@ -5,7 +5,6 @@
 </div>
 <section id="widget-grid" class="">
     @include('admin::partials.cards')
-
     <div class="row" style="padding-right: 13px; padding-left: 13px;">
         <article class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="padding-right: 0px; padding-left: 0px;">
             <div id="table-preloader" class="smoke_lol"><i class="fa fa-gear fa-4x fa-spin"></i></div>
@@ -99,5 +98,32 @@
         Tree.sortTable();
     } catch (err) { }
 
-</script>
 
+    // Сохраняем оригинальную функцию
+    const originalDoEdit = TableBuilder.doEdit;
+
+    // Переопределяем функцию с добавлением новой логики
+    TableBuilder.doEdit = function (id, table, foreign_field_id, foreign_attributes) {
+        // Вызов оригинальной функции с сохранением контекста
+        originalDoEdit.apply(this, arguments);
+
+        // Проверяем, находится ли текущий URL на странице категорий
+        //if (window.location.pathname.includes('/admin/categories')) {
+            // Перезагрузка страницы после успешного сохранения
+        //    setTimeout(function() {
+        //        window.location.href = '/admin/categories?node={{$current->id}}'; // Перезагрузка страницы
+        //    }, 500); // Небольшая задержка для завершения текущих операций
+        //}
+
+        if (window.location.pathname.includes('/admin/categories')) {
+            setTimeout(function() {
+                const currentUrl = new URL(window.location.href);
+                const params = currentUrl.searchParams;
+                params.set('node', '{{$current->id}}'); // Устанавливаем или обновляем параметр 'node' со значением 1
+                window.history.replaceState({}, '', currentUrl.toString()); // Обновляем URL без перезагрузки страницы
+            }, 500);
+        }
+    };
+
+
+</script>

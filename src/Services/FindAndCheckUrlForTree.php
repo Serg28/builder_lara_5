@@ -44,17 +44,16 @@ class FindAndCheckUrlForTree
         $model = $this->model;
 
         if (request('show') == 1) {
-            $nodes = $model::where('slug', '=', $slug)->get(); //из коробки - урл = slug
-            //$nodes = $model::slug($slug)->get(); //урл = мультиязычный из поля url
+            //$nodes = $model::where('slug', 'like', $slug)->get(); //из коробки - урл = slug
+            $nodes = $model::slug($slug)->get(); //урл = мультиязычный из поля url
         } else {
             //из коробки - урл = slug
             //$nodes = Cache::tags($tagsCache)->rememberForever('tree_slug_'.$slug, function () use ($model, $slug) {
                 //return $model::where('slug', 'like', $slug)->active()->get();
             //урл = мультиязычный из поля url
-            //$nodes = Cache::tags($tagsCache)->remember('tree_slug_'.$slug.'_'.App::getLocale(), 1200, function () use ($model, $slug) {
-            $nodes = Cache::store('file')->rememberForever('tree_slug_'.$slug.'_'.App::getLocale(), function () use ($model, $slug) {
-                return $model::where('slug', '=', $slug)->active()->get();
-                //return $model::slug($slug)->active()->get();
+            $nodes = Cache::tags($tagsCache)->rememberForever('tree_slug_'.$slug.'_'.App::getLocale(), function () use ($model, $slug) {
+                //return $model::where('slug', 'like', $slug)->active()->get();
+                return $model::slug($slug)->active()->get();
             });
         }
 
