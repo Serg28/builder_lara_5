@@ -11,6 +11,7 @@ class Export extends ButtonBase implements Button, FromView
 {
     use Exportable;
 
+    /*
     public function view(): View
     {
         $listingRecords = $this->listing->getDefinition()->getListingForExel();
@@ -28,5 +29,26 @@ class Export extends ButtonBase implements Button, FromView
 
         return view('admin::list.buttons.export', compact('list', 'class'));
     }
+*/
+
+
+    public function view(): View
+    {
+        $listingRecords = $this->listing->getDefinition()->getListingForExel();
+
+        return view('admin::exel', [
+            'head' => $this->listing->getDefinition()->headForExcel(),
+            'items' => $listingRecords,
+        ]);
+    }
+
+    public function show():View
+    {
+        $class = addslashes(get_class($this));
+        $list = $this->listing->getDefinition()->headForExcel(true);
+
+        return view('admin::list.buttons.export', compact('list', 'class'));
+    }
+
 
 }

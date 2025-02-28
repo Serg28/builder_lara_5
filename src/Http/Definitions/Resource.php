@@ -5,6 +5,7 @@ namespace Vis\Builder\Definitions;
 use Vis\Builder\Services\Listing;
 use Illuminate\Support\Arr;
 use Vis\Builder\Fields\{Definition, Password, Virtual};
+use Vis\Builder\Fields\Field;
 use Illuminate\Support\Facades\Validator;
 use Vis\Builder\Services\Actions;
 use Vis\Builder\Libs\GoogleTranslateForFree;
@@ -24,6 +25,7 @@ class Resource
     protected $updateMorphOneList = [];
     protected $relations = [];
     protected $filterScope;
+    //protected $autoTranslate = true;
     protected $autoTranslate = false;
     protected $isShowPerPage = false;
 
@@ -340,7 +342,7 @@ class Resource
                                     );
                         }
 
-                        $data[$relationHasOne][$keyField] = json_encode($translateArray[$fieldLanguage], JSON_UNESCAPED_UNICODE);
+                        $data[$relationHasOne][$keyField] = json_encode($translateArray[$fieldLanguage]);;
 
                     } else {
                         $data[$relationHasOne][$keyField] = $item['value'];
@@ -377,7 +379,7 @@ class Resource
                                 );
                         }
 
-                        $data[$item['field']->getNameField()] = json_encode($translateArray, JSON_UNESCAPED_UNICODE);
+                        $data[$item['field']->getNameField()] = json_encode($translateArray);
 
                     } else {
                         $data[$item['field']->getNameField()] = $item['value'];
@@ -407,7 +409,7 @@ class Resource
             $translateArray[$langPrefix->language] = $translate;
         }
 
-        $record->$nameField = json_encode($translateArray, JSON_UNESCAPED_UNICODE);
+        $record->$nameField = json_encode($translateArray);
     }
 
     private function getTranslate($field, $slugLang, $phrase)
@@ -501,6 +503,7 @@ class Resource
         return $list;
     }
 
+    /*
     public function getListingForExel()
     {
         $this->checkPermissions();
@@ -521,6 +524,63 @@ class Resource
         });
 
         return $list;
+    }*/
+
+    public function getListingForExel()
+    {
+        $this->checkPermissions();
+
+        $head = $this->headForExcel();
+        $list = $this->getCollection(getAllRecords: true);
+
+        $definition = $this;
+
+        $list->map(function ($item, $key) use ($head, $definition) {
+            $item->fields = clone $head;
+            $item->fields->map(function ($item2, $key) use ($item, $definition) {
+                $item->fields[$key] = clone $item2;
+                $item2->setValue($item);
+                $value = $item2->getValueForExel($definition) ?? $item2->getValueForList($definition);
+                $value = $this->stripHtmlTags($value);
+                $item->fields[$key]->value = $value;
+            });
+        });
+
+        return $list;
+    }
+
+    public function stripHtmlTags($value)
+    {
+        if (!is_string($value)) {
+            return $value;
+        }
+        // Замінюємо блокові теги на пробіл
+        $value = preg_replace('/<\/?(div|p|br|li|ul|ol|tr|td|th|h[1-6])[^>]*>/i', ' ', $value);
+        // Видаляємо всі інші HTML-теги
+        $value = strip_tags($value);
+        // Прибираємо зайві пробіли
+        return trim(preg_replace('/\s+/', ' ', $value));
+    }
+
+    public function headForExcel(bool $showAll = false)
+    {
+        $fields = $this->getAllFields();
+        if ($showAll) {
+            return $fields;
+        }
+        return collect($fields)->reject(function ($name) {
+            return $this->checkIsSelected($name) !== true;
+        });
+    }
+
+    public function checkIsSelected(Field $field): bool
+    {
+        if (!method_exists($field, 'getNameFieldInBd')) {
+            throw new \InvalidArgumentException("Переданный объект не имеет метода getNameFieldInBd");
+        }
+
+        $fieldInRequest = request()->input('b')[$field->getNameFieldInBd()] ?? 'off';
+        return $fieldInRequest === 'on';
     }
 
     protected function checkPermissions()
