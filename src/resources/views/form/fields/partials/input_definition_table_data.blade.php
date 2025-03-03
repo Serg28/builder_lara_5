@@ -10,7 +10,9 @@
         @foreach($fieldsDefinition as $field)
             <th>{{$field->getName()}}</th>
         @endforeach
+        @if($hasActions)
         <th style="width: 10%"></th>
+        @endif
     </tr>
     </thead>
     <tbody>
@@ -20,6 +22,7 @@
             @foreach($record->fields as $field)
                 <td>{!! $field->value !!}</td>
             @endforeach
+            @if($hasActions)
             <td>
                 <div class="btn-group hidden-phone pull-right">
                     <a class="btn dropdown-toggle btn-default"  data-toggle="dropdown"><i class="fa fa-cog"></i> <i class="fa fa-caret-down"></i></a>
@@ -31,6 +34,7 @@
                 </div>
 
             </td>
+            @endif
         </tr>
     @empty
         <tr><td colspan="{{count ($fieldsDefinition) + 1 }}"> {{__cms('Пока пусто')}} </td></tr>

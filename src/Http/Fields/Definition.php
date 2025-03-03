@@ -10,6 +10,7 @@ class Definition extends Field
     protected $relation;
     protected $onlyForm = true;
     protected $typeRelative;
+    protected $hasActions = true;
 
     public function hasMany($relation, $classDefinitionRelation = null)
     {
@@ -39,6 +40,18 @@ class Definition extends Field
         $fullPathClass = 'App\\Cms\\Definitions\\'. Str::plural(class_basename($model));
 
         return new $fullPathClass();
+    }
+
+    public function hasActions(bool $value = true)
+    {
+        $this->hasActions = $value;
+
+        return $this;
+    }
+
+    public function getHasActions()
+    {
+        return $this->hasActions;
     }
 
     public function getAttributes($definition)
@@ -108,11 +121,11 @@ class Definition extends Field
 
         $urlAction = 'actions/'. $definition->getNameDefinition();
         $isSortable = $this->getDefinitionRelation($definition)->getIsSortable();
-
+        $hasActions = $this->getHasActions();
 
         return [
             'html' => view('admin::form.fields.partials.input_definition_table_data',
-                            compact('definitionRelation', 'fieldsDefinition', 'list', 'attributes', 'urlAction', 'isSortable', 'perPage', 'count'))->render(),
+                            compact('definitionRelation', 'fieldsDefinition', 'list', 'attributes', 'urlAction', 'isSortable', 'perPage', 'count', 'hasActions'))->render(),
             'count_records' => 0
         ];
     }
