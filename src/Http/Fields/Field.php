@@ -43,7 +43,7 @@ class Field
     {
         $value = preg_replace("/[\r\n]+/", "\\r\\n", $value);
         $value = str_replace("\t", '\t', $value);
-        $value = json_encode(json_decode($value), JSON_UNESCAPED_SLASHES);
+        $value = json_encode(json_decode($value), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         return $value;
     }
 
