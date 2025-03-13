@@ -8,13 +8,23 @@
             "email": "artur@vis-design.com"
         }
     ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/Serg28/laravel-localization.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/Serg28/imagecache.git"
+        }
+    ],
     "require": {
         "cartalyst/sentinel": "^7",
-        "mcamara/laravel-localization": "^2.0",
+        "mcamara/laravel-localization": "dev-master",
         "kalnoy/nestedset": "^6.0",
         "venturecraft/revisionable": "1.*",
         "intervention/image": "2.*",
-        "intervention/imagecache": "2.*",
+        "intervention/imagecache": "dev-master",
         "predis/predis" : "v1.1.1",
         "maatwebsite/excel": "3.*",
         "barryvdh/laravel-debugbar": "^3.5",
