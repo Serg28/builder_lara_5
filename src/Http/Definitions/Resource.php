@@ -342,7 +342,7 @@ class Resource
                                     );
                         }
 
-                        $data[$relationHasOne][$keyField] = json_encode($translateArray[$fieldLanguage]);;
+                        $data[$relationHasOne][$keyField] = json_encode($translateArray[$fieldLanguage], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
                     } else {
                         $data[$relationHasOne][$keyField] = $item['value'];
@@ -379,7 +379,7 @@ class Resource
                                 );
                         }
 
-                        $data[$item['field']->getNameField()] = json_encode($translateArray);
+                        $data[$item['field']->getNameField()] = json_encode($translateArray, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
                     } else {
                         $data[$item['field']->getNameField()] = $item['value'];
@@ -409,7 +409,7 @@ class Resource
             $translateArray[$langPrefix->language] = $translate;
         }
 
-        $record->$nameField = json_encode($translateArray);
+        $record->$nameField = json_encode($translateArray, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
     private function getTranslate($field, $slugLang, $phrase)
