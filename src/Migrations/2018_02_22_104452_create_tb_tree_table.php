@@ -23,7 +23,7 @@ class CreateTbTreeTable extends Migration
             $table->integer('depth');
             $table->json('title')->nullable();
             $table->json('description')->nullable();
-            $table->string('slug');
+            $table->string('slug')->index()->collation('utf8_bin');
             $table->string('template', 120);
             $table->string('picture');
             $table->text('additional_pictures');
