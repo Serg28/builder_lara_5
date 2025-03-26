@@ -23,6 +23,7 @@ trait LazyQueryTrait
      * @throws \Exception Если размер пакета меньше 1.
      * 
      * @example
+     *
      * ```php
      * $products = Product::latezyById(500)->each(function ($product) {
      *     // Обработка каждой записи
