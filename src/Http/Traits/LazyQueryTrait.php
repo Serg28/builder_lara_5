@@ -4,6 +4,7 @@ namespace Vis\Builder\Helpers\Traits;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\LazyCollection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 trait LazyQueryTrait
 {
@@ -23,7 +24,6 @@ trait LazyQueryTrait
      * @throws \Exception Если размер пакета меньше 1.
      * 
      * @example
-     *
      * ```php
      * $products = Product::latezyById(500)->each(function ($product) {
      *     // Обработка каждой записи
@@ -75,8 +75,8 @@ trait LazyQueryTrait
      * Работает аналогично `paginate()`, но возвращает `LazyCollection`, что позволяет загружать данные постепенно.
      *
      * @param Builder $query Запрос, к которому применяется метод.
-     * @param int $page Номер страницы (по умолчанию 1).
      * @param int $chunkSize Количество записей на страницу (по умолчанию 1000).
+     * @param int $page Номер страницы (по умолчанию 1).
      * @param callable|null $q Дополнительный обработчик запроса (например, для фильтрации).
      *
      * @return LazyCollection Лениво загружаемая коллекция записей.
@@ -85,14 +85,14 @@ trait LazyQueryTrait
      *
      * @example
      * // Получение третьей страницы записей по 500 штук
-     * $products = Product::lazyPaginatedById(3, 500);
+     * $products = Product::lazyPaginatedById(500, 3);
      * foreach ($products as $product) {
      *     echo $product->id . PHP_EOL;
      * }
      *
      * @example
      * // Фильтрация только активных товаров при ленивой пагинации
-     * $products = Product::lazyPaginatedById(1, 100, fn($q) => $q->where('is_active', 1));
+     * $products = Product::lazyPaginatedById(100, 1, fn($q) => $q->where('is_active', 1));
      * foreach ($products as $product) {
      *     echo $product->title . PHP_EOL;
      * }
@@ -100,38 +100,56 @@ trait LazyQueryTrait
      * @example
      * // Построение пагинации в Blade (пример с обычной пагинацией)
      * $page = request()->input('page', 1);
-     * $products = Product::lazyPaginatedById($page, 20);
+     * $products = Product::lazyPaginatedById(20, $page);
      * @foreach ($products as $product)
      *     <p>{{ $product->title }}</p>
      * @endforeach
      * <a href="{{ url()->current() }}?page={{ $page + 1 }}">Следующая страница</a>
+     * или полная пагинация:
+     * $products->links()
      */
-    public function scopeLazyPaginatedById($query, int $page = 1, int $chunkSize = 1000, callable $q = null): LazyCollection
+    public function scopeLazyPaginatedById($query, int $perPage = 15, int $page = 1, callable $q = null)
     {
-        if ($chunkSize < 1) {
+        if ($perPage < 1) {
             throw new \Exception('Размер пакета должен быть не менее 1');
         }
 
-        return LazyCollection::make(function () use ($query, $chunkSize, $q, $page) {
-            $currentPage = $page - 1; // Laravel использует 1-based индексацию, а offset — 0-based
+        // Клонируем запрос, чтобы избежать изменений в оригинале
+        $baseQuery = clone $query;
 
-            do {
-                $clone = clone $query;
-                $tmpQuery = $q ? $q(clone $query) : clone $query;
+        // Применяем переданный обработчик запроса ($q), если он есть
+        if ($q) {
+            $baseQuery = $q($baseQuery);
+        }
 
-                $tmp = $tmpQuery->select('id as tmpId')
-                    ->limit($chunkSize)
-                    ->offset($chunkSize * $currentPage);
+        // Получаем общее количество записей (учитывая условия)
+        $total = $baseQuery->count();
+        $lastPage = (int) ceil($total / $perPage);
 
-                $results = $clone->joinSub($tmp, 'tmp', fn ($join) => $join->on('tmpId', 'id'))->get();
+        // Ограничиваем номер страницы
+        $page = max(1, min($page, $lastPage));
 
-                foreach ($results as $result) {
-                    yield $result;
-                }
+        // Ленивый генератор записей
+        $lazyCollection = LazyCollection::make(function () use ($baseQuery, $perPage, $page) {
+            $tmpQuery = clone $baseQuery;
+            $tmpQuery = $tmpQuery->select('id as tmpId')
+                ->limit($perPage)
+                ->offset($perPage * ($page - 1));
 
-                $currentPage++;
-            } while ($results->count() >= $chunkSize);
+            $results = $baseQuery->joinSub($tmpQuery, 'tmp', fn ($join) => $join->on('tmpId', 'id'))->get();
+
+            foreach ($results as $result) {
+                yield $result;
+            }
         });
+
+        // Создаем объект стандартной пагинации (LengthAwarePaginator)
+        return new LengthAwarePaginator(
+            $lazyCollection->values(), // Данные для текущей страницы
+            $total, // Общее количество записей
+            $perPage, // Количество записей на странице
+            $page, // Текущая страница
+            ['path' => request()->url(), 'query' => request()->query()] // Добавляем параметры в URL
+        );
     }
 }
-
