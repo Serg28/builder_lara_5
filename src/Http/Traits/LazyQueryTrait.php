@@ -76,7 +76,6 @@ trait LazyQueryTrait
      *
      * @param Builder $query Запрос, к которому применяется метод.
      * @param int $chunkSize Количество записей на страницу (по умолчанию 1000).
-     * @param int $page Номер страницы (по умолчанию 1).
      * @param callable|null $q Дополнительный обработчик запроса (например, для фильтрации).
      *
      * @return LazyCollection Лениво загружаемая коллекция записей.
@@ -84,35 +83,28 @@ trait LazyQueryTrait
      * @throws \Exception Если `$chunkSize` меньше 1.
      *
      * @example
-     * // Получение третьей страницы записей по 500 штук
-     * $products = Product::lazyPaginatedById(500, 3);
-     * foreach ($products as $product) {
-     *     echo $product->id . PHP_EOL;
-     * }
-     *
-     * @example
      * // Фильтрация только активных товаров при ленивой пагинации
-     * $products = Product::lazyPaginatedById(100, 1, fn($q) => $q->where('is_active', 1));
+     * $products = Product::lazyPaginatedById(100, fn($q) => $q->where('is_active', 1));
      * foreach ($products as $product) {
      *     echo $product->title . PHP_EOL;
      * }
      *
      * @example
      * // Построение пагинации в Blade (пример с обычной пагинацией)
-     * $page = request()->input('page', 1);
-     * $products = Product::lazyPaginatedById(20, $page);
+     * $products = Product::lazyPaginatedById(20);
      * @foreach ($products as $product)
      *     <p>{{ $product->title }}</p>
      * @endforeach
-     * <a href="{{ url()->current() }}?page={{ $page + 1 }}">Следующая страница</a>
-     * или полная пагинация:
      * $products->links()
      */
-    public function scopeLazyPaginatedById($query, int $perPage = 15, int $page = 1, callable $q = null)
+    public function scopeLazyPaginatedById($query, int $perPage = 15, callable $q = null)
     {
         if ($perPage < 1) {
             throw new \Exception('Размер пакета должен быть не менее 1');
         }
+
+        // Определяем текущую страницу из запроса
+        $page = max(1, (int) request()->input('page', 1));
 
         // Клонируем запрос, чтобы избежать изменений в оригинале
         $baseQuery = clone $query;
