@@ -22,7 +22,7 @@ class Setting extends Model
         }
     }
 
-    private function getResultType($setting)
+    protected function getResultType($setting)
     {
         return [
             'text' => $setting->value,
