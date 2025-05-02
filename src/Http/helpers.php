@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Database\QueryException;
 use Vis\Builder\Models\TranslationsCms;
 use Vis\Builder\Models\TranslationsPhrasesCms;
 use Vis\Builder\Models\Language;
