@@ -37,7 +37,7 @@ class GeneratePassword extends Command
         Sentinel::update($userAdmin, ['password' => $newPassword]);
 
         $this->info('Access in cms: ');
-        $this->info('Login: admin@vis-design.com');
+        $this->info('Login: admin@admin.com');
         $this->info('Password: '.$newPassword);
     }
 
