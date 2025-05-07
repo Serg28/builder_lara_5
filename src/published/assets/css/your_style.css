@@ -17,7 +17,7 @@ a{
 
 /* select2 */
 div.select2-drop {
-    z-index: 99999;
+    z-index: 999990000;
 }
 .select2-container-multi a.select2-search-choice-close {
     padding: 0;
