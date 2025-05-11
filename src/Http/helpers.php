@@ -124,21 +124,34 @@ if (! function_exists('print_arr')) {
     }
 }
 
-if (! function_exists('glide')) {
-
+if (!function_exists('glide')) {
     function glide($source, array $options = [])
     {
-        if (
-            env('IMG_PLACEHOLDER', true)
-            && (env('APP_ENV') === 'local' || env('APP_ENV') === 'testing')
-        ) {
-            $width = $options['w'] ?? 100;
-            $height = $options['h'] ?? 100;
+        // Уникальный ключ кеша на основе пути и параметров
+        $cacheKey = 'glide_' . md5($source . json_encode($options));
 
-            return "//via.placeholder.com/{$width}x{$height}";
+        // Проверяем, есть ли данные в кеше
+        $cachedPath = cache()->tags(['glide'])->get($cacheKey);
+
+        // Если путь закеширован и файл действительно существует, сразу возвращаем
+        if ($cachedPath && file_exists(public_path($cachedPath))) {
+            return $cachedPath;
         }
 
-        return (new Vis\Builder\Img())->get($source, $options);
+        // Проверяем, есть ли данные в кеше
+        return cache()->tags(['glide'])->rememberForever($cacheKey, function () use ($source, $options) {
+            if (
+                env('IMG_PLACEHOLDER', true)
+                && (env('APP_ENV') === 'local' || env('APP_ENV') === 'testing')
+            ) {
+                $width = $options['w'] ?? 100;
+                $height = $options['h'] ?? 100;
+                return "//via.placeholder.com/{$width}x{$height}";
+            }
+
+            // Если плейсхолдер не используется, вызываем метод get()
+            return (new Vis\Builder\Img())->get($source, $options);
+        });
     }
 }
 
