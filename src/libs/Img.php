@@ -82,6 +82,9 @@ class Img
             return;
         }
 
+        // Уникальный ключ кеша на основе пути и параметров
+        $cacheKey = 'glide_' . md5($source . json_encode($options));
+
         $this->setOptions($options);
         $source = '/' . ltrim($source, '/');
         $sourceArray = pathinfo($source);
@@ -139,6 +142,9 @@ class Img
             $img->save($pathSmallImg, $this->quality);
 
             OptmizationImg::run($this->picturePath);
+
+            // Сохранение пути в кеш
+            cache()->tags(['glide'])->forever($cacheKey, $this->picturePath);
 
             return $this->picturePath;
         } catch (\Exception $e) {
