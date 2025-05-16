@@ -10,23 +10,17 @@ use Illuminate\Support\Facades\App;
 use Vis\Builder\Services\Translate;
 
 if (! function_exists('defaultLanguage')) {
-
-    function defaultLanguage() : ?string
+    function defaultLanguage(): ?string
     {
-        try {
-            return Cache::tags('language')->rememberForever('default_language', function() {
-                $defaultLanguage = Language::getDefaultLanguage();
-
-                if ($defaultLanguage) {
-                    return Language::getDefaultLanguage()->language;
-                }
-            });
-
-        } catch (\Exception $e) {
-            config('app.locale');
-        }
-
-        return config('app.locale');
+        return once(function () {
+            try {
+                return Cache::tags('language')->rememberForever('default_language', function () {
+                    return optional(Language::getDefaultLanguage())->language;
+                });
+            } catch (\Exception $e) {
+                return config('app.locale');
+            }
+        });
     }
 }
 
@@ -186,6 +180,8 @@ if (! function_exists('__cms')) {
 if (! function_exists('__t')) {
     function __t(string $phrase, array $replacePhrase = []) : ?string
     {
-        return (new Translate())->returnPhrase($phrase, $replacePhrase);
+        return once(function () use ($phrase, $replacePhrase) {
+            return (new Translate())->returnPhrase($phrase, $replacePhrase);
+        });
     }
 }
