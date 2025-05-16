@@ -186,6 +186,8 @@ if (! function_exists('__cms')) {
 if (! function_exists('__t')) {
     function __t(string $phrase, array $replacePhrase = []) : ?string
     {
-        return (new Translate())->returnPhrase($phrase, $replacePhrase);
+        return once(function () use ($phrase, $replacePhrase) {
+            return (new Translate())->returnPhrase($phrase, $replacePhrase);
+        });
     }
 }
