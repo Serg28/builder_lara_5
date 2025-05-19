@@ -37,6 +37,7 @@ class TranslationsCms extends Model
         }
 
         Cache::tags('translations')->flush();
+        Cache::tags('translations')->forget('translations_cms');
         TranslationsPhrasesCms::fillCacheTrans();
     }
 }
