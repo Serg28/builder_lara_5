@@ -60,6 +60,7 @@ class TranslationsPhrasesCms extends Model
     public static function reCacheTrans()
     {
         Cache::tags('translations')->flush();
+        Cache::tags('translations')->forget('translations_cms');
         self::fillCacheTrans();
     }
 }
