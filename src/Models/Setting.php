@@ -22,30 +22,6 @@ class Setting extends Model
         }
     }
 
-    <?php
-
-namespace Vis\Builder;
-
-use Illuminate\Database\Eloquent\Model;
-use Vis\Builder\Helpers\Traits\TranslateTrait;
-
-class Setting extends Model
-{
-    use TranslateTrait;
-
-    protected $table = 'settings';
-    protected $fillable = [];
-    public $timestamps = false;
-
-    public function getValue(string $slug)
-    {
-        $setting = $this->whereSlug($slug)->first();
-
-        if ($setting) {
-            return $this->getResultType($setting)[$setting->type] ?? '';
-        }
-    }
-
     protected function getResultType($setting)
     {
         return [
@@ -58,5 +34,4 @@ class Setting extends Model
             'checkbox' => $setting->check
         ];
     }
-}
 }
