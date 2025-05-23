@@ -25,7 +25,7 @@
         "venturecraft/revisionable": "1.*",
         "intervention/image": "2.*",
         "intervention/imagecache": "dev-master",
-        "predis/predis" : "v3.*",
+        "predis/predis" : "v2.*",
         "maatwebsite/excel": "3.*",
         "barryvdh/laravel-debugbar": "^3.5",
         "bkwld/cloner": "^3.10"
