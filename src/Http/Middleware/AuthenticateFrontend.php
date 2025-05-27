@@ -22,26 +22,28 @@ class AuthenticateFrontend
     public function handle($request, Closure $next)
     {
         try {
-            if (! Sentinel::check()) {
-                if (Request::ajax()) {
-                    $data = [
-                        'status'  => 'error',
-                        'code'    => '401',
-                        'message' => 'Unauthorized',
-                    ];
-
-                    return Response::json($data, '401');
-                } else {
-                    return  response()->view('admin::errors.401', [], 401);
-                }
+            if (!Sentinel::check()) {
+                return $this->unauthorizedResponse($request);
             }
         } catch (\Cartalyst\Sentinel\Checkpoints\NotActivatedException $e) {
             Session::flash('login_not_found', 'Пользователь не активирован');
-            //Sentinel::logout(); //Если неактивен, то будет ошибка
-
-            return  response()->view('admin::errors.401', [], 401);
+            //Sentinel::logout(); ошибка при неактивированном
+            return $this->unauthorizedResponse($request);
         }
 
         return $next($request);
+    }
+
+    protected function unauthorizedResponse($request)
+    {
+        if (Request::ajax()) {
+            return Response::json([
+                'status'  => 'error',
+                'code'    => 401,
+                'message' => 'Unauthorized',
+            ], 401);
+        }
+
+        return response()->view('admin::errors.401', [], 401);
     }
 }
