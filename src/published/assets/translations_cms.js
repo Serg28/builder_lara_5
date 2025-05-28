@@ -137,6 +137,7 @@ $(document).on("change", '[name=dt_basic_length]', function () {
 });
 
 //поиск
+/*
 $(document).on("submit", '#search_form', function () {
     var search_q = $("[type=search]").val();
 
@@ -144,11 +145,30 @@ $(document).on("submit", '#search_form', function () {
         window.location.pathname,
         {search_q: search_q, "page": 1},
         function (data) {
-
+console.log(data);
             $('#content_admin').html(data);
         }
     );
     return false;
+});
+*/
+
+//поиск
+$(document).on("keyup", '[name=search_cms_q]', function(){
+    var search_q = $("[name=search_cms_q]").val();
+
+    if (search_q.length > 1) {
+        $(".load_page").show();
+        $.post( window.location.pathname, {search_q : search_q, page : 1 })
+            .done(function( data ) {
+                console.log(data);
+                $("#content_admin").html(data);
+                $(".load_page").hide();
+            }).fail(function(xhr, ajaxOptions, thrownError) {
+            var errorResult = jQuery.parseJSON(xhr.responseText);
+            TableBuilder.showErrorNotification(errorResult.message);
+        });
+    }
 });
 
 //ajax пагинация
@@ -156,4 +176,3 @@ $(document).on('click', '.pagination a', function (e) {
     Trans.show_list($(this).attr('href').split('page=')[1]);
     e.preventDefault();
 });
-
