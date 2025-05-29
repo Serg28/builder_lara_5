@@ -145,7 +145,6 @@ $(document).on("submit", '#search_form', function () {
         window.location.pathname,
         {search_q: search_q, "page": 1},
         function (data) {
-console.log(data);
             $('#content_admin').html(data);
         }
     );
