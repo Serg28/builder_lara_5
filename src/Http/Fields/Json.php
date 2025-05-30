@@ -4,8 +4,6 @@ namespace Vis\Builder\Http\Fields;
 
 use Vis\Builder\Fields\Text;
 
-use function App\Cms\Fields\view;
-
 /**
  * Поле для ввода массива данных в формате JSON в виде визуальной таблицы.
  * Позволяет добавлять, удалять и редактировать элементы массива,
