@@ -40,6 +40,9 @@ class FindAndCheckUrlForTree
 
     private function findUrl($slug)
     {
+        if (function_exists('checkSubDomainForTree') && checkSubDomainForTree()) {
+            return false;
+        }
         $tagsCache = ['tree'];
         $model = $this->model;
 
