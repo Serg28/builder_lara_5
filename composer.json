@@ -28,7 +28,8 @@
         "predis/predis" : "v1.1.1",
         "maatwebsite/excel": "3.*",
         "barryvdh/laravel-debugbar": "^3.5",
-        "bkwld/cloner": "^3.10"
+        "bkwld/cloner": "^3.10",
+        "spatie/once": "^3.1"
     },
     "autoload": {
         "classmap": [

@@ -181,7 +181,8 @@ if (! function_exists('__t')) {
     function __t(string $phrase, array $replacePhrase = []) : ?string
     {
         return once(function () use ($phrase, $replacePhrase) {
-            return (new Translate())->returnPhrase($phrase, $replacePhrase);
+            //return (new Translate())->returnPhrase($phrase, $replacePhrase);
+            return app(Translate::class)->returnPhrase($phrase, $replacePhrase);
         });
     }
 }

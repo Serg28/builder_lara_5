@@ -27,14 +27,15 @@ class TranslationsPhrases extends Model
      * auto generate translation for function __t() if empty.
      *
      * @param string $phrase
-     * @param strign $thisLang
+     * @param string $thisLang
      *
      * @return string
      */
     public static function generateTranslation($phrase, $thisLang)
     {
         if ($phrase && $thisLang) {
-            $checkPresentPhrase = self::where('phrase', 'like', $phrase)->first();
+            //$checkPresentPhrase = self::where('phrase', 'like', $phrase)->first();
+            $checkPresentPhrase = self::where('phrase', $phrase)->first();
             if (! $checkPresentPhrase) {
                 $newPhrase = self::create(['phrase' => $phrase]);
                 $languages = languagesOfSite();
@@ -60,7 +61,10 @@ class TranslationsPhrases extends Model
                 self::reCacheTrans();
                 $arrayTranslate = self::fillCacheTrans();
 
-                return $arrayTranslate[$phrase][$thisLang] ?? 'error translation';
+                //return $arrayTranslate[$phrase][$thisLang] ?? 'error translation';
+                return $arrayTranslate[$phrase][$thisLang]
+                    ?? $arrayTranslate[$phrase][defaultLanguage()]
+                    ?? $phrase;
             }
 
             $translatePhrase = Translations::where('id_translations_phrase', $checkPresentPhrase->id)
@@ -77,7 +81,7 @@ class TranslationsPhrases extends Model
      *
      * @return array
      */
-    public static function fillCacheTrans()
+    /*public static function fillCacheTrans()
     {
         if (Cache::get('translations')) {
             $arrayTranslate = Cache::get('translations');
@@ -87,6 +91,12 @@ class TranslationsPhrases extends Model
         }
 
         return $arrayTranslate;
+    }*/
+    public static function fillCacheTrans(): array
+    {
+        return Cache::rememberForever('translations', static function () {
+            return self::getArrayTranslation();
+        });
     }
 
     /** recache translate.

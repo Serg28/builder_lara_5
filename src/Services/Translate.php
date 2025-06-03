@@ -16,6 +16,7 @@ class Translate
         $this->collectionTranslate = app('arrayTranslate');
     }
 
+    /*
     public function returnPhrase(string $phrase, array $replacePhrase = []) : ?string
     {
         if (env('APP_ENV') == 'testing') {
@@ -27,6 +28,20 @@ class Translate
             : TranslationsPhrases::generateTranslation($phrase, $this->language);
 
         return $this->replaceArrayPhrase($phrase, $replacePhrase);
+    }*/
+    public function returnPhrase(string $phrase, array $replacePhrase = []) : ?string
+    {
+        return once(function () use ($phrase, $replacePhrase) {
+            if (env('APP_ENV') === 'testing') {
+                return $phrase;
+            }
+
+            $translated = $this->checkExistsTranslate($phrase)
+                ? $this->collectionTranslate[$phrase][$this->language]
+                : TranslationsPhrases::generateTranslation($phrase, $this->language);
+
+            return $this->replaceArrayPhrase($translated, $replacePhrase);
+        }, [$phrase, $replacePhrase]);
     }
 
     private function checkExistsTranslate(string $phrase) : bool
