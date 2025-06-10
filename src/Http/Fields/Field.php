@@ -31,6 +31,7 @@ class Field
     protected $isAutoTranslate = false;
     protected $isHide = false;
     protected $isSaveOnChange = false;
+    protected ?int $lengthForList = null;
 
     public function __construct(string $name, $attribute = null)
     {
@@ -188,7 +189,7 @@ class Field
             return view('admin::list.fast_edit.field_base', compact('idRecord', 'value', 'field'));
         }
 
-        return $value;
+        return $this->lengthForList ? str($value)->limit($this->lengthForList) : $value;
     }
 
     public function getValueForExel($definition)
@@ -459,6 +460,13 @@ class Field
     public function isHide()
     {
         return $this->isHide;
+    }
+
+    public function lengthForList(int $limit)
+    {
+        $this->lengthForList = $limit;
+
+        return $this;
     }
 
 
