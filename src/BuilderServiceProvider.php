@@ -54,9 +54,10 @@ class BuilderServiceProvider extends ServiceProvider
             .'/published/assets' => public_path('packages/vis/builder'),
         ], 'public');
 
-        $this->publishes([
-            realpath(__DIR__.'/Migrations') => $this->app->databasePath().'/migrations',
-        ]);
+        //$this->publishes([
+        //    realpath(__DIR__.'/Migrations') => $this->app->databasePath().'/migrations',
+        //]);
+        $this->publishMigrations();
 
         $this->viewComposersInit();
     }
@@ -166,5 +167,34 @@ class BuilderServiceProvider extends ServiceProvider
             $this->commandAdminCreateConfig,
             $this->commandAdminCreateImgWebp,
         ];
+    }
+
+    private function publishMigrations()
+    {
+        $migrationPath = realpath(__DIR__.'/Migrations');
+        $databasePath = $this->app->databasePath().'/migrations';
+
+        // Проверяем, существуют ли миграции и директория для них
+        if (is_dir($migrationPath) && is_dir($databasePath)) {
+            // Используем glob для поиска всех файлов миграций
+            $migrations = glob($migrationPath.'/*.php');
+
+            if ($migrations) {
+                foreach ($migrations as $migration) {
+                    // Получаем имя файла миграции без пути
+                    $migrationName = basename($migration);
+
+                    // Проверяем, существует ли миграция в базе данных
+                    $migrationExists = file_exists($databasePath . '/' . $migrationName);
+
+                    // Публикуем миграцию, только если её нет в базе данных
+                    if (!$migrationExists) {
+                        $this->publishes([
+                            $migration => $databasePath,
+                        ]);
+                    }
+                }
+            }
+        }
     }
 }
