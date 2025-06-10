@@ -13,13 +13,15 @@ class TextSetting extends Text
 
         switch ($setting->type) {
             case 'text':
-                return $setting->value;
+                return str($setting->value)->limit($this->lengthForList);
             case 'text_with_languages':
                 return $setting->t('value_languages');
+            case 'textarea':
+                return str($setting->textarea)->limit($this->lengthForList);
             case 'textarea_with_languages':
-                return __cms('Тектовое поле');
+                return __cms('Текcтовое поле');
             case 'froala_with_languages':
-                return __cms('Тектовое поле');;
+                return __cms('Текcтовое поле');
             case 'file':
                 $basename = basename($setting->file);
                 return "<a href='{$setting->file}' target='_blank'>{$basename}</a>";
