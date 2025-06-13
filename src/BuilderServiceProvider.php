@@ -31,33 +31,42 @@ class BuilderServiceProvider extends ServiceProvider
      */
     public function boot(\Illuminate\Routing\Router $router)
     {
-        require __DIR__.'/../vendor/autoload.php';
-        require __DIR__.'/Http/helpers.php';
+        // Load helpers if they exist
+        if (file_exists(__DIR__.'/Http/helpers.php')) {
+            require __DIR__.'/Http/helpers.php';
+        }
 
-        $this->app->setLocale(defaultLanguage());
+        // Set locale if function exists
+        if (function_exists('defaultLanguage')) {
+            $this->app->setLocale(defaultLanguage());
+        }
 
+        // Register middleware
         $router->middleware('auth.admin', \Vis\Builder\Authenticate::class);
         $router->middleware('auth.user', \Vis\Builder\AuthenticateFrontend::class);
 
+        // Setup routes
         $this->setupRoutes($this->app->router);
 
+        // Load views
         $this->loadViewsFrom(realpath(__DIR__.'/resources/views'), 'admin');
 
+        // Publish assets and config
         $this->publishes([
-            __DIR__
-            .'/published/assets' => public_path('packages/vis/builder'),
-            __DIR__.'/config'    => config_path('builder/'),
+            __DIR__.'/published/assets' => public_path('packages/vis/builder'),
+            __DIR__.'/config' => config_path('builder/'),
         ], 'builder');
 
         $this->publishes([
-            __DIR__
-            .'/published/assets' => public_path('packages/vis/builder'),
+            __DIR__.'/published/assets' => public_path('packages/vis/builder'),
         ], 'public');
 
+        // Publish migrations
         $this->publishes([
             realpath(__DIR__.'/Migrations') => $this->app->databasePath().'/migrations',
-        ]);
+        ], 'migrations');
 
+        // Initialize view composers
         $this->viewComposersInit();
     }
 
@@ -115,8 +124,12 @@ class BuilderServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app[\Illuminate\Contracts\Http\Kernel::class]->pushMiddleware(LocalizationMiddlewareRedirect::class);
+        // Register middleware if LocalizationMiddlewareRedirect class exists
+        if (class_exists('Vis\Builder\LocalizationMiddlewareRedirect')) {
+            $this->app[\Illuminate\Contracts\Http\Kernel::class]->pushMiddleware(LocalizationMiddlewareRedirect::class);
+        }
 
+        // Register middleware aliases
         if (method_exists(\Illuminate\Routing\Router::class, 'aliasMiddleware')) {
             $this->app[\Illuminate\Routing\Router::class]
                 ->aliasMiddleware('auth.admin', \Vis\Builder\Authenticate::class);
@@ -124,6 +137,7 @@ class BuilderServiceProvider extends ServiceProvider
                 ->aliasMiddleware('auth.user', \Vis\Builder\AuthenticateFrontend::class);
         }
 
+        // Register commands
         $this->registerCommands();
     }
 

@@ -1,6 +1,6 @@
 {
     "name": "vis/builder_lara_5",
-    "description": "Builder cms",
+    "description": "Builder cms - Laravel 11 & 12 Support",
     "license": "proprietary",
     "authors": [
         {
@@ -19,15 +19,17 @@
         }
     ],
     "require": {
-        "cartalyst/sentinel": "^7",
+        "php": "^8.2",
+        "laravel/framework": "^11.0|^12.0",
+        "cartalyst/sentinel": "^8.0",
         "mcamara/laravel-localization": "dev-master",
-        "kalnoy/nestedset": "^6.0",
-        "venturecraft/revisionable": "1.*",
-        "intervention/image": "2.*",
+        "kalnoy/nestedset": "^6.0|^7.0",
+        "venturecraft/revisionable": "^1.0",
+        "intervention/image": "^3.0",
         "intervention/imagecache": "dev-master",
-        "predis/predis": "^1.1",
-        "maatwebsite/excel": "3.*",
-        "barryvdh/laravel-debugbar": "^3.5",
+        "predis/predis": "^2.0",
+        "maatwebsite/excel": "^3.1",
+        "barryvdh/laravel-debugbar": "^3.13",
         "bkwld/cloner": "^3.10",
         "spatie/once": "^3.1"
     },
