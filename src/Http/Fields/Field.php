@@ -433,10 +433,14 @@ class Field
         return $this->relationMorphOne;
     }
 
-    public function prepareSave($request)
+    public function prepareSave(array $request)
     {
         $nameField = $this->getNameField();
-
+    
+        if (!array_key_exists($nameField, $request)) {
+            return $this->isNullAble() ? $this->getNullValue() : '';
+        }
+    
         return $request[$nameField];
     }
 
