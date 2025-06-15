@@ -438,7 +438,7 @@ class Field
     {
         $nameField = $this->getNameField();
 
-        return $request[$nameField];
+        return $request[$nameField] ?? null;
     }
 
     public function fastSave($definition, $request)
