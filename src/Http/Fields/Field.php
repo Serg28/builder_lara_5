@@ -85,7 +85,7 @@ class Field
             return;
         }
 
-        if ($this->getLanguage()) {
+        if ($this->getLanguage() && isset($value[$this->attribute]) && $value[$this->attribute]) {
             //$this->valueLanguage = json_decode($value[$this->attribute]);
             $this->valueLanguage = json_decode($this->fixJson($value[$this->attribute]));
         }
