@@ -1,6 +1,6 @@
 <section class="{{$field->getClassName()}}">
     @php
-        $id = $field->getAllData()->id;
+        $id = $field->getAllData()?->id ?? 0;
         $valueArray = json_decode($field->getValue() ?? '[]', true) ?? [];
         $isAssociative = $field->isAssociativeArray($valueArray) && !empty($valueArray);
     @endphp
