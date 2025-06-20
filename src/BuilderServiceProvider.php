@@ -45,13 +45,13 @@ class BuilderServiceProvider extends ServiceProvider
 
         $this->publishes([
             __DIR__
-            .'/published/assets' => public_path('packages/vis/builder'),
+            .'/published/assets' => public_path('packages/linecore/builder'),
             __DIR__.'/config'    => config_path('builder/'),
         ], 'builder');
 
         $this->publishes([
             __DIR__
-            .'/published/assets' => public_path('packages/vis/builder'),
+            .'/published/assets' => public_path('packages/linecore/builder'),
         ], 'public');
 
         $this->publishes([

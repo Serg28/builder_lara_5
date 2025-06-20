@@ -16,10 +16,9 @@ class TextSetting extends Text
                 return $setting->value;
             case 'text_with_languages':
                 return $setting->t('value_languages');
+            case 'froala_with_languages':
             case 'textarea_with_languages':
                 return __cms('Тектовое поле');
-            case 'froala_with_languages':
-                return __cms('Тектовое поле');;
             case 'file':
                 $basename = basename($setting->file);
                 return "<a href='{$setting->file}' target='_blank'>{$basename}</a>";

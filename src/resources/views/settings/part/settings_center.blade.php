@@ -37,5 +37,5 @@
 <div id="modal_wrapper">
    @include("admin::settings.part.pop_settings_add")
 </div>
-<link rel="stylesheet" type="text/css" href="/packages/vis/builder/css/settings.css">
-<script src="/packages/vis/builder/js/settings.js"></script>
+<link rel="stylesheet" type="text/css" href="/packages/linecore/builder/css/settings.css">
+<script src="/packages/linecore/builder/js/settings.js"></script>
