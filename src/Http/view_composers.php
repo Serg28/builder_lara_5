@@ -15,8 +15,8 @@ View::composer(['admin::layouts.default', 'admin::partials.scripts'], function (
     $thisLang = Cookie::get('lang_admin') ?: config('builder.translations.cms.language_default');
     $customJs = config('builder.admin.custom_js');
     $customCss = config('builder.admin.custom_css');
-    $logo = config('builder.admin.logo_url') ?: '/packages/vis/builder/img/logo.png';
-    $logoWhite = config('builder.admin.logo_url_white') ?: '/packages/vis/builder/img/logo-w.png';
+    $logo = config('builder.admin.logo_url') ?: '/packages/linecore/builder/img/logo.png';
+    $logoWhite = config('builder.admin.logo_url_white') ?: '/packages/linecore/builder/img/logo-w.png';
 
     if ($skin && $skin != 'smart-style-0') {
         $logo = $logoWhite;
@@ -33,7 +33,7 @@ View::composer(['admin::new.layouts.default', 'admin::new.partials.scripts'], fu
     $thisLang = Cookie::get('lang_admin') ?: config('builder.translations.cms.language_default');
     $customJs = config('builder.admin.custom_js');
     $customCss = config('builder.admin.custom_css');
-    $logoWhite = config('builder.admin.logo_url_white') ?: '/packages/vis/builder/img/logo-w.png';
+    $logoWhite = config('builder.admin.logo_url_white') ?: '/packages/linecore/builder/img/logo-w.png';
 
     if ($skin && $skin != 'smart-style-0') {
         $logo = $logoWhite;

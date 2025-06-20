@@ -11,7 +11,7 @@
     @include("admin::translation_cms.part.popup")
 </div>
 <div class='load_ajax'></div>
-<script src="{{asset('packages/vis/builder/translations_cms.js')}}"></script>
+<script src="{{asset('packages/linecore/builder/translations_cms.js')}}"></script>
 <script>
     $(".breadcrumb").html("<li><a href='/admin'>{{__cms("Главная")}}</a></li> <li>{{ __cms('Переводы CMS')}}</li>");
     $("title").text("{{ __cms('Переводы CMS')}} - {{ __cms(config('builder::admin.caption')) }}");

@@ -10,18 +10,18 @@
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <meta name="MobileOptimized" content="320">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="stylesheet" href="/packages/vis/builder/fontawesome-pro-5.12.0-web/css/all.min.css?7">
-    <link rel="stylesheet" type="text/css" href="/packages/vis/builder/css/all.css">
-    <link rel="stylesheet" type="text/css" href="/packages/vis/builder/css/tinymce.css?18">
+    <link rel="stylesheet" href="/packages/linecore/builder/fontawesome-pro-5.12.0-web/css/all.min.css?7">
+    <link rel="stylesheet" type="text/css" href="/packages/linecore/builder/css/all.css">
+    <link rel="stylesheet" type="text/css" href="/packages/linecore/builder/css/tinymce.css?18">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,300,400,700">
 
-    <script src="/packages/vis/builder/js/all_header1.js"></script>
+    <script src="/packages/linecore/builder/js/all_header1.js"></script>
 
 
     @yield('styles')
     @yield('scripts_header')
 
-    <script src="/packages/vis/builder/js/all_header2.js"></script>
+    <script src="/packages/linecore/builder/js/all_header2.js"></script>
 
     @if ($admin->getJs())
         @foreach($admin->getJs() as $jsFile)
@@ -35,8 +35,8 @@
         @endforeach
     @endif
 
-    <script type="text/javascript" src="/packages/vis/builder/js/jquery.dataTables.min.js"></script>
-    <script type="text/javascript" src="/packages/vis/builder/js/dataTables.bootstrap4.min.js"></script>
+    <script type="text/javascript" src="/packages/linecore/builder/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="/packages/linecore/builder/js/dataTables.bootstrap4.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/2.10.0/d3.v2.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -83,7 +83,7 @@
 <div class="load_page" style="position: fixed; display: none; opacity: 0.7; z-index: 1111111; height: 50px; top: 10px; right: 30px"><i class="fa fa-spinner fa-spin" style="font-size: 40px"></i></div>
 @include('admin::partials.popup_cropp')
 
-<script src="/packages/vis/builder/js/cropper_model.js"></script>
+<script src="/packages/linecore/builder/js/cropper_model.js"></script>
 @stack('scripts')
 </body>
 </html>

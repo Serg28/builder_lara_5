@@ -5,8 +5,8 @@ namespace Vis\Builder\Setting;
 abstract class AdminBase
 {
     protected $caption = 'Административная часть сайта';
-    protected $logoUrl = '/packages/vis/builder/img/logo-w.png';
-    protected $faviconUrl = '/packages/vis/builder/img/favicon/favicon.ico';
+    protected $logoUrl = '/packages/linecore/builder/img/logo-w.png';
+    protected $faviconUrl = '/packages/linecore/builder/img/favicon/favicon.ico';
     protected $css;
     protected $js;
 

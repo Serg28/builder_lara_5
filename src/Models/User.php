@@ -42,7 +42,7 @@ class User extends EloquentUser
      */
     public function getAvatar(array $imgParam)
     {
-        $image = $this->picture ?? '/packages/vis/builder/img/blank_avatar.gif';
+        $image = $this->picture ?? '/packages/linecore/builder/img/blank_avatar.gif';
 
         return glide($image, $imgParam);
     }

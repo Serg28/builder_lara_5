@@ -1,5 +1,5 @@
-<script src="/packages/vis/builder/js/footer_all.js?2"></script>
-<script src='/packages/vis/builder/js/plugin/editor_floala/js/languages/{{str_replace('uk', 'ua', $thisLang) }}.js'></script>
+<script src="/packages/linecore/builder/js/footer_all.js?2"></script>
+<script src='/packages/linecore/builder/js/plugin/editor_floala/js/languages/{{str_replace('uk', 'ua', $thisLang) }}.js'></script>
 
 <script type="text/javascript">
 
