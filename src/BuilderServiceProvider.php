@@ -31,42 +31,37 @@ class BuilderServiceProvider extends ServiceProvider
      */
     public function boot(\Illuminate\Routing\Router $router)
     {
-        // Load helpers if they exist
-        if (file_exists(__DIR__.'/Http/helpers.php')) {
-            require __DIR__.'/Http/helpers.php';
-        }
+        require __DIR__.'/../vendor/autoload.php';
+        require __DIR__.'/Http/helpers.php';
 
-        // Set locale if function exists
-        if (function_exists('defaultLanguage')) {
-            $this->app->setLocale(defaultLanguage());
-        }
+        $this->app->setLocale(defaultLanguage());
 
-        // Register middleware
         $router->middleware('auth.admin', \Vis\Builder\Authenticate::class);
         $router->middleware('auth.user', \Vis\Builder\AuthenticateFrontend::class);
 
-        // Setup routes
         $this->setupRoutes($this->app->router);
 
-        // Load views
         $this->loadViewsFrom(realpath(__DIR__.'/resources/views'), 'admin');
 
-        // Publish assets and config
         $this->publishes([
-            __DIR__.'/published/assets' => public_path('packages/vis/builder'),
-            __DIR__.'/config' => config_path('builder/'),
+            __DIR__
+            .'/published/assets' => public_path('packages/linecore/builder'),
+            __DIR__.'/config'    => config_path('builder/'),
         ], 'builder');
 
         $this->publishes([
-            __DIR__.'/published/assets' => public_path('packages/vis/builder'),
+            __DIR__.'/config/cms.php' => config_path('builder/cms.php'),
+        ], ['builder', 'builder-cms-config']);
+
+        $this->publishes([
+            __DIR__
+            .'/published/assets' => public_path('packages/linecore/builder'),
         ], 'public');
 
-        // Publish migrations
         $this->publishes([
             realpath(__DIR__.'/Migrations') => $this->app->databasePath().'/migrations',
-        ], 'migrations');
+        ]);
 
-        // Initialize view composers
         $this->viewComposersInit();
     }
 
