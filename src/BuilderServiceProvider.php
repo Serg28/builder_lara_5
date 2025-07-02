@@ -50,6 +50,10 @@ class BuilderServiceProvider extends ServiceProvider
         ], 'builder');
 
         $this->publishes([
+            __DIR__.'/config/cms.php' => config_path('builder/cms.php'),
+        ], ['builder', 'builder-cms-config']);
+
+        $this->publishes([
             __DIR__
             .'/published/assets' => public_path('packages/linecore/builder'),
         ], 'public');

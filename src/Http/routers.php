@@ -1,16 +1,19 @@
 <?php
 
+$adminPrefix = config('builder.cms.admin_prefix', 'admin');
+$loginPath = config('builder.cms.login_path', 'login');
+
     Route::pattern('tree', '[a-z0-9-_]+');
     Route::pattern('any', '[a-z0-9-_/\]+');
 
-    Route::group(['middleware' => ['web']], function () {
-        Route::get('login', 'Vis\Builder\LoginController@index')->name('cms.login.index');
-        Route::post('login', 'Vis\Builder\LoginController@store')->name('cms.login.store');
+    Route::group(['middleware' => ['web']], function () use ($loginPath) {
+        Route::get($loginPath, 'Vis\Builder\LoginController@index')->name('cms.login.index');
+        Route::post($loginPath, 'Vis\Builder\LoginController@store')->name('cms.login.store');
     });
 
-    Route::group(['middleware' => ['web']], function () {
+    Route::group(['middleware' => ['web']], function () use ($adminPrefix) {
         Route::group(
-            ['prefix' => 'admin', 'middleware' => 'auth.admin'],
+            ['prefix' => $adminPrefix, 'middleware' => 'auth.admin'],
             function () {
                 Route::post('change-range-card', 'Vis\Builder\ChangeRangeController@changeValue');
                 Route::post('change-range-trend', 'Vis\Builder\ChangeRangeController@changeValue');
