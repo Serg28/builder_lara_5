@@ -41,7 +41,11 @@ class OptmizationImg
 
             try {
                 $newFile = str_replace(['.png', '.jpg', '.jpeg', '.gif'], '.webp', $fullPathPicture);
-
+                
+                if ($fileExtension=='webp') {
+                    return; // Если уже WebP, ничего не делаем
+                }
+                
                 if (function_exists('imagewebp')) {
                     $image = null;
                     $fileExtension = pathinfo($fullPathPicture, PATHINFO_EXTENSION);
