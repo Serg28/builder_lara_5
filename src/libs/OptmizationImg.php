@@ -69,7 +69,7 @@ class OptmizationImg
 
                     if ($image) {
                         if (strtolower($fileExtension) !== 'webp') {
-                            if (imagewebp($image, $newFile, 80)) {
+                            if (imagewebp($image, $newFile, 90)) {
                                 imagedestroy($image);
                             } else {
                                 // Логируем ошибку, если не удалось создать WebP изображение
@@ -81,7 +81,7 @@ class OptmizationImg
                         //Log::error('Failed to create image from file: ' . $fullPathPicture);
                     }
                 } else {
-                    $command = 'cwebp -q 80 ' . $fullPathPicture . ' -o ' . $newFile;
+                    $command = 'cwebp -q 90 ' . $fullPathPicture . ' -o ' . $newFile;
                     exec($command, $res);
                 }
             } catch (\Exception $e) {
