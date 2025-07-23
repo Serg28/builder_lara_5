@@ -592,74 +592,91 @@ class Resource
 
     public function getCollection($getAllRecords = false)
     {
-        $collection = $this->model()->with($this->relations);
-        $filter = $this->getFilter();
         $orderBy = $this->getOrderBy();
         $perPage = $this->getPerPageThis();
+    
+        $collection = $this->prepareQuery();
+    
+        if ($getAllRecords) {
+            return $collection->orderByRaw($orderBy)->get();
+        }
+    
+        return $collection->orderByRaw($orderBy)->paginate($perPage);
+    }
+    
+    public function countRecords(): int
+    {
+        return $this->prepareQuery()->count();
+    }
+    
+    public function prepareQuery()
+    {
+        $collection = $this->model()->with($this->relations);
+        $filter = $this->getFilter();
         $collection = $this->getFilterScope($collection);
-
+    
         if (isset($filter['filter']) && is_array($filter['filter'])) {
-
+    
             $allFields = $this->getAllFields();
-
+    
             foreach ($filter['filter'] as $field => $value) {
                 if (is_null($value) || $value == '') {
                     continue;
                 }
-
+    
                 if ($hasOneRelation = $this->getRelationsHasOne($allFields, $field)) {
-
+    
                     $collection = $collection->whereHas($hasOneRelation, function($query) use ($field, $value, $allFields) {
-
+    
                         $fieldName = $this->getFieldName($allFields, $field);
-
+    
                         if ($this->isTextField($allFields, $field)) {
-
-                         //   $value = mb_convert_case($value, MB_CASE_TITLE, 'UTF-8');
-
+    
+                            //   $value = mb_convert_case($value, MB_CASE_TITLE, 'UTF-8');
+    
                             $query->where($fieldName, '=', $value)
                                 ->orWhereRaw('LOWER(`'.$fieldName.'`) LIKE ? ',['%'.trim(mb_strtolower($value)).'%']);
                         } else {
                             $query->where($fieldName, '=', $value);
                         }
                     });
-
+    
                 } else {
                     if (is_array($value)) {
                         if ($value['from'] || $value['to']) {
-
+    
                             if ($value['from']) {
                                 $collection = $collection->where($field, '>=', $value['from']);
                             }
-
+    
                             if ($value['to']) {
                                 $collection = $collection->where($field, '<=', $value['to'] . ' 23:59:59');
                             }
                         }
-
+    
                         continue;
                     }
-
+    
                     $collection = $collection->where(function ($query) use ($field, $value, $allFields) {
                         if ($this->isTextField($allFields, $field)) {
-
-                          //  $value = mb_convert_case($value, MB_CASE_TITLE, 'UTF-8');
-
+    
+                            //  $value = mb_convert_case($value, MB_CASE_TITLE, 'UTF-8');
+    
                             $query->where($field, '=', $value)
                                 ->orWhereRaw('LOWER(`'.$field.'`) LIKE ? ',['%'.trim(mb_strtolower($value)).'%']);
                         } else {
-                            $query->where($field, '=', $value);
+                            if($field == 'category_id') {
+                                $query->whereIn($field, Category::getDescendantsAndSelfIds($value));
+                            } else {
+                                $query->where($field, '=', $value);
+                            }
                         }
                     });
                 }
             }
         }
-
-        if ($getAllRecords) {
-           return $collection->orderByRaw($orderBy)->get();
-        }
-
-        return $collection->orderByRaw($orderBy)->paginate($perPage);
+    
+        return $collection;
     }
 
     protected function getRelationsHasOne($allFields, $field)
