@@ -665,11 +665,7 @@ class Resource
                             $query->where($field, '=', $value)
                                 ->orWhereRaw('LOWER(`'.$field.'`) LIKE ? ',['%'.trim(mb_strtolower($value)).'%']);
                         } else {
-                            if($field == 'category_id') {
-                                $query->whereIn($field, Category::getDescendantsAndSelfIds($value));
-                            } else {
-                                $query->where($field, '=', $value);
-                            }
+                            $query->where($field, '=', $value);
                         }
                     });
                 }
