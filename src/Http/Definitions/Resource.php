@@ -607,6 +607,15 @@ class Resource
                     continue;
                 }
 
+                if (method_exists($this, 'additionalFilterScopes')) {
+                    //Перевіряємо, чи є скоуп для поля у фільтрах скоупах
+                    $scopes = $this->additionalFilterScopes($collection, $value);
+                    if (isset($scopes[$field])) {
+                        $collection = $scopes[$field];
+                        continue;
+                    }
+                }
+    
                 if ($hasOneRelation = $this->getRelationsHasOne($allFields, $field)) {
 
                     $collection = $collection->whereHas($hasOneRelation, function($query) use ($field, $value, $allFields) {
@@ -719,6 +728,40 @@ class Resource
         $listingRecords = $list->body();
 
         return view('admin::list.table', compact('list', 'listingRecords'));
+    }
+
+    /**
+     * Дополнительные фильтры для таблицы
+     *
+     * @return array - Возвращает массив полей для дополнительных фильтров
+     */
+    public function getAdditionalFilterFields(): array
+    {
+        // Пример дополнительных полей фильтрации
+        /*return [
+            Text::make('Код виробника', 'mpn')->filter()->sortable()->className('col-md-6'),
+            Text::make('Постачальник', 'supplier')->filter()->sortable()->className('col-md-6'),
+        ];*/
+
+        return [];
+    }
+
+    /**
+     * Cкоупы для дополнительных фильтров
+     *
+     * @param $q - Query Builder
+     * @param $value - Значение фильтра
+     * @return array - Возвращает массив скоупов для фильтрации
+     */
+    public function additionalFilterScopes($q, $value): array
+    {
+        // Пример скоупа для фильтрации по коду производителя
+        /*return [
+            'mpn' => $q->where('mpn', $value),
+            'supplier' => $q->where('supplier', $value)
+        ];*/
+
+        return [];
     }
 
     private function returnSuccess()
