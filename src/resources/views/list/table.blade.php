@@ -18,6 +18,9 @@
                     @foreach($list->getDefinition()->buttons() as $button)
                         {!! (new \Vis\Builder\Services\ButtonStrategy(new $button($list)))->render() !!}
                     @endforeach
+                    {{-- Дополнительные фильтры --}}
+                    @include('admin::list.additional_filters')
+                    {{-- /Дополнительные фильтры --}}
                 </header>
                 <div>
                     <div class="jarviswidget-editbox"></div>
