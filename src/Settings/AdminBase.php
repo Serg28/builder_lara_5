@@ -59,4 +59,14 @@ abstract class AdminBase
     }
 
     abstract public function menu();
+
+    public function showNotifications(): bool
+    {
+        return false;
+    }
+
+    public function refreshNotificationsTime(): int
+    {
+        return 60;
+    }
 }

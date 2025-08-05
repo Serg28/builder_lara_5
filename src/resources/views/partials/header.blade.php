@@ -14,6 +14,7 @@
         <div id="logout" class="btn-header transparent pull-right">
             <span> <a href="/admin/logout" title="{{__cms("Выход")}}" data-action="userLogout" ><i class="fal fa-sign-out"></i></a> </span>
         </div>
+        @include('admin::partials.notification')
         @include('admin::partials.change_lang')
     </div>
 </header>
