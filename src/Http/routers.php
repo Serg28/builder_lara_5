@@ -101,6 +101,9 @@ $loginPath = config('builder.cms.login_path', 'login');
                     '/{page_admin}/fast-save/{id}',
                     'Vis\Builder\TableAdminController@fastEdit'
                 );
+                Route::get('/notifications/all', [Vis\Builder\NotificationController::class, 'index'])->name('admin.notifications');
+                Route::post('/notifications/mark-read', [Vis\Builder\NotificationController::class, 'markRead'])->name('admin.notifications.mark-read');
+                Route::post('/admin/notifications/mark-all-read', [Vis\Builder\NotificationController::class, 'markAllRead'])->name('admin.notifications.mark-all-read');
             }
         );
     });
