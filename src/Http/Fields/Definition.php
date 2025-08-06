@@ -30,6 +30,15 @@ class Definition extends Field
         return $this;
     }
 
+    public function belongsToMany($relation, $classDefinitionRelation = null)
+    {
+        $this->relation = $relation;
+        $this->definitionRelation = $classDefinitionRelation;
+        $this->typeRelative = 'belongsToMany';
+
+        return $this;
+    }
+
     public function getDefinitionRelation($definition)
     {
         if ($this->definitionRelation) {
@@ -83,9 +92,21 @@ class Definition extends Field
         return json_encode($attributes);
     }
 
-    private function getFieldForeignKeyName($definition)
+    /*private function getFieldForeignKeyName($definition)
     {
         return $definition->model()->{$this->relation}()->getForeignKeyName();
+    }*/
+    private function getFieldForeignKeyName($definition)
+    {
+        $relation = $definition->model()->{$this->relation}();
+
+        if ($relation instanceof \Illuminate\Database\Eloquent\Relations\BelongsToMany) {
+            // Для belongsToMany возвращаем foreign pivot key
+            return $relation->getForeignPivotKeyName();
+        }
+
+        // Для других — стандартный метод
+        return $relation->getForeignKeyName();
     }
 
     public function getTable($definition, $parseJsonData)
