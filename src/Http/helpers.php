@@ -15,7 +15,7 @@ if (! function_exists('defaultLanguage')) {
         return once(function () {
             try {
                 return Cache::tags('language')->rememberForever('default_language', function () {
-                    return optional(Language::getDefaultLanguage())->language;
+                    return optional(Language::getDefaultLanguage())->language ?: config('app.locale');
                 });
             } catch (\Exception $e) {
                 return config('app.locale');
