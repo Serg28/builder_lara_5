@@ -7,7 +7,7 @@
 {{-- При клике на кнопку "Застосувати" (Применить) добавляем значения фильтров в форму и запускаем поиск --}}
 {{-- Используется для расширения функционала фильтрации в списках CMS --}}
 
-@if (method_exists($list->getDefinition(), 'getAdditionalFilterFields'))
+@if (method_exists($list->getDefinition(), 'getAdditionalFilterFields') && count($list->getDefinition()->getAdditionalFilterFields()))
 <div class="widget-toolbar" role="menu">
     <div class="btn-group">
         <div class="dropdown">
