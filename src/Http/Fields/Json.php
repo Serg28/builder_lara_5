@@ -1,6 +1,6 @@
 <?php
 
-namespace Vis\Builder\Http\Fields;
+namespace Vis\Builder\Fields;
 
 use Vis\Builder\Fields\Text;
 
