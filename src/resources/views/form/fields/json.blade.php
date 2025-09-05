@@ -2,7 +2,8 @@
     @php
         $id = $field->getAllData()?->id ?? 0;
         $valueArray = json_decode($field->getValue() ?? '[]', true) ?? [];
-        $isAssociative = $field->isAssociativeArray($valueArray) && !empty($valueArray);
+        // $isAssociative is calculated in PHP (Json field) considering defaultDataColumns() setting.
+        // Do not override it here.
     @endphp
     <label class="label" for="{{ $field->getNameField()}}">{{$field->getName()}}</label>
     <input type="hidden" name="{{ $field->getNameField() }}" id="json_array_input_{{ $id }}" value="{{ $field->getValue() }}">
