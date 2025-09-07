@@ -2,14 +2,11 @@
 
 namespace Vis\Builder\Fields;
 
+use Illuminate\Support\Arr;
+
 class MultiSelect extends Select
 {
     public $onlyForm = true;
-
-    public function getValueForList($definition)
-    {
-        return '';
-    }
 
     public function getValueArray()
     {
@@ -19,6 +16,16 @@ class MultiSelect extends Select
     public function getValue()
     {
         return json_decode(parent::getValue()) ?? [];
+    }
+
+    public function getValueForList($definition)
+    {
+        $options = $this->getOptions();
+
+        return collect(Arr::wrap($this->getValue()))
+            ->filter(fn($v) => $v !== null && $v !== '')   // убираем пустые значения
+            ->map(fn($v) => $options[$v] ?? $v)           // заменяем ключи на метки
+            ->implode(', ');                              // объединяем в строку
     }
 
     public function prepareSave($request)
