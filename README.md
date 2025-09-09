@@ -270,9 +270,9 @@ Color::make('Цвет', 'color')
     ->comment('Выбор цвета');
 ```
 
-### Readonly
+### ReadonlyField
 ```php
-Readonly::make('ID', 'id')
+ReadonlyField::make('ID', 'id')
     ->comment('Только для чтения');
 ```
 
