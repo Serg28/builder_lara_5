@@ -1,13 +1,3 @@
-Generate a password for admin
-```json
-   php artisan admin:generatePassword
-```
-Публикация конфига админпанели
-```json
-   php artisan vendor:publish --provider='Vis\Builder\BuilderServiceProvider' --tag=builder-cms-config
-```
-
-
 # Linecore Builder CMS - Руководство разработчика
 
 ## Обзор
@@ -203,9 +193,7 @@ public function fields(): array
 
 ## Типы полей
 
-### Встроенные поля
-
-#### Text
+### Text
 ```php
 Text::make('Название', 'title')
     ->language()           // Мультиязычное поле
@@ -217,32 +205,331 @@ Text::make('Название', 'title')
     ->transliteration('slug', true) // Автотранслитерация
 ```
 
-#### Image
+### Textarea
+```php
+Textarea::make('Описание', 'description')
+    ->language()
+    ->rules(['max:1000'])
+    ->comment('Многострочный текст');
+```
+
+### Number
+```php
+Number::make('Цена', 'price')
+    ->filter()
+    ->sortable()
+    ->rules(['required', 'numeric', 'min:0'])
+    ->comment('Числовое значение');
+```
+
+### Checkbox
+```php
+Checkbox::make('Активно', 'is_active')
+    ->filter()
+    ->sortable()
+    ->default(true);
+```
+
+**Особенности:**
+- Отображается как галочка в списке
+- Поддерживает быстрое редактирование (fastEdit)
+- Значения: 0 (Нет) / 1 (Да)
+
+### Password
+```php
+Password::make('Пароль', 'password')
+    ->rules(['required', 'min:6'])
+    ->comment('Минимум 6 символов');
+```
+
+**Особенности:**
+- Автоматическое хеширование через `Hash::make()`
+- В списке отображается как `******`
+- Не сохраняет исходное значение
+
+### Date
+```php
+Date::make('Дата создания', 'created_at')
+    ->filter()
+    ->sortable()
+    ->rules(['date']);
+```
+
+### Datetime
+```php
+Datetime::make('Дата и время', 'published_at')
+    ->filter()
+    ->sortable()
+    ->rules(['date']);
+```
+
+### Color
+```php
+Color::make('Цвет', 'color')
+    ->default('#ffffff')
+    ->comment('Выбор цвета');
+```
+
+### Readonly
+```php
+Readonly::make('ID', 'id')
+    ->comment('Только для чтения');
+```
+
+### Virtual
+```php
+Virtual::make('Виртуальное поле', 'virtual_field')
+    ->comment('Не сохраняется в БД');
+```
+
+### Image
 ```php
 Image::make('Фото', 'picture')
     ->rules(['image', 'max:2048'])
-    ->resize(800, 600)    // Изменение размера
-    ->watermark()          // Водяной знак
+    ->uploadPath('/storage/images/')  // Путь загрузки
+    ->comment('Изображение');
 ```
 
-#### Select
+**Особенности:**
+- Автоматическое создание превью (50x50 в списке, 350x350 при наведении)
+- Поддержка SVG, PNG, GIF (прозрачность)
+- Интеграция с ImageStorage (если подключен)
+- Автоматическое именование файлов
+
+### MultiImage
+```php
+MultiImage::make('Галерея', 'gallery')
+    ->rules(['array', 'max:10'])
+    ->onlyForm()
+    ->comment('Множественные изображения');
+```
+
+**Особенности:**
+- Только в форме (не отображается в списке)
+- Сохраняется как JSON-массив
+- Наследует функциональность Image
+
+### File
+```php
+File::make('Документ', 'document')
+    ->accept('.pdf,.doc,.docx')  // Разрешенные типы
+    ->uploadPath('/storage/files/')
+    ->noFileSelection()          // Отключить выбор из загруженных
+    ->comment('Загрузка файла');
+```
+
+**Особенности:**
+- Выбор типов файлов через `accept()`
+- Автоматическое создание папок
+- Ссылка "Скачать" в списке
+- Возможность выбора из ранее загруженных файлов
+
+### MultiFile
+```php
+MultiFile::make('Документы', 'documents')
+    ->accept('.pdf,.doc,.docx')
+    ->uploadPath('/storage/files/')
+    ->onlyForm()
+    ->comment('Множественные файлы');
+```
+
+**Особенности:**
+- Только в форме
+- Сохраняется как JSON-массив
+- Наследует функциональность File
+
+### Select
 ```php
 Select::make('Категория', 'category_id')
     ->options([
         '1' => 'Категория 1',
         '2' => 'Категория 2',
     ])
+    ->optionsWithAttributes([  // Опции с дополнительными атрибутами
+        '1' => ['value' => 'Категория 1', 'data-color' => 'red'],
+        '2' => ['value' => 'Категория 2', 'data-color' => 'blue'],
+    ])
+    ->action()                 // Включить JS-действия
+    ->actionSelect('other')    // Имя селекта для действия
     ->filter()
     ->sortable();
 ```
 
-#### Foreign (Связанные поля)
+**Особенности:**
+- Поддержка быстрого редактирования (fastEdit)
+- Опции с дополнительными HTML-атрибутами
+- JS-действия при изменении значения
+
+### MultiSelect
+```php
+MultiSelect::make('Теги', 'tags')
+    ->options([
+        '1' => 'Тег 1',
+        '2' => 'Тег 2',
+        '3' => 'Тег 3',
+    ])
+    ->onlyForm()
+    ->comment('Множественный выбор');
+```
+
+**Особенности:**
+- Только в форме (не отображается в списке)
+- Сохраняется как JSON-массив
+- В списке отображается как строка через запятую
+- Автоматическая фильтрация пустых значений
+
+### SelectWithPicture
+```php
+SelectWithPicture::make('Вариант', 'variant')
+    ->options([
+        '1' => ['value' => 'Вариант 1', 'image' => '/images/variant1.jpg'],
+        '2' => ['value' => 'Вариант 2', 'image' => '/images/variant2.jpg'],
+    ])
+    ->filter()
+    ->comment('Выбор с изображениями');
+```
+
+**Особенности:**
+- Отображение изображений в опциях
+- Структура: `['value' => 'Текст', 'image' => 'путь_к_изображению']`
+
+### Froala (Rich Text Editor)
+```php
+Froala::make('Содержание', 'content')
+    ->language()
+    ->toolbar('bold,italic,underline,link,image')  // Настройка панели
+    ->options(['height' => 300])                   // Дополнительные опции
+    ->comment('Текстовый редактор');
+```
+
+**Особенности:**
+- Полнофункциональный WYSIWYG редактор
+- Настраиваемая панель инструментов
+- Поддержка мультиязычности
+- В списке отображается обрезанный текст (70 символов)
+
+### Foreign (Связанные поля)
 ```php
 Foreign::make('Категория', 'category_id')
     ->options((new Options('category'))->isJson())
     ->filter()
     ->sortable();
 ```
+
+### ForeignAjax (AJAX-связанные поля)
+```php
+ForeignAjax::make('Пользователь', 'user_id')
+    ->options((new Options('user'))->keyField('name'))
+    ->filter()
+    ->comment('Поиск пользователя через AJAX');
+```
+
+**Особенности:**
+- Загрузка данных через AJAX
+- Поиск по произвольному полю через `keyField()`
+- Оптимизация для больших таблиц
+
+### ManyToMany (Связь многие-ко-многим)
+```php
+ManyToMany::make('Теги', 'tags')
+    ->options((new Options('tag'))->keyField('name'))
+    ->onlyForm()
+    ->comment('Множественная связь');
+```
+
+**Особенности:**
+- Только в форме
+- Работа с промежуточной таблицей
+- Автоматическое управление связями
+
+### ManyToManyAjax (AJAX многие-ко-многим)
+```php
+ManyToManyAjax::make('Категории', 'categories')
+    ->options((new Options('category'))->isJson())
+    ->onlyForm()
+    ->comment('AJAX-связь многие-ко-многим');
+```
+
+### ManyToManyMultiSelect (Мультиселект многие-ко-многим)
+```php
+ManyToManyMultiSelect::make('Роли', 'roles')
+    ->options([
+        '1' => 'Администратор',
+        '2' => 'Модератор',
+        '3' => 'Пользователь',
+    ])
+    ->onlyForm()
+    ->comment('Мультиселект для связей');
+```
+
+### Definition (Вложенные определения)
+```php
+Definition::make('Комментарии')
+    ->hasMany('comments', Comments::class)
+    ->comment('Управление связанными записями');
+```
+
+**Особенности:**
+- Встраивание других Definition в форму
+- Управление связанными записями
+- Поддержка `hasMany`, `morphMany` связей
+
+### Permissions (Права доступа)
+```php
+Permissions::make('Права', 'permissions')
+    ->comment('Управление правами доступа');
+```
+
+**Особенности:**
+- Специальное поле для управления правами
+- Интеграция с системой авторизации
+- Древовидная структура прав
+
+### Hidden (Скрытое поле)
+```php
+Hidden::make('Скрытое значение', 'hidden_field')
+    ->default('default_value');
+```
+
+### Id (Поле ID)
+```php
+Id::make('ID', 'id')
+    ->onlyTable()  // Только в таблице
+    ->sortable();
+```
+
+**Особенности:**
+- Автоматическое отображение ID записи
+- Обычно только в таблице
+
+### Json (JSON-массив)
+```php
+Json::make('Параметры', 'parameters')
+    ->twoColumnsByDefault()    // Режим ключ/значение по умолчанию
+    ->oneColumnByDefault()     // Режим только значений по умолчанию
+    ->columns(6)               // Bootstrap-колонки (1-12)
+    ->comment('JSON-массив с парами ключ/значение');
+```
+
+**Особенности:**
+- Автодетект режима: ассоциативный массив (ключ/значение) или простой массив (только значения)
+- Визуальное редактирование через таблицу
+- Добавление/удаление/перемещение элементов
+- Поддержка `defaultDataColumns()` для принудительного режима
+
+### JsonExt (Расширенный JSON-массив объектов)
+```php
+JsonExt::make('Конфигурация', 'config')
+    ->columns(12)
+    ->comment('Массив объектов с произвольным количеством пар в каждом');
+```
+
+**Особенности:**
+- Формат: `[{"key":"val","key2":"val2"},{"a":"b","c":"d","e":"f"}]`
+- Группы объектов с произвольным количеством пар ключ/значение
+- Добавление/удаление/перемещение групп и пар
+- Иконки управления (FontAwesome 4)
+- Совместимость с API поля Json
 
 ### Кастомные поля
 
