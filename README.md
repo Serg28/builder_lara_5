@@ -866,7 +866,6 @@ Text::make('Телефон', 'phone')
 ```php
 Text::make('Название', 'title')
     ->filter()             // Включить фильтрацию
-    ->filterScope('title'); // Кастомный scope для фильтрации
 ```
 
 ### Сортировка
