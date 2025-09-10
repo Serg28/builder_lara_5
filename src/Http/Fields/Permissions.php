@@ -35,7 +35,7 @@ class Permissions extends Field
     {
         $permissionsMenu = (new Admin())->menu();
 
-        $permissions['Дооступ в cms'] = [
+        $permissions['Доступ в cms'] = [
             "admin.access" => "Да"
         ];
 
