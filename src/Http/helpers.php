@@ -47,7 +47,15 @@ if (! function_exists('languagesOfSite')) {
         }
     }
 }
+if (! function_exists('adminLang')) {
+    function adminLang() : string
+    {
+        $lang = Cookie::get('lang_admin') ?: config('builder.translations.cms.language_default');
 
+        // совместимость со старым кодом
+        return $lang === 'uk' ? 'ua' : $lang;
+    }
+}
 /*
 if (! function_exists('setting')) {
 
