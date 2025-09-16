@@ -59,6 +59,26 @@ class Resource
         return __cms($this->title);
     }
 
+    public static function staticTitle(): string
+    {
+        static $cache = [];
+
+        $class = static::class;
+        if (isset($cache[$class])) {
+            return $cache[$class];
+        }
+
+        $ref = new \ReflectionClass($class);
+        $prop = $ref->getProperty('title');
+        $prop->setAccessible(true);
+
+        return $cache[$class] = __cms(
+            $prop->isStatic()
+                ? $prop->getValue()
+                : $prop->getValue($ref->newInstanceWithoutConstructor())
+        );
+    }
+
     public function getPerPage()
     {
         return $this->perPage;
