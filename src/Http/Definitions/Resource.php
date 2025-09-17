@@ -79,6 +79,15 @@ class Resource
         );
     }
 
+    public function getTitleByName($name)
+    {
+        $title = ucfirst(\Str::camel($name));
+
+        $namespace = '\\App\\Cms\\Definitions\\' . $title;
+
+        return class_exists($namespace) ? $namespace::staticTitle() : $title;
+    }
+
     public function getPerPage()
     {
         return $this->perPage;
