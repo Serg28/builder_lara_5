@@ -78,6 +78,12 @@
 
                 Route::post('save_croped_img', 'Vis\Builder\TBController@saveCropImg');
 
+                // Документация для Definition
+                Route::get('/docs', '\Vis\Builder\DocsController@index')->name('admin.docs.index');
+                Route::get('/docs/{definition}', 'Vis\Builder\DocsController@index')
+                    ->where('definition', '[A-Za-z0-9_]+')
+                    ->name('admin.docs.show');
+
                 //router for pages builder
                 Route::get(
                     '/{page_admin}',

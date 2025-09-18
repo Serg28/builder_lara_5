@@ -58,6 +58,31 @@ class BuilderServiceProvider extends ServiceProvider
             realpath(__DIR__.'/Migrations') => $this->app->databasePath().'/migrations',
         ]);
 
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                \Vis\Builder\Console\MakeDocCommand::class,
+            ]);
+
+            if (! is_dir(resource_path('docs'))) {
+                if (!mkdir($concurrentDirectory = resource_path('docs'), 0755, true) && !is_dir($concurrentDirectory)) {
+                    throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
+                }
+            }
+
+            $this->publishes([
+                __DIR__.'/resources/docs/definitions' => resource_path('docs/definitions'),
+            ], 'builder-docs');
+        }
+
+        $this->publishes([
+            __DIR__.'/config/documentation.php' => config_path('builder/documentation.php'),
+        ], 'builder-docs-config');
+
+        $this->publishes([
+            __DIR__.'/resources/views/documentation_page' =>
+                resource_path('views/vendor/builder/documentation_page'),
+        ], 'builder-docs-views');
+
         $this->viewComposersInit();
     }
 
@@ -123,6 +148,11 @@ class BuilderServiceProvider extends ServiceProvider
             $this->app[\Illuminate\Routing\Router::class]
                 ->aliasMiddleware('auth.user', \Vis\Builder\AuthenticateFrontend::class);
         }
+
+        $this->app->bind(
+            \Vis\Builder\Interfaces\DocSearchInterface::class,
+            \Vis\Builder\Services\Documentation\FuzzyFileSearch::class
+        );
 
         $this->registerCommands();
     }
