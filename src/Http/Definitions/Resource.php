@@ -9,12 +9,12 @@ use Vis\Builder\Fields\Field;
 use Illuminate\Support\Facades\Validator;
 use Vis\Builder\Services\Actions;
 use Vis\Builder\Libs\GoogleTranslateForFree;
-use Vis\Builder\Definitions\Traits\{CacheResource, CloneResource};
+use Vis\Builder\Definitions\Traits\{CacheResource, CloneResource, HasDocumentation};
 use Illuminate\Support\Str;
 
 class Resource
 {
-    use CacheResource, CloneResource;
+    use CacheResource, CloneResource, HasDocumentation;
 
     protected $orderBy = 'created_at desc';
     protected $isSortable = false;
