@@ -27,7 +27,7 @@
 
     <div class="col-sm-8 text-right">
         <div class="dataTables_paginate paging_bootstrap_full">
-            {{$listingRecords->appends(request()->all())->links()}}
+            {{$listingRecords->appends(request()->all())->links('admin::list.pagination-bootstrap-4')}}
 
             @if ($list->isShowAmount())
                 @include('admin::list.pagination_show_amount')
