@@ -70,7 +70,7 @@
         <div style="text-align: center; padding: 50px">Нет изображений</div>
     @endforelse
     <div style="text-align: center" class="paginator_pictures">
-        {{ $list->appends(request()->all())->links() }}
+        {{ $list->appends(request()->all())->links('admin::list.pagination-bootstrap-4') }}
     </div>
 
 
