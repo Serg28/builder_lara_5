@@ -105,7 +105,7 @@
         </div>
         <div class="col-xs-12 col-sm-6">
             <div id="dt_basic_paginate" class="dataTables_paginate paging_simple_numbers">
-                {{$phrases->links()}}
+                {{$phrases->links('admin::list.pagination-bootstrap-4')}}
             </div>
         </div>
     </div>
