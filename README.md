@@ -1296,3 +1296,36 @@ class Products extends Resource
     }
 }
 ```
+
+## Редактор документации
+
+В админ-панели реализован функционал работы с документацией, который состоит из двух частей: редактора и портала просмотра с возможностью поиска.
+Редактор позволяет выбрать необходимый Definition и добавить для него справочную информацию.
+Если к определённому Definition подключить кнопку ButtonDocumentation::class и подготовить для него документацию, в интерфейсе появится ссылка для просмотра. При нажатии она откроется в новой вкладке.
+
+### Настройка
+1. В нужные Definition подключить кнопку ButtonDocumentation:
+```php
+    use namespace Vis\Builder\Services\Documentation\ButtonDocumentation;
+
+    public function buttons()
+    {
+        return [
+            ButtonDocumentation::class,
+        ];
+    }
+```
+2. Добавить пункт меню Редактор Документации в `app/Cms/Admin.php`:
+```php
+    [
+        'title' => 'Редактор Документации',
+        'icon' => 'wrench',
+        'link' => '/documentation_editor',
+    ],
+```
+3. В раздел Пользователи - Группы выставить разрешение для данного пункта меню у нужный групп пользователей.
+
+4. Публикация ресурсов, конфига
+- php artisan vendor:publish --provider="Vis\Builder\BuilderServiceProvider" --tag=builder-docs-views
+- php artisan vendor:publish --provider="Vis\Builder\BuilderServiceProvider" --tag=builder-docs-config
+- php artisan vendor:publish --provider="Vis\Builder\BuilderServiceProvider" --tag=builder-docs
