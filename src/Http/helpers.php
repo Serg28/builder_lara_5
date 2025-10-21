@@ -142,7 +142,7 @@ if (! function_exists('glide')) {
             $width = $options['w'] ?? 100;
             $height = $options['h'] ?? 100;
 
-            return "//via.placeholder.com/{$width}x{$height}";
+            return "//placehold.co/{$width}x{$height}";
         }
 
         return (new Vis\Builder\Img())->get($source, $options);
