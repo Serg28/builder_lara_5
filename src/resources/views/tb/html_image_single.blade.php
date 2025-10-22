@@ -9,7 +9,7 @@
          data-height="{{$height}}"
          @if (strpos($value, ".svg"))
             width="{{$width}}"
-            src="/{{ $value}}" src_original="{{$value}}"
+            src="/{{ $value}}" src_original="/{{$value}}"
          @else
            src="{{ glide($value, ['w' => $width, 'h' => $height]) }}" src_original="{{$value}}"
          @endif
