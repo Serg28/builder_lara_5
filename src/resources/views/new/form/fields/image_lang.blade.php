@@ -42,11 +42,11 @@
                                                  data-tbident="{{$field->getNameField() . $tab->language}}"
                                                  @if (strpos($field->getValueLanguage($tab->language), ".svg"))
                                                     width="200"
-                                                    src="{{ $field->getValueLanguage($tab->language)}}"
-                                                    src_original="{{$field->getValueLanguage($tab->language)}}"
+                                                    src="/{{ $field->getValueLanguage($tab->language)}}"
+                                                    src_original="/{{$field->getValueLanguage($tab->language)}}"
                                                  @else
                                                     src="{{ glide($field->getValueLanguage($tab->language), ['w' => 200, 'h' => 200]) }}"
-                                                    src_original="{{$field->getValueLanguage($tab->language)}}"
+                                                    src_original="/{{$field->getValueLanguage($tab->language)}}"
                                                  @endif
 
                                                  style="max-width: 200px"
