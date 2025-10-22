@@ -7,7 +7,7 @@
                 src="/{{ $field->getValue()}}" src_original="{{$field->getValue()}}"
              @else
                  src="{{ glide($field->getValue(), ['w' => 200, 'h' => 200]) }}"
-                 src_original="{{$field->getValue()}}"
+                 src_original="/{{$field->getValue()}}"
             @endif
 
             style="max-width: 200px"
