@@ -58,6 +58,7 @@ class Field
                 if ($relation) {
                     //$this->valueLanguage = json_decode($relation->{$this->attribute});
                     $this->valueLanguage = json_decode($this->fixJson($relation->{$this->attribute}));
+                    $this->value = $relation ? $relation->{$this->attribute} : '';
                 }
 
                 return;
