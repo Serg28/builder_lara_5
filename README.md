@@ -1307,7 +1307,7 @@ class Products extends Resource
 ```php
     use namespace Vis\Builder\Services\Documentation\ButtonDocumentation;
 
-    public function buttons()
+    public function buttons(): array
     {
         return [
             ButtonDocumentation::class,
