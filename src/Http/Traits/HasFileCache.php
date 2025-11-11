@@ -31,7 +31,7 @@ trait HasFileCache
 
     /**
      * Определение всех кешей по тегам
-     * Пример переопределения в модели:a
+     * Пример переопределения в модели:
      *
      * protected static function getFileCacheDefinitions(): array {
      *   return [
@@ -97,9 +97,10 @@ trait HasFileCache
             static::updateFileCacheByTag($tag);
         }
 
-        return collect(
-            json_decode(Storage::get($path)) ?: []
-        );
+        $json = Storage::get($path);
+        $data = json_decode($json, true) ?: [];
+
+        return collect($data);
     }
 
     /**
@@ -123,15 +124,9 @@ trait HasFileCache
 
         foreach (languagesOfSite() as $lang) {
             app()->setLocale($lang);
-
-            $collection = collect(call_user_func($queryCallback));
-
+            $collection = call_user_func($queryCallback);
             $path = static::getFileCachePathForTag($tag, $lang);
-
-            // Если есть данные — сохраняем, иначе удаляем файл
-            $collection->isNotEmpty()
-                ? Storage::put($path, $collection->toJson(JSON_UNESCAPED_UNICODE))
-                : Storage::delete($path);
+            Storage::put($path, collect($collection)->toJson(JSON_UNESCAPED_UNICODE));
         }
 
         app()->setLocale($originalLocale);
