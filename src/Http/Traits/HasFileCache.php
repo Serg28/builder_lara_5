@@ -31,7 +31,7 @@ trait HasFileCache
 
     /**
      * Определение всех кешей по тегам
-     * Пример переопределения в модели:
+     * Пример переопределения в модели:a
      *
      * protected static function getFileCacheDefinitions(): array {
      *   return [
