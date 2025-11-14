@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Storage;
 /**
  * Трейт для кеширования различных коллекций моделей в файлы JSON.
  *
+ * Кеширует выборки, минуя стандартный кеш Laravel. И затем используется в методах getCachedCollection() и getTaggedCache()
+ *
  * Позволяет определять несколько наборов кешируемых данных (тегов),
  * каждый из которых сохраняется в собственный файл и может иметь
  * индивидуальные правила выборки данных.
@@ -34,6 +36,25 @@ use Illuminate\Support\Facades\Storage;
  * ---
  * Каждый кеш создаётся отдельно для каждого языка,
  * возвращаемого функцией languagesOfSite().
+ *
+ *  Пример переопределения в модели:
+ *
+ * @example
+ *
+ *  ```php
+ *  protected static function getFileCacheDefinitions(): array {
+ *    return [
+ *      'default' => [
+ *          'name' => 'cities_' . App::getLocale(),
+ *          'query' => fn () => static::query()->where('is_active', 1)->get(['id', 'title']),
+ *      ],
+ *      'short' => [
+ *          'name' => 'cities_short_' . App::getLocale(),
+ *          'query' => fn () => static::query()->pluck('title', 'id'),
+ *      ],
+ *    ];
+ *  }
+ * ```
  */
 trait HasFileCache
 {
