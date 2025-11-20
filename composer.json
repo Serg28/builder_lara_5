@@ -18,6 +18,9 @@
             "url": "https://github.com/Serg28/imagecache.git"
         }
     ],
+    "replace": {
+        "intervention/imagecache": "*"
+    },
     "require": {
         "cartalyst/sentinel": "^7",
         "mcamara/laravel-localization": "dev-master",
