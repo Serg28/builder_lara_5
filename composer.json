@@ -18,13 +18,16 @@
             "url": "https://github.com/Serg28/imagecache.git"
         }
     ],
+    "replace": {
+        "intervention/imagecache": "*"
+    },
     "require": {
         "cartalyst/sentinel": "^7",
         "mcamara/laravel-localization": "dev-master",
         "kalnoy/nestedset": "^6.0",
         "venturecraft/revisionable": "1.*",
         "intervention/image": "2.*",
-        "intervention/imagecache": "dev-master",
+        "intervention/imagecache": "dev-laravel10",
         "predis/predis": "2.*",
         "maatwebsite/excel": "3.*",
         "barryvdh/laravel-debugbar": "^3.5",
