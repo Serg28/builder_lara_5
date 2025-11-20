@@ -15,7 +15,7 @@
         },
         {
             "type": "vcs",
-            "url": "https://github.com/Serg28/imagecache.git"
+            "url": "https://git.linecore.com/linecore-laravel/packages/imagecache.git"
         }
     ],
     "require": {
@@ -26,7 +26,7 @@
         "kalnoy/nestedset": "^6.0|^7.0",
         "venturecraft/revisionable": "^1.0",
         "intervention/image": "^3.0",
-        "intervention/imagecache": "dev-master",
+        "intervention/imagecache": "^3.0",
         "predis/predis": "^2.0",
         "maatwebsite/excel": "^3.1",
         "barryvdh/laravel-debugbar": "^3.13",
