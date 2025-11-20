@@ -630,12 +630,12 @@ class Resource
                 if (method_exists($this, 'additionalFilterScopes')) {
                     //Перевіряємо, чи є скоуп для поля у фільтрах скоупах
                     $scopes = $this->additionalFilterScopes($collection, $value);
-                    if (isset($scopes[$field])) {
-                        $collection = $scopes[$field];
+                    if (isset($scopes[$field]) && $scopes[$field] instanceof \Closure) {
+                        $collection = $scopes[$field]($collection, $value);
                         continue;
                     }
                 }
-    
+
                 if ($hasOneRelation = $this->getRelationsHasOne($allFields, $field)) {
 
                     $collection = $collection->whereHas($hasOneRelation, function($query) use ($field, $value, $allFields) {
@@ -771,15 +771,17 @@ class Resource
      *
      * @param $q - Query Builder
      * @param $value - Значение фильтра
-     * @return array - Возвращает массив скоупов для фильтрации
+     * @return array - Возвращает массив колбеков скоупов для фильтрации
      */
     public function additionalFilterScopes($q, $value): array
     {
         // Пример скоупа для фильтрации по коду производителя
-        /*return [
-            'mpn' => $q->where('mpn', $value),
-            'supplier' => $q->where('supplier', $value)
-        ];*/
+        /* return [
+            'mpn' => fn() => $q->where('mpn', $value),
+            'problem_section' => function ($q, $value) {
+                return $q->whereJsonContains('problem_section', $value);
+            },
+        ]; */
 
         return [];
     }
