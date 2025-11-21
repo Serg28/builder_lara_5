@@ -26,6 +26,7 @@
         "kalnoy/nestedset": "^6.0|^7.0",
         "venturecraft/revisionable": "^1.0",
         "intervention/image": "^3.0",
+        "intervention/image-laravel": "^1.0",
         "intervention/imagecache": "^3.0",
         "predis/predis": "^2.0",
         "maatwebsite/excel": "^3.1",

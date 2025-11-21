@@ -163,6 +163,11 @@ class BuilderServiceProvider extends ServiceProvider
         );
 
         $this->registerCommands();
+
+        $this->app->register(\Intervention\Image\Laravel\ServiceProvider::class);
+
+        $loader = \Illuminate\Foundation\AliasLoader::getInstance();
+        $loader->alias('Image', \Intervention\Image\Laravel\Facades\Image::class);
     }
 
     private function registerCommands()

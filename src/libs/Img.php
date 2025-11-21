@@ -2,7 +2,7 @@
 
 namespace Vis\Builder;
 
-use Intervention\Image\Facades\Image;
+use Intervention\Image\Laravel\Facades\Image;
 
 class Img
 {
@@ -123,10 +123,10 @@ class Img
         }
 
         try {
-            $img = Image::make(public_path($source));
+            $img = Image::read(public_path($source));
 
             if (config('builder.watermark.active') && file_exists(config('builder.watermark.path'))) {
-                $img->insert(
+                $img->place(
                     config('builder.watermark.path'),
                     config('builder.watermark.position'),
                     config('builder.watermark.x'),
@@ -175,25 +175,17 @@ class Img
     protected function createRatioImg($img, $options)
     {
         if (isset($options['fit']) && $options['fit'] == 'crop') {
-            $img->fit(
+            $img->cover(
                 $this->width,
-                $this->height,
-                function ($constraint) {
-                    $constraint->aspectRatio();
-                    $constraint->upsize();
-                }
+                $this->height
             );
 
             return;
         }
 
-        $img->resize(
+        $img->scaleDown(
             $this->width,
-            $this->height,
-            function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            }
+            $this->height
         );
     }
 
