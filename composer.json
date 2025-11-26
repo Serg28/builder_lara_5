@@ -21,7 +21,6 @@
     "require": {
         "php": "^8.2",
         "laravel/framework": "^11.0|^12.0",
-        "cartalyst/sentinel": "^8.0",
         "mcamara/laravel-localization": "dev-master",
         "kalnoy/nestedset": "^6.0|^7.0",
         "venturecraft/revisionable": "^1.0",
@@ -32,6 +31,7 @@
         "maatwebsite/excel": "^3.1",
         "barryvdh/laravel-debugbar": "^3.13",
         "bkwld/cloner": "^3.10",
+        "cartalyst/sentinel": "^9.0",
         "spatie/once": "^3.1"
     },
     "autoload": {
