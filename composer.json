@@ -11,10 +11,6 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/Serg28/laravel-localization.git"
-        },
-        {
-            "type": "vcs",
             "url": "https://git.linecore.com/linecore-laravel/packages/imagecache.git"
         }
     ],
