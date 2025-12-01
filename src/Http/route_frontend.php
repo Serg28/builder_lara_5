@@ -3,7 +3,7 @@
 $urlPath = Request::path();
 $arrSegments = explode('/', $urlPath);
 
-if ($arrSegments[0] != 'admin' && str_contains($urlPath, 'livewire') && $arrSegments[0] != 'api') {
+if ($arrSegments[0] != 'admin' && $arrSegments[0] != 'api') {
     try {
         $controllerMethodArray = (new \Vis\Builder\Services\FindAndCheckUrlForTree())->getRoute($arrSegments);
 
