@@ -194,3 +194,128 @@ if (! function_exists('__t')) {
         });
     }
 }
+
+// ============================================================================
+// URL Helpers (перенесено з app/Helpers/Helpers.php для автономності пакету)
+// ============================================================================
+
+if (! function_exists('currentUrl')) {
+    /**
+     * Отримує поточний URL, з можливістю виключити GET-параметри та/або домен.
+     *
+     * Якщо поточний URL містить 'livewire/update', функція поверне значення
+     * заголовка `referer`. В іншому випадку повернеться поточний URL.
+     *
+     * @param bool $withoutQuery  Вказує, чи потрібно повернути URL без GET-параметрів.
+     * @param bool $withoutDomain Вказує, чи потрібно повернути URL без домену (тільки шлях). За замовчуванням — false.
+     */
+    function currentUrl(bool $withoutQuery = false, bool $withoutDomain = false): ?string
+    {
+        $currentUrl = request()->fullUrl();
+        $refererUrl = request()->header('referer') ?? '';
+
+        // Якщо URL містить `livewire/update`, використовуємо referer
+        $url = str_contains($currentUrl, 'livewire/update') ? $refererUrl : $currentUrl;
+
+        // Прибираємо GET-параметри, якщо потрібно
+        if ($withoutQuery) {
+            $url = str_contains($url, '?') ? explode('?', $url)[0] : $url;
+        }
+
+        // Прибираємо домен, якщо потрібно
+        if ($withoutDomain) {
+            $parsed = parse_url($url);
+            $path = $parsed['path'] ?? '/';
+            $query = isset($parsed['query']) && ! $withoutQuery ? '?' . $parsed['query'] : '';
+            $url = $path . $query;
+        }
+
+        return $url;
+    }
+}
+
+if (! function_exists('currentUrlPath')) {
+    /**
+     * Повертає поточний URL - тільки частину path (без домену та get-параметрів),
+     * навіть якщо виклик відбувся з livewire-компонента.
+     */
+    function currentUrlPath(): ?string
+    {
+        $url = currentUrl();
+
+        // Функція для витягування шляху з URL
+        $getPath = static function ($url): string {
+            $parsedUrl = parse_url($url);
+            return isset($parsedUrl['path']) ? ltrim($parsedUrl['path'], '/') : '/';
+        };
+
+        return $url ? $getPath($url) : '/';
+    }
+}
+
+if (! function_exists('urlPathWithoutLocale')) {
+    /**
+     * Отримати шлях без домену та мовного префіксу (без початкового слешу).
+     * Якщо $pathOrUrl не вказано, використовується поточний URL.
+     *
+     * @param string|null $pathOrUrl Шлях або повний URL.
+     */
+    function urlPathWithoutLocale(?string $pathOrUrl = null): ?string
+    {
+        static $cached = null;
+
+        if ($pathOrUrl === null && $cached !== null) {
+            return $cached;
+        }
+
+        // Отримуємо шлях без ведучого слешу
+        $path = $pathOrUrl
+            ? ltrim(parse_url($pathOrUrl, PHP_URL_PATH) ?? '', '/')
+            : currentUrlPath();
+
+        if ($path === '') {
+            return null;
+        }
+
+        $segments = explode('/', $path);
+
+        $defaultLocale = defaultLanguage();
+        $supportedLocales = languagesOfSite()->toArray();
+
+        $firstSegment = $segments[0] ?? null;
+
+        if ($firstSegment !== $defaultLocale && in_array($firstSegment, $supportedLocales, true)) {
+            array_shift($segments);
+        }
+
+        $result = implode('/', $segments);
+
+        if ($pathOrUrl === null) {
+            $cached = $result;
+        }
+
+        return $result;
+    }
+}
+
+if (! function_exists('getQueryParam')) {
+    /**
+     * Отримує значення вказаного GET-параметра з поточного URL.
+     *
+     * Працює коректно і при звичайних HTTP-запитах, і при AJAX-запитах Livewire.
+     *
+     * @param  string      $param Ім'я GET-параметра, значення якого потрібно отримати.
+     * @param  mixed|null  $default Значення за замовчуванням, якщо параметр відсутній.
+     * @return string|null Повертає значення параметра або null, якщо параметр відсутній.
+     */
+    function getQueryParam(string $param, mixed $default = null): ?string
+    {
+        // Пріоритет: $_GET (актуальний URL в браузері)
+        if (isset($_GET[$param])) {
+            return $_GET[$param];
+        }
+
+        // Якщо немає в $_GET — пробуємо з Laravel-запиту
+        return request()->query($param, $default);
+    }
+}

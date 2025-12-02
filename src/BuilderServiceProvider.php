@@ -41,6 +41,9 @@ class BuilderServiceProvider extends ServiceProvider
 
         $this->setupRoutes($this->app->router);
 
+        // Регистрация прероутера
+        $this->registerPreRouter($router);
+
         $this->loadViewsFrom(realpath(__DIR__.'/resources/views'), 'admin');
 
         $this->publishes([
@@ -87,7 +90,63 @@ class BuilderServiceProvider extends ServiceProvider
                 resource_path('views/vendor/builder/documentation_page'),
         ], 'builder-docs-views');
 
+        // Публикация конфига прероутера
+        $this->publishes([
+            __DIR__.'/config/prerouter.php' => config_path('builder/prerouter.php'),
+        ], ['builder', 'prerouter-config']);
+
         $this->viewComposersInit();
+    }
+
+    /**
+     * Регистрация прероутера (middleware и автоперегенерация кеша).
+     */
+    private function registerPreRouter(Router $router): void
+    {
+        if (! config('prerouter.enabled', false)) {
+            return;
+        }
+
+        // Регистрация middleware
+        $this->app[\Illuminate\Contracts\Http\Kernel::class]
+            ->pushMiddleware(\Vis\Builder\Http\Middleware\CachePreRouter::class);
+
+        // Слушатель событий для автоперегенерации кеша при cache:clear
+        \Illuminate\Support\Facades\Event::listen(
+            \Illuminate\Console\Events\CommandFinished::class,
+            function (\Illuminate\Console\Events\CommandFinished $event) {
+                // Автоперегенерація вимкнена
+                if (!config('prerouter.auto_rebuild_on_cache_clear', true)) {
+                    return;
+                }
+
+                $command = trim($event->command ?? '');
+
+                // Порожня команда
+                if ($command === '') {
+                    return;
+                }
+
+                // Пропускаємо optimize (містить cache:clear)
+                if (str_starts_with($command, 'optimize')) {
+                    return;
+                }
+
+                // Ручне вимкнення: php artisan cache:clear --no-preroute
+                if (str_contains($command, '--no-preroute')) {
+                    return;
+                }
+
+                // Реагуємо лише на cache:clear
+                if (str_starts_with($command, 'cache:clear')) {
+                    try {
+                        \Illuminate\Support\Facades\Artisan::call('prerouter:build');
+                    } catch (\Throwable $e) {
+                        logger()->error('Помилка prerouter:build', ['error' => $e->getMessage()]);
+                    }
+                }
+            }
+        );
     }
 
     private function viewComposersInit()
@@ -131,7 +190,11 @@ class BuilderServiceProvider extends ServiceProvider
      */
     public function setupRoutes(Router $router)
     {
-        require __DIR__.'/Http/route_frontend.php';
+        // Якщо прероутер вимкнено (або не налаштовано), використовуємо стандартний роутинг
+        if (! config('prerouter.enabled', false)) {
+            require __DIR__.'/Http/route_frontend.php';
+        }
+        
         require __DIR__.'/Http/routers_translation_cms.php';
         require __DIR__.'/Http/routers.php';
         require __DIR__.'/Http/routers_translation.php';
@@ -196,6 +259,13 @@ class BuilderServiceProvider extends ServiceProvider
         $this->commands($this->commandAdminGeneratePass);
         $this->commands($this->commandAdminCreateConfig);
         $this->commands($this->commandAdminCreateImgWebp);
+        
+        // Регистрация команды прероутера
+        if (config('prerouter.enabled', false)) {
+            $this->commands([
+                \Vis\Builder\Console\PreRouterBuild::class,
+            ]);
+        }
     }
 
     /**
