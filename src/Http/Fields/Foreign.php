@@ -9,6 +9,19 @@ class Foreign extends Field
 {
     protected $options = [];
 
+    private $withTranslatedOptions = true;
+
+    public function withTranslatedOptions(bool $with = true)
+    {
+        $this->withTranslatedOptions = $with;
+        return $this;
+    }
+
+    public function getWithTranslatedOptions()
+    {
+        return $this->withTranslatedOptions;
+    }
+
     public function options($model)
     {
         $this->options = $model;
@@ -78,17 +91,18 @@ class Foreign extends Field
 
             $idRecord = $this->getId();
             $field = $this->getNameFieldInBd();
+            $withTranslatedOptions = false;
 
-            return view('admin::list.fast_edit.select', compact('idRecord', 'value', 'field', 'optionsArray'));
+            return view('admin::list.fast_edit.select', compact('idRecord', 'value', 'field', 'optionsArray', 'withTranslatedOptions'));
         }
-        
+
         $definition = $this->getDefinition($definition);
         $modelRelated = $definition->model()->{$this->options->getRelation()}()->getRelated();
         $record = $modelRelated::select(['id', $this->options->getKeyField() . ' as name']);
 
         $recordThis = $record->rememberForever()
-                             ->cacheTags($this->getCacheArray($definition, $modelRelated))
-                             ->find($value);
+            ->cacheTags($this->getCacheArray($definition, $modelRelated))
+            ->find($value);
 
         return optional($recordThis)->name;
     }

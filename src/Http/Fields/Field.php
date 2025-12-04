@@ -36,7 +36,7 @@ class Field
     {
         $this->name = $name;
         $this->attribute = $attribute ?? str_replace(' ', '_', Str::lower($name));
-        $this->locale = config('app.locale');
+        $this->locale = adminLang() ?: config('app.locale');
     }
 
     function fixJson($value)
@@ -379,7 +379,7 @@ class Field
 
     public function getComment() : string
     {
-        return $this->commentText;
+        return __cms($this->commentText);
     }
 
     public function getFieldForm($definition)

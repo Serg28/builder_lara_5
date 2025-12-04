@@ -10,6 +10,19 @@ class Select extends Field
     private $isAction = false;
     private $actionSelect = false;
 
+    private $withTranslatedOptions = true;
+
+    public function withTranslatedOptions(bool $with = true)
+    {
+        $this->withTranslatedOptions = $with;
+        return $this;
+    }
+
+    public function getWithTranslatedOptions()
+    {
+        return $this->withTranslatedOptions;
+    }
+
     public function options($arrayList)
     {
         $this->options = $arrayList;

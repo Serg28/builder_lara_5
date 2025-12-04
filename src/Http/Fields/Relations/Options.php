@@ -63,7 +63,7 @@ class Options
     public function getKeyField() : string
     {
         if ($this->isJson) {
-            return $this->keyField . '->' . defaultLanguage();
+            return $this->keyField . '->' . adminLang() ?: defaultLanguage();
         }
 
         return $this->keyField;
