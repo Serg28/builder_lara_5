@@ -15,7 +15,7 @@
                         @foreach ($field->getOptions() as $value => $caption)
                             <option value="{{ $value }}"
                                     {{$value == $field->getValue() ? 'selected' : ''}}
-                            >{{ $caption }}</option>
+                            >{{ $field->getWithTranslatedOptions() ? __cms($caption) : $caption }}</option>
                         @endforeach
                     </select>
                     <i></i>
