@@ -240,4 +240,16 @@ class Tree extends Model
     {
         return ['tree'];
     }
+
+    /**
+     * Bootstrap the model.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        if (config('prerouter.enabled', false) && class_exists(\Vis\Builder\Observers\PreRouterTreeObserver::class)) {
+            static::observe(\Vis\Builder\Observers\PreRouterTreeObserver::class);
+        }
+    }
 }

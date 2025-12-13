@@ -140,7 +140,7 @@ class BuilderServiceProvider extends ServiceProvider
                 // Реагуємо лише на cache:clear
                 if (str_starts_with($command, 'cache:clear')) {
                     try {
-                        \Illuminate\Support\Facades\Artisan::call('prerouter:build');
+                       \Illuminate\Support\Facades\Artisan::call('prerouter:build');
                     } catch (\Throwable $e) {
                         logger()->error('Помилка prerouter:build', ['error' => $e->getMessage()]);
                     }

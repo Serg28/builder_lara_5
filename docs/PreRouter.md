@@ -1,361 +1,97 @@
-# PreRouter - Швидка маршрутизація через Redis
+# PreRouter (Lite)
 
-## Що це?
+PreRouter — це високоефективна система маршрутизації, реалізована як прошарок Middleware, що працює **до** завантаження основного ядра фреймворку Laravel. Вона дозволяє віддавати сторінки за лічені мілісекунди, використовуючи Redis.
 
-**PreRouter** — це система швидкої маршрутизації для динамічних сторінок сайту (Tree, новини, категорії, товари). Замість того, щоб на кожному запиті шукати сторінку в базі даних, система зберігає мапу URL → Контролер у Redis і миттєво знаходить потрібний обробник.
+В даній Lite-версії система оптимізована виключно для роботи зі **сторінками сайту (Tree)**.
 
 ## Яку проблему вирішує?
 
-### Проблема (без PreRouter):
-На кожному запиті Laravel:
-1. Шукає відповідність URL у таблиці моделі Tree → сторінка
-2. Визначає контролер і метод
-3. Викликає контролер
-4. При відсутності сторінки в базі даних викликається стандартний роутинг Laravel
+У великих проектах стандартний роутинг Laravel може займати значний час, особливо якщо він зав'язаний на складні запити до БД для визначення шаблонів та контролерів. PreRouter:
+1. Перехоплює запит на ранньому етапі.
+2. Перевіряє наявність готового маршруту в швидкому кеші (Redis).
+3. Якщо маршрут знайдено — миттєво ініціалізує потрібний контролер, оминаючи зайві запити.
 
-**Результат:** Повільна робота при великій кількості запитів і зайві запити для пошуку сторінок, які не відносяться до динамічних сторінок, наприклад, статті, новини, категорії, товари. Навіть службові виклики livewire/update або api/... викликають зайві запити до бази даних.
+## Як це працює
 
-### Рішення (з PreRouter):
-1. Один раз будується кеш: URL → {id, controller, method}
-2. На кожному запиті: Redis lookup (< 1ms)
-3. Миттєвий виклик контролера
+1. **Запит:** Вхідний HTTP-запит потрапляє в `CachePreRouter` middleware.
+2. **Перевірка:** 
+   - Якщо це адмінка або API — пропускає далі.
+   - Якщо кеш Redis містить дані для цього URL — відразу викликає збережений `Controller@method` (наприклад, `HomeController@init`).
+3. **Lazy Loading (Автоматичне кешування):**
+   - Якщо в Redis немає запису, PreRouter не віддає 404.
+   - Він "на льоту" шукає сторінку в БД.
+   - Якщо знаходить — зберігає в Redis і віддає результат.
+   - Наступний користувач отримає відповідь миттєво з кешу.
+4. **Автоматичне оновлення:**
+   - Пакет автоматично слідкує за змінами моделі `Tree` і оновлює кеш в реальному часі.
 
-**Результат:** Швидкість зросла в 2-5 разів, навантаження на БД знизилось на 90%.
+---
 
-## Як це працює?
-
-```
-Запит → PreRouter Middleware → Redis lookup → Контролер
-                ↓ (якщо не знайдено)
-           Стандартний роутинг Laravel
-```
-
-### Автоматичне оновлення кешу
-
-**TreeObserver** відстежує зміни сторінок:
-- Створення → додає в кеш
-- Оновлення → оновлює кеш
-- Видалення → видаляє з кешу
-
-**Автоперегенерація:**
-```bash
-php artisan cache:clear
-# Автоматично викликається prerouter:build
-```
-
-## Використання
+## Налаштування
 
 ### 1. Увімкнення
 
-У `.env`:
+В файлі `.env`:
+
 ```env
 PREROUTER_ENABLED=true
+PREROUTER_AUTO_REBUILD=true
 ```
 
-### 2. Налаштування (опціонально)
+### 2. Конфігурація
 
-Опублікувати конфіг:
-```bash
-php artisan vendor:publish --tag=prerouter-config
-```
+Конфігураційний файл `config/prerouter.php`:
 
-Відредагувати `config/prerouter.php`:
 ```php
 return [
     'enabled' => env('PREROUTER_ENABLED', true),
     
-    // Класс для отримання шаблонів Tree
-    'tree_templates_class' => \App\Cms\Tree\Tree::class,
-    
-    // Які джерела обробляти
-    'sources' => [
-        'tree'     => true,   // Сторінки
-        'news'     => false,  // Новини
-        'category' => false,  // Категорії
-        'product'  => false,  // Товари
-    ],
-    
-    // Моделі
+    // Модель для сторінок
     'models' => [
         'tree' => \App\Models\Tree::class,
-        // ...
     ],
+
+    // Клас, що містить мапинг шаблонів (template -> Controller)
+    'tree_templates_class' => \App\Cms\Tree\Tree::class,
 ];
 ```
 
-### 3. Створення Observer (для Tree)
+### 3. Observer (Автоматично)
 
-```php
-// app/Observers/TreeObserver.php
-namespace App\Observers;
+Пакет **автоматично реєструє** Observer для моделі, вказаної в `config('prerouter.models.tree')`.
+Вам **не потрібно** вручну створювати `TreeObserver` або додавати `#[ObservedBy]`, якщо ви використовуєте стандартну структуру.
 
-use App\Models\Tree;
-use Vis\Builder\Services\RouteMapBuilder;
+Це дозволяє вам мати власні Observer-и для `Tree` без конфліктів, оскільки Laravel підтримує декілька спостерігачів для однієї моделі.
 
-class TreeObserver
-{
-    protected RouteMapBuilder $routeMapBuilder;
+---
 
-    public function __construct(RouteMapBuilder $routeMapBuilder)
-    {
-        $this->routeMapBuilder = $routeMapBuilder;
-    }
+## Консольні команди
 
-    public function created(Tree $tree): void
-    {
-        $this->routeMapBuilder->rebuildTreeNode($tree);
-    }
+### Очищення кешу
 
-    public function updated(Tree $tree): void
-    {
-        if ($tree->wasChanged(['slug', 'url', 'is_active', 'template'])) {
-            $this->routeMapBuilder->deleteTreeNode($tree);
-            $this->routeMapBuilder->rebuildTreeNode($tree);
-        }
-    }
-
-    public function deleted(Tree $tree): void
-    {
-        $this->routeMapBuilder->deleteTreeNode($tree);
-    }
-
-    public function restored(Tree $tree): void
-    {
-        $this->routeMapBuilder->rebuildTreeNode($tree);
-    }
-}
+```bash
+php artisan cache:clear
 ```
+> **Важливо:** Якщо в `.env` параметр `PREROUTER_AUTO_REBUILD=true` (за замовчуванням), ця команда **автоматично запустить** `prerouter:build` відразу після очищення. 
 
-Зареєструвати в `app/Providers/EventServiceProvider.php`:
-```php
-protected $observers = [
-    \App\Models\Tree::class => [\App\Observers\TreeObserver::class],
-];
-```
+### Примусова побудова
 
-або прямо у моделі
-
-```php
-use Vis\Builder\Traits\ObservedBy;
-use App\Observers\TreeObserver;
-
-#[ObservedBy(TreeObserver::class)]
-class Tree extends TreeBuilder
-{
-
-}
-```
-
-### 4. Побудова кешу
+Для повного "прогріву" кешу вручну:
 
 ```bash
 php artisan prerouter:build
 ```
 
-або
+Ця команда просканує всі активні сторінки сайту та згенерує для них кеш в Redis.
 
-```bash
-php artisan cache:clear
-```
-автоматично викликається prerouter:build при ввімкненні PreRouter
+---
 
-Або для конкретного типу:
-```bash
-php artisan prerouter:build --type=tree
-php artisan prerouter:build --type=news
-```
+## Вимкнення
 
-### 5. Перевірка роботи
+Якщо щось пішло не так, PreRouter можна миттєво вимкнути:
 
-```bash
-php artisan tinker
->>> Cache::tags(['prerouter', 'tree'])->get('preroute:tree:/')
-=> [
-     "id" => 1,
-     "controller" => "App\Http\Controllers\HomeController",
-     "method" => "index",
-   ]
-```
-
-## Вимкнення PreRouter
-
-### Повне вимкнення
-
-У `.env`:
 ```env
 PREROUTER_ENABLED=false
 ```
 
-Очистити кеш:
-```bash
-php artisan config:clear
-```
-
-**Результат:**
-- Middleware не реєструється
-- Команда `prerouter:build` недоступна
-- Автоматично вмикається стандартний роутинг через `route_frontend.php`
-
-### Вимкнення автоперегенерації
-
-У `.env`:
-```env
-PREROUTER_AUTO_REBUILD=false
-```
-
-Або вручну:
-```bash
-php artisan cache:clear --no-preroute
-```
-
-## Команди
-
-### Побудова кешу
-```bash
-php artisan prerouter:build           # Всі джерела
-php artisan prerouter:build --type=tree
-php artisan prerouter:build --type=news
-```
-
-### Очищення кешу
-```bash
-php artisan cache:clear
-# Автоматично перебудовується (якщо PREROUTER_AUTO_REBUILD=true)
-```
-
-## Виключення URL
-
-Деякі URL не обробляються PreRouter (налаштовується в конфігу):
-```php
-'exclude_prefixes' => [
-    'admin',      // Адмінка
-    'api',        // API
-    'livewire',   // Livewire
-    'storage',    // Файли
-    '_debugbar',  // Debug bar
-],
-```
-
-## Продуктивність
-
-### До впровадження:
-- 100+ SQL-запитів на хіт
-- Час відповіді: 200-500ms
-- Навантаження на БД: високе
-
-### Після впровадження:
-- 1-5 SQL-запитів на хіт
-- Час відповіді: 50-100ms
-- Навантаження на БД: мінімальне
-- Redis lookup: < 1ms
-
-## Fallback (аварійне відключення)
-
-Якщо виникли проблеми:
-
-1. Вимкнути в `.env`:
-   ```env
-   PREROUTER_ENABLED=false
-   ```
-
-2. Очистити кеш:
-   ```bash
-   php artisan config:clear
-   ```
-
-Сайт автоматично повернеться до стандартного роутингу.
-
-## Технічні деталі
-
-### Архітектура
-
-```
-BuilderServiceProvider
-├── registerPreRouter()
-│   ├── Реєстрація Middleware (якщо enabled=true)
-│   └── Слухач CommandFinished (автоперегенерація)
-└── setupRoutes()
-    └── Завантаження route_frontend.php (якщо enabled=false)
-```
-
-### Компоненти
-
-- **Middleware:** `Vis\Builder\Http\Middleware\CachePreRouter`
-- **Service:** `Vis\Builder\Services\RouteMapBuilder`
-- **Command:** `Vis\Builder\Console\PreRouterBuild`
-- **Config:** `config/prerouter.php`
-
-### Формат кешу
-
-```php
-// Ключ
-"preroute:tree:/about-us"
-
-// Значення
-[
-    'id' => 5,
-    'controller' => 'App\Http\Controllers\PageController',
-    'method' => 'show',
-]
-```
-
-### Теги кешу
-
-- `prerouter` — загальний тег
-- `tree`, `news`, `category`, `product` — теги по типах
-
-Очищення конкретного типу:
-```php
-Cache::tags(['prerouter', 'tree'])->flush();
-```
-
-## Поширені питання
-
-### Чи потрібно вручну перебудовувати кеш?
-
-Ні. Observer автоматично оновлює кеш при змінах через адмінку.
-
-Вручну потрібно тільки якщо:
-- Змінили дані напряму в БД
-- Додали новий тип джерела
-- Після відновлення з бекапу
-
-### Що буде, якщо Redis впаде?
-
-PreRouter пропустить запит далі, і Laravel обробить його через стандартний роутинг. Сайт продовжить працювати.
-
-### Чи можна використовувати без Redis?
-
-Ні. PreRouter використовує `Cache::tags()`, що підтримується тільки Redis і Memcached.
-
-### Як додати підтримку нових типів (новини, товари)?
-
-1. Увімкнути в `config/prerouter.php`:
-   ```php
-   'sources' => [
-       'news' => true,
-   ],
-   ```
-
-2. Налаштувати модель і контролер:
-   ```php
-   'models' => [
-       'news' => \App\Models\News::class,
-   ],
-   'controllers' => [
-       'news' => [\App\Http\Controllers\NewsController::class, 'show'],
-   ],
-   ```
-
-3. Створити Observer для автооновлення (опціонально)
-
-4. Побудувати кеш:
-   ```bash
-   php artisan prerouter:build --type=news
-   ```
-
----
-
-**Версія:** 1.0  
-**Пакет:** vis/builder_lara_5  
-**Підтримка:** Redis 5.0+, Laravel 11+
+Після зміни `.env` виконайте `php artisan config:clear`.

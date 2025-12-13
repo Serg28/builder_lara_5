@@ -7,9 +7,21 @@ use Illuminate\Support\Facades\Cache;
 /**
  * Сервіс для побудови та оновлення кешу прероутера.
  * Відповідає за створення мапи URL -> ID/Controller для швидкого доступу.
+ * 
+ * Версія Lite: тільки для Tree.
  */
 class RouteMapBuilder
 {
+    /**
+     * Конфігурація прероутера.
+     */
+    protected array $config;
+
+    public function __construct()
+    {
+        $this->config = config('prerouter');
+    }
+
     /**
      * Перебудувати всі карти маршрутів.
      */
@@ -17,22 +29,8 @@ class RouteMapBuilder
     {
         $this->clear();
 
-        $config = config('prerouter.sources');
-
-        if ($config['tree'] ?? false) {
+        if ($this->config['sources']['tree'] ?? false) {
             $this->buildTree();
-        }
-
-        if ($config['category'] ?? false) {
-            $this->buildCategories();
-        }
-
-        if ($config['product'] ?? false) {
-            $this->buildProducts();
-        }
-
-        if ($config['news'] ?? false) {
-            $this->buildNews();
         }
     }
 
@@ -49,86 +47,48 @@ class RouteMapBuilder
      */
     public function buildTree(): void
     {
-        $locales = languagesOfSite();
+        $modelClass = $this->config['models']['tree'] ?? null;
         
-        $treeModel = config('prerouter.models.tree');
-        
-        if (!$treeModel || !class_exists($treeModel)) {
+        if (! $this->isValidModel($modelClass)) {
             return;
         }
 
-        $treeModel::active()
+        $locales = languagesOfSite();
+
+        $modelClass::active()
             ->get(['id', 'slug', 'is_active', 'template'])
-            ->each(function ($item) use ($locales) {
-                $this->rebuildTreeNode($item, $locales);
-            });
+            ->each(fn ($item) => $this->rebuildTreeNode($item, $locales));
     }
 
     /**
      * Перебудувати кеш для одного вузла Tree.
      * 
-     * @param mixed $item Tree model instance
+     * @param mixed $item Модель Tree
      * @param mixed $locales Колекція або масив кодів мов
      */
     public function rebuildTreeNode($item, $locales = null): void
     {
         $locales = $locales ?? languagesOfSite();
-
-        // 1. Визначаємо контролер та метод на основі шаблону
-        $templatesClass = config('prerouter.tree_templates_class');
+        $controllerInfo = $this->resolveController($item);
         
-        if (!$templatesClass || !class_exists($templatesClass)) {
+        if (! $controllerInfo) {
             return;
         }
 
-        static $templates = null;
-        if ($templates === null) {
-            $templates = (new $templatesClass())->templates();
-        }
-
-        $templateClass = $templates[$item->template] ?? null;
-        
-        // Якщо шаблону немає або він некоректний - пропускаємо
-        if (! $templateClass || ! class_exists($templateClass)) {
-            return;
-        }
-
-        try {
-            $templateInstance = new $templateClass();
-            $action = $templateInstance->getAction(); // Наприклад: "HomeController@index"
-            
-            if (!str_contains($action, '@')) {
-                return;
-            }
-
-            [$controllerName, $method] = explode('@', $action);
-            
-            // CMS передбачає, що контролери знаходяться в App\Http\Controllers
-            if (str_starts_with($controllerName, 'App\\')) {
-                $controllerClass = $controllerName;
-            } else {
-                $controllerClass = 'App\\Http\\Controllers\\' . $controllerName;
-            }
-
-        } catch (\Exception $e) {
-            return;
-        }
-
-        // 2. Зберігаємо готовий маршрут для кожної локалі
         foreach ($locales as $locale) {
             $url = urlPathWithoutLocale($item->getUrl($locale));
             
+            // Захист від пустих URL - головна сторінка
             if (empty($url)) {
                 $url = '/';
             }
 
             $key = "preroute:tree:{$url}";
             
-            // Зберігаємо масив даних
             $data = [
                 'id' => $item->id,
-                'controller' => $controllerClass,
-                'method' => $method,
+                'controller' => $controllerInfo['class'],
+                'method' => $controllerInfo['method'],
             ];
 
             Cache::tags(['prerouter', 'tree'])
@@ -138,9 +98,6 @@ class RouteMapBuilder
 
     /**
      * Видалити вузол Tree з кешу.
-     * 
-     * @param mixed $item Tree model instance
-     * @param mixed $locales Колекція або масив кодів мов
      */
     public function deleteTreeNode($item, $locales = null): void
     {
@@ -153,62 +110,58 @@ class RouteMapBuilder
                 $url = '/';
             }
 
-            Cache::tags(['prerouter', 'tree'])
-                ->forget("preroute:tree:{$url}");
+            Cache::tags(['prerouter', 'tree'])->forget("preroute:tree:{$url}");
         }
     }
 
     /**
-     * Построить карту для категорий
+     * Визначає контролер та метод для вузла Tree.
      */
-    public function buildCategories(): void
+    protected function resolveController($item): ?array
     {
-        $categoryModel = config('prerouter.models.category');
+        $templatesClass = $this->config['tree_templates_class'] ?? null;
         
-        if (!$categoryModel || !class_exists($categoryModel)) {
-            return;
+        if (! $templatesClass || ! class_exists($templatesClass)) {
+            return null;
         }
 
-        $categoryModel::all(['id', 'slug', 'full_path'])
-            ->each(function ($cat) {
-                Cache::tags(['prerouter', 'category'])
-                    ->forever("preroute:category:{$cat->full_path}", $cat->id);
-            });
+        // Кешування списку шаблонів у стартичній змінній для продуктивності
+        static $templates = null;
+        if ($templates === null) {
+            $templates = (new $templatesClass())->templates();
+        }
+
+        $templateClass = $templates[$item->template] ?? null;
+
+        if (! $templateClass || ! class_exists($templateClass)) {
+            return null;
+        }
+
+        try {
+            $action = (new $templateClass())->getAction();
+            
+            if (! str_contains($action, '@')) {
+                return null;
+            }
+
+            [$controllerName, $method] = explode('@', $action);
+            
+            $controllerClass = str_starts_with($controllerName, 'App\\')
+                ? $controllerName
+                : 'App\\Http\\Controllers\\' . $controllerName;
+
+            return ['class' => $controllerClass, 'method' => $method];
+
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 
     /**
-     * Построить карту для товаров
+     * Перевірка валідності моделі.
      */
-    public function buildProducts(): void
+    protected function isValidModel(?string $class): bool
     {
-        $productModel = config('prerouter.models.product');
-        
-        if (!$productModel || !class_exists($productModel)) {
-            return;
-        }
-
-        $productModel::all(['id', 'slug', 'url'])
-            ->each(function ($product) {
-                Cache::tags(['prerouter', 'product'])
-                    ->forever("preroute:product:{$product->url}", $product->id);
-            });
-    }
-
-    /**
-     * Построить карту для новостей
-     */
-    public function buildNews(): void
-    {
-        $newsModel = config('prerouter.models.news');
-        
-        if (!$newsModel || !class_exists($newsModel)) {
-            return;
-        }
-
-        $newsModel::all(['id', 'slug'])
-            ->each(function ($news) {
-                Cache::tags(['prerouter', 'news'])
-                    ->forever("preroute:news:news/{$news->slug}", $news->id);
-            });
+        return $class && class_exists($class);
     }
 }

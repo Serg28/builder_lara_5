@@ -1,102 +1,58 @@
-# PreRouter - Швидкий старт
+# PreRouter Lite: Швидкий старт 🚀
 
-## Що це?
+PreRouter — це система швидкої маршрутизації через Redis, яка працює **перед** завантаженням фреймворку Laravel.
+В даній версії (Lite) підтримується прискорення тільки для **Tree** (сторінки сайту).
 
-Система швидкої маршрутизації через Redis. Замість пошуку сторінки в БД на кожному запиті — миттєвий lookup у кеші.
+## 1. Увімкнення
 
-**Результат:** Швидкість ↑ у 2-5 разів, навантаження на БД ↓ на 90%.
-
-## Швидкий старт
-
-### 1. Увімкнути
+В файлі `.env`:
 
 ```env
 PREROUTER_ENABLED=true
+PREROUTER_AUTO_REBUILD=true
 ```
 
-### 2. Опублікувати конфіг
+## 2. Налаштування (опціонально)
 
-```bash
-php artisan vendor:publish --tag=prerouter-config
-```
-
-### 3. Налаштувати `config/prerouter.php`
+Конфіг знаходиться в `config/prerouter.php`.
+За замовчуванням він налаштований на використання `App\Models\Tree`.
 
 ```php
-'tree_templates_class' => \App\Cms\Tree\Tree::class,
 'models' => [
     'tree' => \App\Models\Tree::class,
 ],
 ```
 
-### 4. Створити Observer
+## 3. Як це працює
 
-```php
-// app/Observers/TreeObserver.php
-use Vis\Builder\Services\RouteMapBuilder;
+### Lazy Loading («Лінива» загрузка)
+Вам **не потрібно** вручну будувати кеш.
+1. Користувач заходить на сторінку `/about`.
+2. PreRouter шукає її в Redis.
+3. Якщо не знайдено — шукає в БД.
+4. Якщо знайдено в БД — записує в Redis і віддає користувачу.
+5. Наступний користувач отримає сторінку миттєво з Redis.
 
-class TreeObserver
-{
-    public function __construct(protected RouteMapBuilder $routeMapBuilder) {}
-    
-    public function created(Tree $tree): void
-    {
-        $this->routeMapBuilder->rebuildTreeNode($tree);
-    }
-    
-    public function updated(Tree $tree): void
-    {
-        if ($tree->wasChanged(['slug', 'url', 'is_active', 'template'])) {
-            $this->routeMapBuilder->deleteTreeNode($tree);
-            $this->routeMapBuilder->rebuildTreeNode($tree);
-        }
-    }
-    
-    public function deleted(Tree $tree): void
-    {
-        $this->routeMapBuilder->deleteTreeNode($tree);
-    }
-}
-```
-
-Зареєструвати в `EventServiceProvider`:
-```php
-protected $observers = [
-    \App\Models\Tree::class => [\App\Observers\TreeObserver::class],
-];
-```
-
-або прямо у моделі
-
-```php
-use Vis\Builder\Traits\ObservedBy;
-use App\Observers\TreeObserver;
-
-#[ObservedBy(TreeObserver::class)]
-class Tree extends TreeBuilder
-{
-
-}
-```
-
-### 5. Побудувати кеш
+### Ручна побудова кешу
+Якщо ви хочете "прогріти" кеш одразу для всього сайту:
 
 ```bash
 php artisan prerouter:build
 ```
 
-## Вимкнення
+## 4. Очищення кешу
+
+```bash
+php artisan cache:clear
+```
+Це очистить кеш прероутера. Він автоматично наповниться при відвідуванні сторінок.
+
+## 5. Вимкнення
 
 ```env
 PREROUTER_ENABLED=false
 ```
-
+Після зміни `.env` не забудьте:
 ```bash
 php artisan config:clear
 ```
-
-Автоматично повернеться стандартний роутинг.
-
-## Детальна документація
-
-Дивіться [PreRouter.md](PreRouter.md)
