@@ -319,3 +319,13 @@ if (! function_exists('getQueryParam')) {
         return request()->query($param, $default);
     }
 }
+
+if (! function_exists('isLivewireQuery')) {
+    /*
+     * Перевірка, чи запит був від Livewire
+     */
+    function isLivewireQuery(): bool
+    {
+        return (bool) request()->header('x-livewire') !== null;
+    }
+}
