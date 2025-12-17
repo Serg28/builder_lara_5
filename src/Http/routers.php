@@ -23,6 +23,8 @@ $loginPath = config('builder.cms.login_path', 'login');
                     'Vis\Builder\ControllersNew\EditContentOnSiteController@index'
                 );
 
+                Route::post('/slugify', 'Vis\Builder\ControllersNew\SlugifyController@create')->name('cms.slugify');
+
                 Route::get('logout', 'Vis\Builder\LoginController@logout')->name('cms.logout');
 
                 Route::get('/logs', 'Vis\Builder\LogViewerController@index');
