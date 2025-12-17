@@ -11,7 +11,7 @@ class ChangeLang
         $languages = config("builder.translations.cms.languages");
         // $thisLang = request()->cookie('lang_admin') ?: config('builder.translations.cms.language_default');
 
-        $thisLang = adminLang();
+        $thisLang = adminLang(false);
 
         $view->with(compact( 'languages', 'thisLang'));
     }
