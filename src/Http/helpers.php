@@ -43,12 +43,16 @@ if (! function_exists('languagesOfSite')) {
     }
 }
 if (! function_exists('adminLang')) {
-    function adminLang() : string
+    function adminLang(bool $normalizeUaKey = true) : string
     {
         $lang = Cookie::get('lang_admin') ?: config('builder.translations.cms.language_default');
 
-        // совместимость со старым кодом
-        return $lang === 'uk' ? 'ua' : $lang;
+        if($normalizeUaKey) {
+            // совместимость со старым кодом
+            return $lang === 'uk' ? 'ua' : $lang;
+        }
+
+        return $lang;
     }
 }
 /*
@@ -171,7 +175,8 @@ if (! function_exists('geturl')) {
 if (! function_exists('__cms')) {
     function __cms($phrase) : ?string
     {
-        $thisLang = Cookie::get('lang_admin', config('builder.translations.cms.language_default'));
+        // $thisLang = Cookie::get('lang_admin', config('builder.translations.cms.language_default'));
+        $thisLang = adminLang(false);
 
         $arrayTranslate = TranslationsPhrasesCms::fillCacheTrans();
 
