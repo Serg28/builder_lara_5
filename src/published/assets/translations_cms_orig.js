@@ -39,7 +39,7 @@ var Trans = {
         }).done(function (data) {
 
             $('.table_center_translate').html(data);
-            Trans.loadEditable();
+            window.history.pushState(url_page, '', url_page);
             Trans.load_ajax("hide");
         }).fail(function () {
             jQuery.smallBox({
@@ -111,13 +111,7 @@ var Trans = {
             "/admin/translations_cms/remove/" + id,
             {},
             function (data) {
-                // Удалить строку из DOM
-                $('.tr_' + id).remove();
-
-                // Обновить таблицу, если это была последняя строка
-                if($('#sort_t tbody tr').length === 0) {
-                    Trans.show_list(1);
-                }
+                Trans.show_list(1);
             }
         );
     },
@@ -133,17 +127,6 @@ var Trans = {
         } else {
             $(".load_ajax").hide();
         }
-    },
-
-    loadEditable: function() {
-        $('.lang_change').editable2({
-            url: '/admin/translations_cms/change-text-lang',
-            type: 'text',
-            pk: 1,
-            id: "",
-            name: 'username',
-            title: 'Enter username'
-        });
     }
 
 };
@@ -170,15 +153,15 @@ $(document).on("submit", '#search_form', function () {
 */
 
 //поиск
-$(document).on("keyup", '[name=search_q]', function(){
-    var search_q = $("[name=search_q]").val();
+$(document).on("keyup", '[name=search_cms_q]', function(){
+    var search_q = $("[name=search_cms_q]").val();
 
     if (search_q.length > 1) {
         $(".load_page").show();
         $.post( window.location.pathname, {search_q : search_q, page : 1 })
             .done(function( data ) {
-                $("#results_container").html(data);
-                Trans.loadEditable();
+                console.log(data);
+                $("#content_admin").html(data);
                 $(".load_page").hide();
             }).fail(function(xhr, ajaxOptions, thrownError) {
             var errorResult = jQuery.parseJSON(xhr.responseText);
@@ -187,3 +170,8 @@ $(document).on("keyup", '[name=search_q]', function(){
     }
 });
 
+//ajax пагинация
+$(document).on('click', '.pagination a', function (e) {
+    Trans.show_list($(this).attr('href').split('page=')[1]);
+    e.preventDefault();
+});

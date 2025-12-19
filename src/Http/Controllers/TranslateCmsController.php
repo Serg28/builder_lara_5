@@ -26,21 +26,41 @@ class TranslateCmsController extends Controller
 
     public function index()
     {
-        $search = request('search_q');
-        $phrases = TranslationsPhrasesCms::orderBy('id', 'desc');
-
-        if ($search) {
-            $phrases = $phrases->where('phrase', 'LIKE', '%'.$search.'%');
+        if (request('search_q') && mb_strlen(request('search_q')) > 1) {
+            return $this->search();
         }
 
-        $phrases = $phrases->paginate($this->countShow);
+        $phrases = TranslationsPhrasesCms::orderBy('id', 'desc')->paginate($this->countShow);
         $view = Request::ajax() ? 'admin::translation_cms.part.center' : 'admin::translation_cms.trans';
 
         return view($view)
+            ->with('data', $phrases)
             ->with('phrases', $phrases)
             ->with('langs', $this->lanuages)
-            ->with('search_q', $search)
+            ->with('search_q', request('search_q'))
             ->with('count_show', $this->countShow);
+    }
+
+    /**
+     * search in list phrase.
+     *
+     * @return Illuminate\Support\Facades\View
+     */
+    public function search()
+    {
+        $querySearch = trim(request('search_q'));
+
+        $phrases = TranslationsPhrasesCms::leftJoin('translations_cms', 'translations_cms.translations_phrases_cms_id', '=', 'translations_phrases_cms.id')
+            ->select('translations_phrases_cms.*')
+            ->where(function ($query) use ($querySearch) {
+                $query->where('phrase', 'like', '%'.$querySearch.'%')
+                    ->orWhere('translations_cms.translate', 'like', '%'.$querySearch.'%');
+            })
+            ->groupBy('translations_phrases_cms.id')
+            ->orderBy('translations_phrases_cms.id', 'desc')->paginate($this->countShow);
+
+        $langs = $this->lanuages;
+        return view('admin::translation_cms.part.result_search', compact('phrases', 'langs'));
     }
 
     /**
