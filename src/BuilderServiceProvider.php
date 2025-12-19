@@ -225,6 +225,13 @@ class BuilderServiceProvider extends ServiceProvider
             \Vis\Builder\Services\Documentation\FuzzyFileSearch::class
         );
 
+        $this->app->singleton(
+            \Vis\Builder\Services\Translate::class,
+            function () {
+                return new \Vis\Builder\Services\Translate();
+            }
+        );
+
         $this->registerCommands();
 
         $this->app->register(\Intervention\Image\Laravel\ServiceProvider::class);

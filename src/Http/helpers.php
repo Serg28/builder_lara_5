@@ -173,20 +173,28 @@ if (! function_exists('geturl')) {
 }
 
 if (! function_exists('__cms')) {
-    function __cms($phrase) : ?string
+    function __cms($phrase, array $replacePhrase = []) : ?string
     {
-        // $thisLang = Cookie::get('lang_admin', config('builder.translations.cms.language_default'));
-        $thisLang = adminLang(false);
+        return once(function () use ($phrase, $replacePhrase) {
+            // $thisLang = Cookie::get('lang_admin', config('builder.translations.cms.language_default'));
+            $thisLang = adminLang(false);
 
-        $arrayTranslate = TranslationsPhrasesCms::fillCacheTrans();
+            $arrayTranslate = TranslationsPhrasesCms::fillCacheTrans();
 
-        if (!isset($arrayTranslate[$phrase][$thisLang])) {
-            if ($phrase) {
-                (new TranslationsCms())->createNewTranslate($phrase);
+            if (!isset($arrayTranslate[$phrase][$thisLang])) {
+                if ($phrase) {
+                    (new TranslationsCms())->createNewTranslate($phrase);
+                }
             }
-        }
 
-        return $arrayTranslate[$phrase][$thisLang] ?? $phrase;
+            $result = $arrayTranslate[$phrase][$thisLang] ?? $phrase;
+
+            if (!empty($replacePhrase)) {
+                $result = str_replace(array_keys($replacePhrase), array_values($replacePhrase), $result);
+            }
+
+            return $result;
+        }, [$phrase, $replacePhrase]);
     }
 }
 
@@ -196,7 +204,7 @@ if (! function_exists('__t')) {
         return once(function () use ($phrase, $replacePhrase) {
             //return (new Translate())->returnPhrase($phrase, $replacePhrase);
             return app(Translate::class)->returnPhrase($phrase, $replacePhrase);
-        });
+        }, [$phrase, $replacePhrase]);
     }
 }
 
