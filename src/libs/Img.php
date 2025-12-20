@@ -14,6 +14,9 @@ class Img
     private $height = null;
     private $quality = 90;
 
+    // Кеширование конфигурационных значений водяного знака
+    private static $watermarkConfig = null;
+
     //Оригинал
     /*public function _get($source, $options)
     {
@@ -125,12 +128,14 @@ class Img
         try {
             $img = Image::read(public_path($source));
 
-            if (config('builder.watermark.active') && file_exists(config('builder.watermark.path'))) {
+            // Получаем кешированную конфигурацию водяного знака
+            $watermarkConfig = $this->getWatermarkConfig();
+            if ($watermarkConfig['active'] && file_exists($watermarkConfig['path'])) {
                 $img->place(
-                    config('builder.watermark.path'),
-                    config('builder.watermark.position'),
-                    config('builder.watermark.x'),
-                    config('builder.watermark.y')
+                    $watermarkConfig['path'],
+                    $watermarkConfig['position'],
+                    $watermarkConfig['x'],
+                    $watermarkConfig['y']
                 );
             }
 
@@ -142,10 +147,10 @@ class Img
             $img->save($pathSmallImg, $this->quality);
 
             OptmizationImg::run($this->picturePath);
-            
+
             // Сохранение пути в кеш
             cache()->tags(['glide'])->forever($cacheKey, $this->picturePath);
-            
+
             return $this->picturePath;
         } catch (\Exception $e) {
             return $e->getMessage();
@@ -202,5 +207,20 @@ class Img
     {
         //return strpos($_SERVER['HTTP_ACCEPT'], 'image/webp') !== false;
         return strpos(request()->header('Accept'), 'image/webp') !== false;
+    }
+
+    // Метод для получения и кеширования конфигурации водяного знака
+    private function getWatermarkConfig()
+    {
+        if (self::$watermarkConfig === null) {
+            self::$watermarkConfig = [
+                'active' => config('builder.watermark.active'),
+                'path' => config('builder.watermark.path'),
+                'position' => config('builder.watermark.position'),
+                'x' => config('builder.watermark.x'),
+                'y' => config('builder.watermark.y'),
+            ];
+        }
+        return self::$watermarkConfig;
     }
 }
