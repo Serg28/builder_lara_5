@@ -1323,9 +1323,21 @@ class Products extends Resource
         'link' => '/documentation_editor',
     ],
 ```
-3. В раздел Пользователи - Группы выставить разрешение для данного пункта меню у нужный групп пользователей.
+3. Создать файл `app/Cms/Definitions/DocumentationEditor.php`
+```php
+<?php
 
-4. Публикация ресурсов, конфига
+namespace App\Cms\Definitions;
+
+use Vis\Builder\Definitions\DocumentationEditor as BaseDocumentationEditor;
+
+class DocumentationEditor extends BaseDocumentationEditor
+{
+}
+```
+5. В раздел Пользователи - Группы выставить разрешение для данного пункта меню у нужный групп пользователей.
+
+6. Публикация ресурсов, конфига
 - php artisan vendor:publish --provider="Vis\Builder\BuilderServiceProvider" --tag=builder-docs-views
 - php artisan vendor:publish --provider="Vis\Builder\BuilderServiceProvider" --tag=builder-docs-config
 - php artisan vendor:publish --provider="Vis\Builder\BuilderServiceProvider" --tag=builder-docs
