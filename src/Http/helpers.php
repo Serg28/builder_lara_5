@@ -147,8 +147,8 @@ if (!function_exists('glide')) {
         // Проверяем, есть ли данные в кеше
         return cache()->tags(['glide'])->rememberForever($cacheKey, function () use ($source, $options) {
             if (
-                config('builder.image.img_placeholder', true)
-                && (config('app.env') === 'local' || config('app.env') === 'testing')
+                env('IMG_PLACEHOLDER', true)
+                && (env('APP_ENV') === 'local' || env('APP_ENV') === 'testing')
             ) {
                 $width = $options['w'] ?? 100;
                 $height = $options['h'] ?? 100;
@@ -156,7 +156,7 @@ if (!function_exists('glide')) {
             }
 
             // Если плейсхолдер не используется, вызываем метод get()
-            return app(Vis\Builder\Img::class)->get($source, $options);
+            return (new Vis\Builder\Img())->get($source, $options);
         });
     }
 }

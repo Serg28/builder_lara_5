@@ -34,17 +34,6 @@ class BuilderServiceProvider extends ServiceProvider
         require __DIR__.'/../vendor/autoload.php';
         require __DIR__.'/Http/helpers.php';
 
-        // Загружаем конфигурацию
-        $this->mergeConfigFrom(
-            __DIR__.'/config/image.php',
-            'builder.image'
-        );
-
-        // Регистрируем Img как singleton для оптимизации
-        $this->app->singleton(Vis\Builder\Img::class, function () {
-            return new Vis\Builder\Img();
-        });
-
         $this->app->setLocale(defaultLanguage());
 
         $router->middleware('auth.admin', \Vis\Builder\Authenticate::class);
@@ -63,10 +52,6 @@ class BuilderServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/config/cms.php' => config_path('builder/cms.php'),
         ], ['builder', 'builder-cms-config']);
-
-        $this->publishes([
-            __DIR__.'/config/image.php' => config_path('builder/image.php'),
-        ], ['builder', 'builder-image-config']);
 
         $this->publishes([
             __DIR__
