@@ -16,7 +16,7 @@
    @include("admin::translation_cms.part.pop_trans_add")
 </div>
 <div class='load_ajax'></div>
-<script src="{{asset('packages/linecore/builder/translations_cms.js?1')}}"></script>
+<script src="{{asset('packages/linecore/builder/translations_cms.js')}}?2"></script>
 <script>
     $(document).ready(function () {
         $('.lang_change').editable2({
