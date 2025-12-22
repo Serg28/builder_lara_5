@@ -255,11 +255,11 @@ trait HasFileCache
         $originalLocale = app()->getLocale();
         $langs = static::availableLangs();
 
-        $raw = collect($query());
-
+        // УБРАНО: $raw = collect($query()); - выполнение запроса перемещено внутрь цикла
         foreach ($langs as $lang) {
             app()->setLocale($lang);
 
+            $raw = collect($query());
             $localized = $raw->map(fn($item) => static::localizeValue($item, $lang));
             $path = static::getFileCachePathForTag($tag, $lang);
 
