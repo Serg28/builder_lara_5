@@ -64,7 +64,16 @@ var Trans = {
     {
         $.post("/admin/translations/del_record", {id : this_id_pages },
             function(data){
-                Trans.show_list(1);
+                // Trans.show_list(1);
+
+                // Удалить строку из DOM
+                $('.tr_' + this_id_pages).remove();
+
+                // Обновить таблицу, если это была последняя строка
+                if($('#sort_t tbody tr').length === 0) {
+                    Trans.show_list(1);
+                }
+
             });
     },
 
