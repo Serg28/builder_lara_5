@@ -40,4 +40,4 @@
    @include("admin::translations.part.pop_trans_add")
 </div>
 <div class='load_ajax'></div>
-<script src="{{asset('packages/linecore/builder/translations.js')}}"></script>
+<script src="{{asset('packages/linecore/builder/translations.js')}}?2"></script>
