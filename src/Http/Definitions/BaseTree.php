@@ -4,10 +4,23 @@ namespace Vis\Builder\Definitions;
 
 use App\Models\Tree;
 use Illuminate\Support\Arr;
+use Vis\Builder\Definitions\Traits\HasDocumentation;
 
 class BaseTree
 {
+    use HasDocumentation;
+
     protected $model = Tree::class;
+
+    public function buttons(): array
+    {
+        return [];
+    }
+
+    public function getTitle()
+    {
+        return __cms('Структура сайта');
+    }
 
     public function model()
     {

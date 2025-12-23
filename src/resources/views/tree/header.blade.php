@@ -7,6 +7,11 @@ $result = $current::defaultOrder()->ancestorsOf($current);
 @endforeach
 
 {{$current->t('title')}}
+
+@foreach($list->getDefinition()->buttons() as $button)
+    {!! (new \Vis\Builder\Services\ButtonStrategy(new $button($list)))->render() !!}
+@endforeach
+
 @if (app('user')->hasAccessActionsForCms('update'))
     <a href="javascript:void(0);" onclick="Tree.showEditForm('{{$current->id}}');" style="min-width: 70px; float: right">{{__cms('Редактировать')}}</a>
 @endif

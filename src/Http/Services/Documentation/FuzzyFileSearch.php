@@ -121,7 +121,7 @@ class FuzzyFileSearch implements DocSearchInterface
         $batches = array_chunk($files, self::BATCH_SIZE);
 
         foreach ($batches as $batchIndex => $batch) {
-            $this->processBatch($batch);
+            $this->processBatch($batch, $ext);
 
             // Логируем прогресс каждые 5 пакетов
             if ($batchIndex % 5 === 0) {
@@ -154,7 +154,7 @@ class FuzzyFileSearch implements DocSearchInterface
     /**
      * Обработка пакета файлов
      */
-    private function processBatch(array $files): void
+    private function processBatch(array $files, string $ext): void
     {
         foreach ($files as $filePath) {
             if (!file_exists($filePath)) {
@@ -177,7 +177,7 @@ class FuzzyFileSearch implements DocSearchInterface
                 continue;
             }
 
-            $this->indexFileContent($filePath, $content);
+            $this->indexFileContent($filePath, $content, $ext);
         }
     }
 
@@ -200,21 +200,31 @@ class FuzzyFileSearch implements DocSearchInterface
     /**
      * Индексация содержимого файла и его названия
      */
-    private function indexFileContent(string $filePath, string $content): void
+    private function indexFileContent(string $filePath, string $content, string $ext): void
     {
-        // 1. Индексируем содержимое файла
+        // 1. Извлекаем заголовок документа для индексации
+        $title = $this->extractTitleFromContent($content, $ext);
+        $cleanTitle = mb_strtolower($title, 'UTF-8');
+        $cleanTitle = preg_replace('/\s+/', ' ', trim($cleanTitle));
+
+        // 2. Индексируем содержимое файла
         $cleanContent = strip_tags($content);
         $cleanContent = mb_strtolower($cleanContent, 'UTF-8');
         $cleanContent = preg_replace('/\s+/', ' ', $cleanContent);
 
-        // 2. Индексируем название файла (с повышенным весом)
+        // 3. Индексируем название файла (с повышенным весом)
         $fileName = $this->extractSearchableFileName($filePath);
         $cleanFileName = mb_strtolower($fileName, 'UTF-8');
         $cleanFileName = preg_replace('/[_\-\.]+/', ' ', $cleanFileName); // заменяем разделители на пробелы
         $cleanFileName = preg_replace('/\s+/', ' ', trim($cleanFileName));
 
-        // Объединяем контент с названием (название повторяем для увеличения веса)
-        $searchableText = $cleanFileName . ' ' . $cleanFileName . ' ' . $cleanFileName . ' ' . $cleanContent;
+        // Объединяем контент с названием и заголовком (повышаем вес названия и заголовка)
+        // Заголовок и название файла повторяем несколько раз для релевантности
+        $searchableText = implode(' ', [
+            $cleanTitle, $cleanTitle, $cleanTitle, $cleanTitle,
+            $cleanFileName, $cleanFileName, $cleanFileName,
+            $cleanContent
+        ]);
 
         // Создаем n-граммы разных размеров для лучшего поиска
         $ngrams = [];
@@ -636,5 +646,31 @@ class FuzzyFileSearch implements DocSearchInterface
         if ($seconds < 3600) return round($seconds/60) . " мин";
         if ($seconds < 86400) return round($seconds/3600) . " ч";
         return round($seconds/86400) . " дн";
+    }
+    /**
+     * Извлечение заголовка из содержимого документа (для индексации)
+     */
+    private function extractTitleFromContent(string $content, string $ext): string
+    {
+        if ($ext === 'html' || $ext === 'htm') {
+            if (preg_match('/<meta\s+name=["\']title["\']\s+content=["\']([^"\']*)["\']\s*\/?>/i', $content, $matches)) {
+                return $matches[1];
+            }
+            if (preg_match('/<title>(.*?)<\/title>/i', $content, $matches)) {
+                return trim(strip_tags($matches[1]));
+            }
+            if (preg_match('/<h1.*?>(.*?)<\/h1>/i', $content, $matches)) {
+                return trim(strip_tags($matches[1]));
+            }
+        } elseif ($ext === 'md' || $ext === 'markdown') {
+            if (preg_match('/^---\\s*\\n.*?title:\\s*(.+?)\\n.*?---\\s*\\n/is', $content, $matches)) {
+                return trim($matches[1], '"\' ');
+            }
+            if (preg_match('/^#\\s+(.+)/m', $content, $matches)) {
+                return trim($matches[1]);
+            }
+        }
+
+        return '';
     }
 }
