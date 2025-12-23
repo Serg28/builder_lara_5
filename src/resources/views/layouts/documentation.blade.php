@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>{{__cms('Документация')}}</title>
+    <title>{{__cms('Документация к административной панели')}} {{config('app.name')}}</title>
     <meta name="robots" content="noindex, nofollow">
     <meta name="description" content="">
     <meta name="csrf-token" content="{{ csrf_token() }}"/>
@@ -11,6 +11,10 @@
     <link rel="stylesheet" type="text/css" href="/packages/linecore/builder/css/documentation-page.min.css">
     <meta http-equiv="Content-Security-Policy"
           content="default-src 'self' 'unsafe-inline' data: https:; img-src 'self' data: https: *; style-src 'self' 'unsafe-inline' https:; script-src 'self' 'unsafe-inline' https:">
+
+    <link rel="shortcut icon" href="{{$admin->getFaviconUrl()}}" type="image/x-icon">
+    <link rel="icon" href="{{$admin->getFaviconUrl()}}" type="image/x-icon">
+
 
     @yield('styles')
     @yield('scripts_header')

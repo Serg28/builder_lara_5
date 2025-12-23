@@ -17,7 +17,7 @@
                 <div>
                     <div class="jarviswidget-editbox"></div>
                     <div class="widget-body no-padding">
-                        <form action="/admin/actions/warehouses" method="post" class="form-horizontal tb-table" target="submiter">
+                        <form action="{{ url()->current() }}" method="post" class="form-horizontal tb-table" target="submiter">
 
                             <table id="datatable_fixed_column" class="table  table-hover table-bordered">
                                 <thead>
@@ -45,11 +45,9 @@
                                                         <li>
                                                             <a href="/admin/docs/{{ $doc['path'] }}" target="_blank"><i class="fa fa-eye"></i> {{__cms('Открыть')}}</a>
                                                         </li>
-                                                        {{--
                                                         <li>
-                                                            <a style="color: red" onclick="TableBuilder.doDelete(1, $(this));"><i class="fa red fa-times"></i> Видалити</a>
+                                                            <a href="javascript:void(0);" style="color: red" onclick="doDelete('{{ $doc['path'] }}', this);"><i class="fa red fa-times"></i> {{__cms('Удалить')}}</a>
                                                         </li>
-                                                        --}}
                                                     </ul>
                                                 </div>
                                             </div>
@@ -57,7 +55,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="2" class="text-center">{{__cms('Файлы документации не найдены')}}</td>
+                                        <td colspan="3" class="text-center">{{__cms('Файлы документации не найдены')}}</td>
                                     </tr>
                                 @endforelse
                                 </tbody>
@@ -107,3 +105,45 @@
         </article>
     </div>
 </section>
+
+<script>
+    function doDelete(id, context) {
+        if (confirm("{{__cms('Вы уверены, что хотите удалить этот документ?')}}")) {
+            const formData = new FormData();
+            formData.append('id', id);
+            formData.append('query_type', 'delete_row');
+            formData.append('_token', '{{ csrf_token() }}');
+
+            fetch("{{ url()->current() }}", {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    $(context).closest('tr').fadeOut(300, function() {
+                        $(this).remove();
+                    });
+                    if (window.TableBuilder && window.TableBuilder.showSuccessNotification) {
+                        window.TableBuilder.showSuccessNotification(data.message);
+                    } else {
+                        alert(data.message);
+                    }
+                } else {
+                    if (window.TableBuilder && window.TableBuilder.showErrorNotification) {
+                        window.TableBuilder.showErrorNotification(data.message);
+                    } else {
+                        alert(data.message);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('{{__cms('Произошла ошибка при удалении')}}');
+            });
+        }
+    }
+</script>
