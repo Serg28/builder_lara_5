@@ -46,7 +46,7 @@ trait HasDocumentation
             return null;
         }
 
-        $ext = config('builder.documentation.extension', 'html');
+        $ext = config('builder.documentation.docs_extensions', 'html');
         $slug      = strtolower($slug);
         $locale    = $locale ? strtolower($locale) : null;
         $candidates = [];

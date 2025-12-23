@@ -30,7 +30,7 @@ class DocumentationRequest extends FormRequest
 
     protected function prepareForValidation()
     {
-        $ext = config('builder.documentation.extension', 'html');
+        $ext = config('builder.documentation.docs_extensions', 'html');
 
         if ($this->has('name')) {
             $this->merge(['name' => strtolower(preg_replace('/\.'.$ext.'$/i', '', $this->input('name')))]);
