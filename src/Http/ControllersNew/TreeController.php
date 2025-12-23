@@ -38,14 +38,15 @@ class TreeController
         $children = $children->withCount('children')->defaultOrder()->paginate($perPage);
         $templates = $this->definition->getTemplates();
         $definition = $this->definition;
+        $list = new \Vis\Builder\Services\Listing($definition);
 
         $content = view('admin::tree.content',
-            compact('current', 'treeName', 'children', 'perPage', 'templates', 'definition'));
+            compact('current', 'treeName', 'children', 'perPage', 'templates', 'definition', 'list'));
 
         $view = request()->ajax() ? 'center' : 'table';
 
         return view('admin::tree.' . $view,
-            compact( 'treeName', 'current', 'children', 'content', 'definition', 'templates'));
+            compact( 'treeName', 'current', 'children', 'content', 'definition', 'templates', 'list'));
     }
 
     public function handle()

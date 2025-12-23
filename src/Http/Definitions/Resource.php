@@ -175,7 +175,7 @@ class Resource
         return $fieldsResults;
     }
 
-    public function remove(int $id) : array
+    public function remove($id) : array
     {
         $this->model()->destroy($id);
         $this->clearCache();

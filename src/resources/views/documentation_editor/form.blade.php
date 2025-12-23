@@ -41,6 +41,24 @@
                                         </section>
                                     </div>
 
+                                    <div class="col-lg-12 col-md-12">
+                                        <section class="section_name">
+                                            <label class="label" for="custom_title">{{__cms('Произвольное название')}}</label>
+                                            <div style="position: relative;">
+                                                <div class="div_input">
+                                                    <div class="input_content">
+                                                        <label class="input">
+                                                            <input type="text" class="form-control input-sm" id="custom_title" name="custom_title" value="{{ $customTitle }}" autocomplete="off">
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="note">
+                                                <small>{{__cms('Если указано, будет использоваться как заголовок документа')}}</small>
+                                            </div>
+                                        </section>
+                                    </div>
+
                                    {!! $tinymceHtml !!}
 
                                     <div class="col-lg-12 col-md-12">

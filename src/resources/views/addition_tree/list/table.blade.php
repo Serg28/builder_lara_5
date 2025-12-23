@@ -29,7 +29,12 @@
                             @foreach ($ancestors as $ancestor)
                                 <a href="?node={{ $ancestor->id }}" style="color: #fff" class="node_link">{{ $ancestor->t('title')}}</a> /
                             @endforeach
-                                <a onclick="TableBuilder.getEditForm(<?=$current->id?>, $(this));" style="min-width: 70px; float: right">{{__cms('Редактировать')}}</a>
+
+                            @foreach($list->getDefinition()->buttons() as $button)
+                                {!! (new \Vis\Builder\Services\ButtonStrategy(new $button($list)))->render() !!}
+                            @endforeach
+
+                            <a onclick="TableBuilder.getEditForm(<?=$current->id?>, $(this));" style="min-width: 70px; float: right">{{__cms('Редактировать')}}</a>
 
                         </th>
                     </tr>
