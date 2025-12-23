@@ -38,7 +38,7 @@ class DocumentationEditor extends Resource
         $this->checkPermissions();
 
         $dir = config('builder.documentation.path_app', resource_path('docs/definitions')) . DIRECTORY_SEPARATOR;
-        $ext = config('builder.documentation.extension', 'html');
+        $ext = config('builder.documentation.docs_extensions', 'html');
 
         $files = File::glob($dir . '*.' . $ext) ?: [];
 
@@ -76,7 +76,7 @@ class DocumentationEditor extends Resource
         $name = '';
 
         $dir = config('builder.documentation.path_app', resource_path('docs/definitions')) . DIRECTORY_SEPARATOR;
-        $ext = config('builder.documentation.extension', 'html');
+        $ext = config('builder.documentation.docs_extensions', 'html');
 
         if ($fileName) {
             $base = strtolower(preg_replace('/\.'.$ext.'$/i', '', $fileName));
@@ -105,7 +105,7 @@ class DocumentationEditor extends Resource
 
     public function saveEditForm($request): array
     {
-        $ext = config('builder.documentation.extension', 'html');
+        $ext = config('builder.documentation.docs_extensions', 'html');
 
         $data = $request instanceof Request ? $request->all() : (array)$request;
 
@@ -129,7 +129,23 @@ class DocumentationEditor extends Resource
 
         foreach ($langs as $lang) {
             $body = is_array($content) ? ($content[$lang] ?? '') : $content;
-            File::put($dir . "{$nameBase}.{$lang}." . $ext, $body);
+            $filePath = $dir . "{$nameBase}.{$lang}." . $ext;
+
+            // Ensure directory exists before writing file
+            $fileDir = dirname($filePath);
+            if (!File::exists($fileDir)) {
+                File::makeDirectory($fileDir, 0755, true);
+            }
+
+            // Attempt to write the file with error handling
+            try {
+                File::put($filePath, $body);
+            } catch (\ErrorException $e) {
+                return [
+                    'success' => false,
+                    'message' => "Ошибка при записи файла {$filePath}: " . $e->getMessage()
+                ];
+            }
         }
 
         if ($originalBase && $originalBase !== $nameBase) {

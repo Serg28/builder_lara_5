@@ -19,7 +19,7 @@ class MakeDocCommand extends Command
         // нормализуем имя через метод редактора
         $rawName = $this->argument('definition');
         $fileName = $editor->normalize($rawName);
-        $ext = config('builder.documentation.extension', 'html');
+        $ext = config('builder.documentation.docs_extensions', 'html');
 
         if (!$fileName) {
             $this->error('Некорректное имя: не удалось сформировать имя файла.');

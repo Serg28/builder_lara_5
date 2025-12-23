@@ -23,7 +23,7 @@ class DocsController extends Controller
     {
         $query = trim(request('q', ''));
         $this->dir  = config('builder.documentation.path_app', resource_path('docs/definitions'));
-        $this->fileExt = config('builder.documentation.extension', 'html');
+        $this->fileExt = config('builder.documentation.docs_extensions', 'html');
 
         return view('admin::documentation_page.index', [
             'documents' => $this->list(),
