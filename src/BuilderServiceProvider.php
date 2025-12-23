@@ -193,7 +193,7 @@ class BuilderServiceProvider extends ServiceProvider
 
 
 
-        View::composer('admin::layouts.default',  LayoutDefault::class);
+        View::composer(['admin::layouts.default', 'admin::layouts.documentation'],  LayoutDefault::class);
     }
 
     /**
