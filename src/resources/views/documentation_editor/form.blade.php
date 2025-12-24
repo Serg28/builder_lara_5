@@ -38,12 +38,15 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                            <div class="note">
+                                                <span>{!! __cms('Slug страницы документации. Совпдает с последней частью url страницы, для которой создается документация. Напр., если url:  http://site.com/admin/<b>products</b> то укажите <b>products</b>. Для документации, не привязанной к конкретной форме, укажите любое уникально название латинскими буквами') !!}</span>
+                                            </div>
                                         </section>
                                     </div>
 
                                     <div class="col-lg-12 col-md-12">
                                         <section class="section_name">
-                                            <label class="label" for="custom_title">{{__cms('Произвольное название')}}</label>
+                                            <label class="label" for="custom_title">{{__cms('Название документа')}}</label>
                                             <div style="position: relative;">
                                                 <div class="div_input">
                                                     <div class="input_content">
@@ -54,7 +57,7 @@
                                                 </div>
                                             </div>
                                             <div class="note">
-                                                <small>{{__cms('Если указано, будет использоваться как заголовок документа')}}</small>
+                                                <span>{{__cms('Если указано, будет использоваться как заголовок документа')}}</span>
                                             </div>
                                         </section>
                                     </div>
