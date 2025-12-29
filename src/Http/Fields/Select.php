@@ -93,7 +93,8 @@ class Select extends Field
                 return view('admin::list.fast_edit.select', compact('idRecord', 'value', 'field', 'optionsArray'));
             }
 
-            return $optionsArray[$value];
+            // return $optionsArray[$value];
+            return $this->getWithTranslatedOptions() ? __cms($optionsArray[$value]) : $optionsArray[$value];
         }
     }
 
