@@ -32,6 +32,7 @@ class Field
     protected $isHide = false;
     protected $isSaveOnChange = false;
     protected ?int $lengthForList = null;
+    private $withTranslatedNullValue = true;
 
     public function __construct(string $name, $attribute = null)
     {
@@ -356,7 +357,18 @@ class Field
 
     public function getNullValue()
     {
-        return $this->nullValue;
+        return $this->withTranslatedNullValue ? __cms($this->nullValue) : $this->nullValue;
+    }
+
+    public function withTranslatedNullValue(bool $with = true): Field
+    {
+        $this->withTranslatedNullValue = $with;
+        return $this;
+    }
+
+    public function getWithTranslatedNullValue()
+    {
+        return $this->withTranslatedNullValue;
     }
 
     public function isDisabled()
