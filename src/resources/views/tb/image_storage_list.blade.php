@@ -2,13 +2,13 @@
     <div class="row filter_gallary_images" style="padding-top: 10px">
         <section  class="col col-4">
             <label class="input">
-                <input type="text" value="{{request('q')}}" name="q" placeholder="Введите название картинки">
+                <input type="text" value="{{request('q')}}" name="q" placeholder="{{__cms('Введите название картинки')}}">
             </label>
         </section>
         <section class="col col-4">
             <label class="select">
                 <select name="id_gallery" onchange="TableBuilder.changeGalleryAndTags($(this))">
-                    <option value="">Выбрать галерею</option>
+                    <option value="">{{__cms('Выбрать галерею')}}</option>
                      @foreach($galleries as $gallery)
                         <option value="{{$gallery->id}}" {{request('gallary') == $gallery->id ? 'selected' : ''}}>{{$gallery->title}}</option>
                      @endforeach
@@ -20,7 +20,7 @@
         <section class="col col-4">
             <label class="select">
                 <select name="id_tag" onchange="TableBuilder.changeGalleryAndTags($(this))">
-                    <option value="">Выбрать тег</option>
+                    <option value="">{{__cms('Выбрать тег')}}</option>
                     @foreach($tags as $tag)
                         <option value="{{$tag->id}}" {{request('tag') == $tag->id ? 'selected' : ''}}>{{$tag->title}}</option>
                     @endforeach
