@@ -1,11 +1,11 @@
 <div>
     <input class="select2-enabled" type="hidden" id="{{$name}}{{$postfix}}" name="{{$name}}" style="width:100%;">
     @if ($insert)
-        <p><a onclick="$(this).parents('div').find('.input-file').show(); $(this).parent().hide();">Добавить</a></p>
+        <p><a onclick="$(this).parents('div').find('.input-file').show(); $(this).parent().hide();">{{__cms('Добавить')}}</a></p>
         <div class="input input-file" style="margin-top: 10px; display: none">
 
-            <span class="button" onclick="addNewRecort{{$name}}{{$postfix}}('{{$name}}', '{{ $attributes }}')">Добавить</span>
-            <input type="text"  placeholder="Введите новое значение" class="form-control insert_many_to_many{{$name}}">
+            <span class="button" onclick="addNewRecort{{$name}}{{$postfix}}('{{$name}}', '{{ $attributes }}')">{{__cms('Добавить')}}</span>
+            <input type="text"  placeholder="{{__cms('Введите новое значение')}}" class="form-control insert_many_to_many{{$name}}">
         </div>
     @endif
 </div>
@@ -14,7 +14,7 @@
     jQuery(document).ready(function() {
 
          $select2{{$name}}{{$postfix}} = jQuery('#{{$name}}{{$postfix}}').select2({
-            placeholder: "{{ $search['placeholder'] ?? 'Поиск' }}",
+            placeholder: "{{ __cms($search['placeholder'] ?? 'Поиск') }}",
             minimumInputLength: {{ $search['minimum_length'] ?? '3' }},
             multiple: true,
             language: "ru",
@@ -46,10 +46,10 @@
                 return item.name + '<span class="item_id" data-id="' + item.id + '"></span>';
             },
             formatNoMatches : function () {
-                return 'По результату поиска ничего не найдено';
+                return '{{__cms('По результату поиска ничего не найдено')}}';
             },
-            formatSearching: function () { return "Ищет..."; },
-            formatInputTooShort: function (input, min) { var n = min - input.length; return "Введите еще " + n + "   символ "; },
+            formatSearching: function () { return "{{__cms('Ищет')}}..."; },
+            formatInputTooShort: function (input, min) { var n = min - input.length; return "{{__cms('Введите еще')}} " + n + "   {{__cms('символ')}} "; },
 
             dropdownCssClass: "bigdrop", // apply css that makes the dropdown taller
             escapeMarkup: function (m) { return m; } // we do not want to escape markup since we are displaying html in results

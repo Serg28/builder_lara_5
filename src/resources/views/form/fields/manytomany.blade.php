@@ -40,10 +40,10 @@
                                 return item.text + '<span class="item_id" data-id="' + item.id + '"></span>';
                             },
                             formatNoMatches : function () {
-                                return 'По результату поиска ничего не найдено';
+                                return '{{__cms('По результату поиска ничего не найдено')}}';
                             },
-                            formatSearching: function () { return "Ищет..."; },
-                            formatInputTooShort: function (input, min) { var n = min - input.length; return "Введите еще " + n + "   символ "; },
+                            formatSearching: function () { return "{{__cms('Ищет')}}..."; },
+                            formatInputTooShort: function (input, min) { var n = min - input.length; return "{{__cms('Введите еще')}} " + n + "   {{__cms('символ')}} "; },
 
                             dropdownCssClass: "bigdrop", // apply css that makes the dropdown taller
                             escapeMarkup: function (m) { return m; } // we do not want to escape markup since we are displaying html in results

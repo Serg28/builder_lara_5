@@ -3,5 +3,5 @@
 	  data-pk="{{$idRecord}}"
 	  data-url="{{url()->current()}}/fast-save/{{$idRecord}}"
 	  data-name="{{$field}}"
-	  data-title="Введите:"
+	  data-title="{{__cms('Введите')}}:"
 >{{$value}}</span>
