@@ -46,14 +46,14 @@
                 return item.name;
             },
             formatNoMatches: function () {
-                return 'Ничего не найдено';
+                return '{{__cms('Ничего не найдено')}}';
             },
             formatSearching: function () {
-                return "Ищет...";
+                return "{{__cms('Ищет')}}...";
             },
             formatInputTooShort: function (input, min) {
                 var n = min - input.length;
-                return "Введите текст";
+                return "{{__cms('Введите текст')}}";
             },
 
             dropdownCssClass: "bigdrop",
