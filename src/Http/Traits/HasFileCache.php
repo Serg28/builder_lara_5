@@ -2,73 +2,73 @@
 
 namespace Vis\Builder\Http\Traits;
 
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * Трейт для кеширования различных коллекций моделей в файлы JSON.
+ * Трейт для оптимізованого файлового кешування моделей з підтримкою L2 (через фасад Cache).
  *
- * Кеширует выборки, минуя стандартный кеш Laravel. И затем используется в методах getCachedCollection() и getTaggedCache()
+ *  Кешує вибірки, минаючи стандартний кеш Laravel
  *
- * Позволяет определять несколько наборов кешируемых данных (тегов),
- * каждый из которых сохраняется в собственный файл и может иметь
- * индивидуальные правила выборки данных.
+ *  Дозволяє визначати кілька наборів даних, що кешуються (тегів),
+ *  кожен з яких зберігається у власний файл і може мати
+ *  індивідуальні правила вибірки даних.
  *
- * Поддерживает автоматическую локализацию значений при генерации кеша,
- * а также обновление кешей при создании, изменении и удалении моделей.
+ *  Підтримує автоматичну локалізацію значень при генерації кешу,
+ *  а також оновлення кешів при створенні, зміні та видаленні моделей.
  *
- * ---
- * ✅ Как использовать:
+ * ЧОМУ ЦЕ ВИКОРИСТОВУЄТЬСЯ:
+ * 1. Швидкість: Читання JSON файлу або отримання з Redis (L2) в десятки разів швидше за запит до БД.
+ * 2. Економія ресурсів: Відсутня "hydration" (створення важких об'єктів Eloquent) при кожному хіті.
+ * 3. Незалежність: Вирішує проблему некоректних URL в контексті Livewire (/livewire/update),
+ *    оскільки дані (включаючи URL) зберігаються в кеш в "чистому" стані основного запиту.
  *
- * 1. Подключите трейт в вашу модель:
- *      use HasFileCache;
+ *  ---
+ *  Як використовувати:
  *
- * 2. Переопределите метод getFileCacheDefinitions(), где задаются:
- *      - тег (например: 'default', 'short', 'grouped')
- *      - имя файла кеша (опционально)
- *      - колбэк для выборки данных
+ *  1. Підключіть трейт у вашу модель:
+ *       use HasFileCache;
  *
- * 3. Получение кеша:
- *      static::getTaggedCache('short');
+ *  2. Перевизначте метод getFileCacheDefinitions(), де задаються:
+ *       - тег (наприклад: 'default', 'short', 'grouped')
+ *       - ім'я файлу кешу (опціонально)
+ *       - колбек для вибірки даних
  *
- * 4. Обновление всех кешей:
- *      static::updateFileCache();
+ *  3. Отримання кешу:
+ *       static::getTaggedCache('short');
  *
- * ---
- * Каждый кеш создаётся отдельно для каждого языка,
- * возвращаемого функцией languagesOfSite().
+ *  4. Оновлення всіх кешів:
+ *       static::updateFileCache();
  *
- *  Пример переопределения в модели:
+ *  ---
+ *  Кожен кеш створюється окремо для кожної мови,
+ *  що повертається функцією languagesOfSite().
  *
- * @example
- *
- *  ```php
- *  protected static function getFileCacheDefinitions(): array {
- *    return [
- *      'default' => [
- *          'name' => 'cities_' . App::getLocale(),
- *          'query' => fn () => static::query()->where('is_active', 1)->get(['id', 'title']),
- *      ],
- *      'short' => [
- *          'name' => 'cities_short_' . App::getLocale(),
- *          'query' => fn () => static::query()->pluck('title', 'id'),
- *      ],
- *    ];
- *  }
+ * ПРИКЛАД ВИЗНАЧЕННЯ В МОДЕЛІ:
+ * ```php
+ * protected static function getFileCacheDefinitions(): array
+ * {
+ *     return [
+ *         'main_menu' => [
+ *             'name' => 'main_menu',
+ *             'query' => fn () => static::query()->where('is_active', 1)->get(['id', 'title']),
+ *             'return_array' => true,
+ *             'use_l2_cache' => true
+ *         ]
+ *     ];
+ * }
  * ```
+ *
  */
 trait HasFileCache
 {
-    /**
-     * Локальный кеш имён таблиц.
-     *
-     * @var array<class-string, string>
-     */
+    /** @var array Кеш імен таблиць для моделей */
     protected static array $tableNameCache = [];
 
     /**
-     * Возвращает директорию, в которой хранятся кеш-файлы.
-     *
-     * @return string Путь к директории хранения кеша
+     * Отримати директорію для зберігання файлів кешу.
+     * За замовчуванням: storage/app/model_cache/
      */
     protected static function getFileCacheDir(): string
     {
@@ -76,31 +76,29 @@ trait HasFileCache
     }
 
     /**
-     * Определяет наборы доступных кешей.
+     * Визначення кешу для моделі.
+     * Перевизначається в моделі для задання кастомних вибірок.
      *
-     * Каждый элемент массива должен содержать:
-     *  - name  — имя файла кеша (опционально)
-     *  - query — колбэк выборки данных
-     *
-     * @return array<string, array{name?: string, query: callable}>
+     * Ключі конфігурації:
+     * - name: (string) базова назва файлу кешу.
+     * - query: (callable) функція, що повертає QueryBuilder, Collection або масив.
+     * - return_array: (bool) якщо true, дані в кеші будуть масивами, а не об'єктами/моделями.
+     * - use_l2_cache: (bool) якщо true, дані будуть дублюватися в Redis.
      */
     protected static function getFileCacheDefinitions(): array
     {
         return [
             'default' => [
                 'name' => static::getFileCacheName(),
-                'query' => fn() => static::query()->get(),
+                'query' => fn () => static::query()->get(),
+                'return_array' => false,
+                'use_l2_cache' => false,
             ],
         ];
     }
 
     /**
-     * Возвращает имя кеш-файла по умолчанию.
-     *
-     * Формируется на основе названия таблицы и языка.
-     *
-     * @param string|null $lang Язык (если не указан — текущий)
-     * @return string            Имя файла без расширения
+     * Базова назва файлу кешу на основі таблиці моделі.
      */
     protected static function getFileCacheName(?string $lang = null): string
     {
@@ -112,20 +110,16 @@ trait HasFileCache
     }
 
     /**
-     * Строит путь к файлу кеша по тегу и языку.
+     * Отримати шлях до файлу кешу для конкретного тегу.
      *
-     * @param string $tag Имя набора кеша
-     * @param string|null $lang Язык кеша
-     * @return string            Полный путь до JSON-файла
-     *
-     * @throws \InvalidArgumentException Если тег не определён
+     * @throws \InvalidArgumentException
      */
     protected static function getFileCachePathForTag(string $tag, ?string $lang = null): string
     {
         $defs = static::getFileCacheDefinitions();
 
-        if (!isset($defs[$tag])) {
-            throw new \InvalidArgumentException("Неизвестный тег кеша: $tag");
+        if (! isset($defs[$tag])) {
+            throw new \InvalidArgumentException("Невідомий тег кешу: $tag");
         }
 
         $lang = $lang ?: app()->getLocale();
@@ -135,43 +129,35 @@ trait HasFileCache
     }
 
     /**
-     * Рекурсивно локализует значение для указанного языка.
-     *
-     * Поддерживает:
-     *  - строки вида {"ru": "...", "ua": "..."}
-     *  - массивы языков ['ru' => '...', 'ua' => '...']
-     *  - вложенные массивы
-     *  - объекты произвольной структуры
-     *
-     * @param mixed $value Исходное значение
-     * @param string $locale Язык локализации
-     * @return mixed          Локализованное значение
+     * Рекурсивна локалізація значень.
+     * Автоматично визначає багатомовні поля (JSON або масиви)
+     * і замінює їх на значення для поточної локалі.
      */
     protected static function localizeValue(mixed $value, string $locale): mixed
     {
         if (is_string($value) && static::looksLikeJsonLang($value)) {
             $arr = json_decode($value, true);
+
             return is_array($arr) ? ($arr[$locale] ?? reset($arr)) : $value;
         }
 
-        // Массив: ['ru' => '...', 'ua' => ...]
         if (is_array($value) && static::isLangArray($value)) {
             return $value[$locale] ?? reset($value);
         }
 
-        // Вложенный массив
         if (is_array($value)) {
             foreach ($value as $k => $v) {
                 $value[$k] = static::localizeValue($v, $locale);
             }
+
             return $value;
         }
 
-        // Объект
         if (is_object($value)) {
             foreach ($value as $prop => $v) {
                 $value->$prop = static::localizeValue($v, $locale);
             }
+
             return $value;
         }
 
@@ -179,102 +165,131 @@ trait HasFileCache
     }
 
     /**
-     * Проверяет, является ли строка JSON-представлением языкового массива.
-     *
-     * Языки берутся динамически из languagesOfSite().
-     *
-     * @param string $val Проверяемая строка
-     * @return bool        True, если строка похожа на JSON языков
+     * Перевірка, чи є рядок JSON-ом з перекладами.
+     * Використовує regex за списком доступних мов сайту.
      */
     protected static function looksLikeJsonLang(string $val): bool
     {
         $pattern = static::compileLangPattern();
 
-        return (bool)preg_match('/^\{.*"(?:' . $pattern . ')".*\}$/u', $val);
+        return (bool) preg_match('/^\{.*"(?:' . $pattern . ')".*\}$/u', $val);
     }
 
     /**
-     * Проверяет, является ли массив языковым массивом.
-     *
-     * Массив считается языковым, если содержит хотя бы один ключ,
-     * совпадающий с одним из языков сайта.
-     *
-     * @param array $arr Проверяемый массив
-     * @return bool       True, если массив является языковым
+     * Перевірка, чи є масив словником перекладів.
      */
     protected static function isLangArray(array $arr): bool
     {
         $langs = static::availableLangs();
 
         return count(array_intersect(array_keys($arr), $langs)) > 0
-            && !array_filter($arr, fn($v) => !is_scalar($v) && $v !== null);
+            && ! array_filter($arr, static fn ($v) => ! is_scalar($v) && $v !== null);
     }
 
     /**
-     * Получает кеш по тегу.
-     *
-     * Если файлы кеша отсутствуют — автоматически создаёт их.
-     *
-     * @param string $tag Имя набора кеша
-     * @return \Illuminate\Support\Collection Коллекция данных
+     * Отримати дані з кешу за тегом.
+     * 1. Шукає в Redis (якщо увімкнено use_l2_cache).
+     * 2. Якщо немає в Redis, шукає в локальному файлі.
+     * 3. Якщо файлу немає, генерує кеш заново.
      */
-    public static function getTaggedCache(string $tag): \Illuminate\Support\Collection
+    public static function getTaggedCache(string $tag): Collection
+    {
+        $defs = static::getFileCacheDefinitions();
+        $useL2 = $defs[$tag]['use_l2_cache'] ?? false;
+
+        if ($useL2) {
+            $lang = app()->getLocale();
+            $cacheKey = 'file_cache:' . static::class . ":{$tag}:{$lang}";
+
+            return Cache::rememberForever($cacheKey, static function () use ($tag) {
+                return static::loadFromFilesystem($tag);
+            });
+        }
+
+        return static::loadFromFilesystem($tag);
+    }
+
+    /**
+     * Завантажити дані безпосередньо з файлової системи.
+     */
+    protected static function loadFromFilesystem(string $tag): Collection
     {
         $path = static::getFileCachePathForTag($tag);
 
-        if (!Storage::exists($path)) {
+        if (! Storage::exists($path)) {
             static::updateFileCacheByTag($tag);
         }
 
-        return collect(json_decode(Storage::get($path)) ?: []);
+        $defs = static::getFileCacheDefinitions();
+        $asArray = $defs[$tag]['return_array'] ?? false;
+
+        return collect(json_decode(Storage::get($path), $asArray) ?: []);
     }
 
     /**
-     * Обновляет кеш по указанному тегу для всех языков.
+     * Оновити файли кешу (та L2 Redis) для конкретної конфігурації (тегу).
+     * Генерує файли ОДРАЗУ для всіх мов, доступних на сайті.
      *
-     * Выполняет локализацию данных перед сохранением.
-     *
-     * @param string $tag Имя набора кеша
-     * @return void
-     *
-     * @throws \InvalidArgumentException Если тег не определён
-     * @throws \LogicException Если колбэк выборки не задан
+     * @throws \InvalidArgumentException|\LogicException
      */
     public static function updateFileCacheByTag(string $tag): void
     {
         $defs = static::getFileCacheDefinitions();
-        if (!isset($defs[$tag])) {
-            throw new \InvalidArgumentException("Неизвестный тег кеша: $tag");
+        if (! isset($defs[$tag])) {
+            throw new \InvalidArgumentException("Невідомий тег кешу: $tag");
         }
 
         $query = $defs[$tag]['query'] ?? null;
-        if (!is_callable($query)) {
-            throw new \LogicException("Неверный колбэк выборки для тега: $tag");
+        if (! is_callable($query)) {
+            throw new \LogicException("Невірний колбек вибірки для тегу: $tag");
         }
 
         $originalLocale = app()->getLocale();
         $langs = static::availableLangs();
+        $useL2 = $defs[$tag]['use_l2_cache'] ?? false;
 
-        // УБРАНО: $raw = collect($query()); - выполнение запроса перемещено внутрь цикла
         foreach ($langs as $lang) {
             app()->setLocale($lang);
 
-            $raw = collect($query());
-            $localized = $raw->map(fn($item) => static::localizeValue($item, $lang));
+            $raw = $query();
+
+            // Виконання Query Builder якщо передано його, а не колекцію
+            if ($raw instanceof \Illuminate\Database\Eloquent\Builder || $raw instanceof \Illuminate\Database\Query\Builder) {
+                $raw = $raw->get();
+            }
+
+            // Автоматичне приведення до масиву (включаючи вкладені колекції/моделі)
+            $asArray = $defs[$tag]['return_array'] ?? false;
+            if ($asArray && is_object($raw) && method_exists($raw, 'toArray')) {
+                $raw = $raw->toArray();
+            }
+
+            // Рекурсивна локалізація даних перед збереженням
+            $localized = static::localizeValue($raw, $lang);
+
+            // Приведення до колекції для Json-серіалізації
+            $localizedData = collect(is_array($localized) && ! empty($localized) && ! array_is_list($localized) ? [$localized] : $localized);
+
             $path = static::getFileCachePathForTag($tag, $lang);
 
-            $localized->isNotEmpty()
-                ? Storage::put($path, $localized->toJson(JSON_UNESCAPED_UNICODE))
-                : Storage::delete($path);
+            if ($localizedData->isNotEmpty()) {
+                Storage::put($path, $localizedData->toJson(JSON_UNESCAPED_UNICODE));
+            } else {
+                Storage::delete($path);
+            }
+
+            // Примусове оновлення L2 кешу, якщо увімкнено
+            if ($useL2) {
+                $cacheKey = 'file_cache:' . static::class . ":{$tag}:{$lang}";
+                Cache::forever($cacheKey, $localizedData);
+            }
         }
 
         app()->setLocale($originalLocale);
     }
 
     /**
-     * Обновляет все наборы кешей.
-     *
-     * @return void
+     * Оновити всі визначені кеші для цієї моделі.
      */
     public static function updateFileCache(): void
     {
@@ -284,51 +299,65 @@ trait HasFileCache
     }
 
     /**
-     * Удаляет все файлы кеша для всех языков.
-     *
-     * @return void
+     * Обробка вузла даних перед записом у кеш.
+     * Можна перевизначити в моделі для кастомного очищення або модифікації даних.
+     */
+    protected static function processFileCacheNode(mixed $item, string $lang): mixed
+    {
+        // Рекурсивна обробка 'children' для деревоподібних структур
+        if (is_array($item) && isset($item['children']) && is_array($item['children'])) {
+            foreach ($item['children'] as $key => $child) {
+                $item['children'][$key] = static::processFileCacheNode($child, $lang);
+            }
+        } elseif (is_object($item) && isset($item->children)) {
+            foreach ($item->children as $child) {
+                static::processFileCacheNode($child, $lang);
+            }
+        }
+
+        return $item;
+    }
+
+    /**
+     * Очищення файлів кешу та записів у Redis для всіх мов і тегів моделі.
      */
     public static function clearFileCache(): void
     {
         $langs = static::availableLangs();
-
         foreach (array_keys(static::getFileCacheDefinitions()) as $tag) {
             foreach ($langs as $lang) {
                 Storage::delete(static::getFileCachePathForTag($tag, $lang));
+
+                $cacheKey = 'file_cache:' . static::class . ":{$tag}:{$lang}";
+                Cache::forget($cacheKey);
             }
         }
     }
 
     /**
-     * Регистрирует автоматическое обновление кеша
-     * при создании, обновлении или удалении модели.
-     *
-     * @return void
+     * Автоматичний зв'язок подій Eloquent з інвалідацією кешу.
+     * При створенні, оновленні або видаленні запису - кеш перестворюється.
      */
     protected static function bootHasFileCache(): void
     {
-        $handler = fn() => static::updateFileCache();
-
+        $handler = static fn () => static::updateFileCache();
         static::created($handler);
         static::updated($handler);
         static::deleted($handler);
     }
 
     /**
-     * Возвращает массив доступных языков.
-     *
-     * @return array
+     * Список мов сайту для процесів генерації кешу.
      */
     protected static function availableLangs(): array
     {
         $langs = languagesOfSite();
-        return $langs instanceof \Illuminate\Support\Collection ? $langs->all() : (array)$langs;
+
+        return $langs instanceof Collection ? $langs->all() : (array) $langs;
     }
 
     /**
-     * Возвращает языки как строку для preg_match.
-     *
-     * @return string
+     * Регулярний вираз для виявлення ключів локалізації в JSON.
      */
     protected static function compileLangPattern(): string
     {
