@@ -39,6 +39,10 @@ class CachePreRouter
             return $next($request);
         }
 
+        if ($request->isMethod('POST')) {
+            return $next($request);
+        }
+
         $path = urlPathWithoutLocale() ?: '/';
 
         // 2. Перевіряємо виключення (адмінка, api тощо)
