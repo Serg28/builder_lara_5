@@ -15,7 +15,7 @@
     <link rel="stylesheet" type="text/css" href="/packages/linecore/builder/css/tinymce.css?18">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,300,400,700">
     @include('admin::partials.translate_phrases')
-    <script src="/packages/vis/builder/js/all_header1.js"></script>
+    <script src="/packages/linecore/builder/js/all_header1.js"></script>
 
     @yield('styles')
     @yield('scripts_header')
