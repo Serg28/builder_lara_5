@@ -5,7 +5,7 @@
     <title></title>
     <meta name="robots" content="noindex, nofollow">
     <meta name="description" content="">
-    <meta name="author" content="VIS-A-VIS">
+    <meta name="author" content="Linecore">
     <meta name="HandheldFriendly" content="True">
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <meta name="MobileOptimized" content="320">
@@ -14,7 +14,7 @@
     <link rel="stylesheet" type="text/css" href="/packages/vis/builder/css/all.css">
     <link rel="stylesheet" type="text/css" href="/packages/vis/builder/css/tinymce.css?18">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,300,400,700">
-
+    @include('admin::partials.translate_phrases')
     <script src="/packages/vis/builder/js/all_header1.js"></script>
 
 
@@ -78,7 +78,6 @@
 </div>
 @include('admin::partials.scripts')
 @yield('scripts')
-@include('admin::partials.translate_phrases')
 
 <div class="load_page" style="position: fixed; display: none; opacity: 0.7; z-index: 1111111; height: 50px; top: 10px; right: 30px"><i class="fa fa-spinner fa-spin" style="font-size: 40px"></i></div>
 @include('admin::partials.popup_cropp')
