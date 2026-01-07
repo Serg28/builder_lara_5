@@ -13,11 +13,11 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            {{-- <a class="navbar-brand" href="#">{{__cms('Документация к административной панели')}} {{config('app.name')}}</a> --}}
+            {{-- <a class="navbar-brand" href="#">{{__cms('Документация к административной панели')}} {{config('app.domain', '')}}</a> --}}
 
             <a class="navbar-brand" href="#" style="padding-top: 8px;">
                 {{__cms('Документация')}}
-                <small class="_navbar-text" style="display: block;font-size: 80%;">{{__cms('административной панели')}} {{config('app.name')}}</small>
+                <small class="_navbar-text" style="display: block;font-size: 80%;">{{__cms('административной панели')}} {{config('app.domain', '')}}</small>
             </a>
 
         </div>
