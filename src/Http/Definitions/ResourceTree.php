@@ -20,7 +20,7 @@ class ResourceTree extends Resource
     public function getTitleDefinition()
     {
         if ($this->titleDefinition) {
-            return $this->titleDefinition;
+            return __cms($this->titleDefinition);
         }
 
         return parent::getNameDefinition();
