@@ -230,6 +230,9 @@ if (! function_exists('currentUrl')) {
         // Якщо URL містить `livewire/update`, використовуємо referer
         $url = str_contains($currentUrl, 'livewire/update') ? $refererUrl : $currentUrl;
 
+        // Фільтруємо пусті GET-параметри для запобігання проблем з Livewire-компонентами
+        $url = removeEmptyQueryParams($url);
+
         // Прибираємо GET-параметри, якщо потрібно
         if ($withoutQuery) {
             $url = str_contains($url, '?') ? explode('?', $url)[0] : $url;
@@ -340,5 +343,48 @@ if (! function_exists('isLivewireQuery')) {
     function isLivewireQuery(): bool
     {
         return (bool) request()->header('x-livewire') !== null;
+    }
+}
+
+if (! function_exists('removeEmptyQueryParams')) {
+    /**
+     * Удаляет пустые GET-параметры из URL.
+     *
+     * Функция фильтрует параметры со значениями пустой строки ('') или null,
+     * сохраняя параметры со значением '0' или false, так как они могут быть валидными.
+     *
+     * @param  string $url URL для обработки
+     * @return string URL без пустых GET-параметров
+     */
+    function removeEmptyQueryParams(string $url): string
+    {
+        // Ранний возврат, если URL не содержит query-строку
+        if (! str_contains($url, '?')) {
+            return $url;
+        }
+
+        // Разбираем URL
+        $parsed = parse_url($url);
+
+        // Если нет query-строки после парсинга, возвращаем URL как есть
+        if (! isset($parsed['query']) || $parsed['query'] === '') {
+            return $url;
+        }
+
+        // Парсим query-параметры
+        parse_str($parsed['query'], $params);
+
+        // Фильтруем пустые значения (сохраняем '0' и false как валидные)
+        $filteredParams = array_filter($params, static fn ($value) => $value !== '' && $value !== null);
+
+        // Собираем URL обратно
+        $scheme = isset($parsed['scheme']) ? $parsed['scheme'].'://' : '';
+        $host = $parsed['host'] ?? '';
+        $port = isset($parsed['port']) ? ':'.$parsed['port'] : '';
+        $path = $parsed['path'] ?? '';
+        $query = ! empty($filteredParams) ? '?'.http_build_query($filteredParams) : '';
+        $fragment = isset($parsed['fragment']) ? '#'.$parsed['fragment'] : '';
+
+        return $scheme.$host.$port.$path.$query.$fragment;
     }
 }
