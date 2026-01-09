@@ -5,9 +5,13 @@
     .filter_autocomplete .select2-container .select2-choice{
         cursor: text
     }
+    .filter-autocomplete--bordered {
+        border: 1px solid #d1d5db; /* як у input */
+        background: #fff;
+    }
 </style>
 
-<div class="filter_autocomplete" style="position: relative; min-width: 125px">
+<div class="filter_autocomplete filter-autocomplete--bordered" style="position: relative; min-width: 125px">
     <input class="select2-enabled filter_{{ $field->getNameField() }}" type="hidden" id="filter[{{ $field->getNameField() }}]" name="filter[{{$field->getNameField()}}]" style="width:100%;" value="{{$filterValue}}">
     @if ($filterValue)
         <button onclick="$(this).parent().find('input').val(''); setTimeout(function(){ TableBuilder.search(); }, 200); return false;" class="close" style="position: absolute; top: 8px; right: 6px;">
