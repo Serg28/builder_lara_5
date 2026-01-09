@@ -51,9 +51,10 @@ class ForeignAjax extends Foreign
     public function getValueForFilter($definition, $id)
     {
         $modelRelated = $definition->model()->{$this->options->getRelation()}()->getRelated();
-        $selectOption = $modelRelated::find($id);
+        $selectOption = $modelRelated::where('id', $id)->select([ "id", "{$this->options->getKeyField()} as name"])
+            ->first();
 
-        return $selectOption->{$this->options->getKeyField()};
+        return $selectOption?->name;
     }
 
     public function search($definition)
