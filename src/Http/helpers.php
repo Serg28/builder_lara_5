@@ -177,7 +177,8 @@ if (! function_exists('__cms')) {
     {
         return once(function () use ($phrase, $replacePhrase) {
             // $thisLang = Cookie::get('lang_admin', config('builder.translations.cms.language_default'));
-            $thisLang = adminLang(false);
+            // $thisLang = adminLang(false);
+            $thisLang = config('builder.translations.cms.language_default', 'uk');
 
             $arrayTranslate = TranslationsPhrasesCms::fillCacheTrans();
 
