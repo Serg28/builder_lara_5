@@ -77,10 +77,19 @@ class GoogleTranslateForFree
      */
     protected static function requestTranslation($source, $target, $text, $attempts)
     {
-        // Google translate URL
-        // $url = 'https://translate.google.com/translate_a/single?client=at&dt=t&dt=ld&dt=qca&dt=rm&dt=bd&dj=1&hl=uk-RU&ie=UTF-8&oe=UTF-8&inputm=2&otf=2&iid=1dd3b944-fa62-4b55-b330-74909a99969e';
+        // Add pattern to detect codes and article numbers
+        $pattern = '/([A-Za-z0-9][-_A-Za-z0-9]*[A-Za-z0-9])/';
 
-        $url = 'https://translate.google.com/translate_a/single?client=at&dt=t&dt=ld&dt=qca&dj=1&hl=uk-RU&ie=UTF-8&oe=UTF-8&inputm=2&otf=2&iid=1dd3b944-fa62-4b55-b330-74909a99969e';
+        // Store matches to restore later
+        $codes = [];
+        $text = preg_replace_callback($pattern, function ($matches) use (&$codes) {
+            $placeholder = '___CODE' . count($codes) . '___';
+            $codes[$placeholder] = $matches[0];
+            return $placeholder;
+        }, $text);
+
+        $url = 'https://translate.google.com/translate_a/single?client=at&dt=t&dt=ld&dt=qca&dt=rm&dt=bd&dj=1&hl=uk-RU&ie=UTF-8&oe=UTF-8&inputm=2&otf=2&iid=1dd3b944-fa62-4b55-b330-74909a99969e';
+        // $url = 'https://translate.google.com/translate_a/single?client=at&dt=t&dt=ld&dt=qca&dj=1&hl=uk-RU&ie=UTF-8&oe=UTF-8&inputm=2&otf=2&iid=1dd3b944-fa62-4b55-b330-74909a99969e';
 
         $fields = array(
             'sl' => urlencode($source),
@@ -91,18 +100,71 @@ class GoogleTranslateForFree
         if (strlen($fields['q']) >= 5000) {
             throw new \Exception('Maximum number of characters exceeded: 5000');
         }
-        // URL-ify the data for the POST
-        $fields_string = self::fieldsString($fields);
 
+        $fields_string = self::fieldsString($fields);
         $content = self::curlRequest($url, $fields, $fields_string, 0, $attempts);
 
         if (null === $content) {
-            //echo $text,' Error',PHP_EOL;
             return $text;
         } else {
-            // Parse translation
-            return self::getSentencesFromJSON($content);
+            // Get translated text
+            $translatedText = self::getSentencesFromJSON($content);
+
+            /*
+            // Restore original codes
+            foreach ($codes as $placeholder => $originalCode) {
+                $translatedText = str_replace($placeholder, $originalCode, $translatedText);
+            }
+        
+            return $translatedText; */
+            return str_replace(
+                array_keys($codes),
+                array_values($codes),
+                self::getSentencesFromJSON($content)
+            );
         }
+    }
+
+    protected static function requestTranslation_(string $source, string $target, string $text, int $attempts ): string
+    {
+        // Add pattern to detect codes and article numbers
+        $pattern = '/([A-Za-z0-9][-_A-Za-z0-9]*[A-Za-z0-9])/';
+
+        // $url = 'https://translate.google.com/translate_a/single?client=at&dt=t&dt=ld&dt=qca&dt=rm&dt=bd&dj=1&hl=uk-RU&ie=UTF-8&oe=UTF-8&inputm=2&otf=2&iid=1dd3b944-fa62-4b55-b330-74909a99969e';
+        $url = 'https://translate.google.com/translate_a/single?client=at&dt=t&dt=ld&dt=qca&dj=1&hl=uk-RU&ie=UTF-8&oe=UTF-8&inputm=2&otf=2&iid=1dd3b944-fa62-4b55-b330-74909a99969e';
+
+        // Replace codes with placeholders
+        $codes = [];
+        $text = preg_replace_callback(
+            $pattern,
+            static function ($m) use (&$codes) {
+                $key = '___CODE' . count($codes) . '___';
+                return $codes[$key] = $m[0];
+            },
+            $text
+        );
+
+        if (strlen($text) >= 5000) {
+            throw new \Exception('Maximum number of characters exceeded: 5000');
+        }
+
+        $fields = [
+            'sl' => $source,
+            'tl' => $target,
+            'q'  => $text,
+        ];
+
+        $content = self::curlRequest($url, $fields, self::fieldsString($fields), 0, $attempts);
+
+        if ($content === null) {
+            return $text;
+        }
+
+        return str_replace(
+            array_keys($codes),
+            array_values($codes),
+            self::getSentencesFromJSON($content)
+        );
     }
 
     /**
