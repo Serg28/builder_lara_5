@@ -17,6 +17,7 @@ class TranslationsCms extends Model
     public function createNewTranslate($phrase)
     {
         $languages = config('builder.translations.cms.languages');
+        $thisLang = config('builder.translations.cms.language_default', 'uk');
 
         $newPhrase = TranslationsPhrasesCms::create([
             'phrase' => $phrase
@@ -25,7 +26,7 @@ class TranslationsCms extends Model
         foreach ($languages as $lang => $value) {
 
             try {
-                $translate = (new GoogleTranslateForFree())->translate('ru', $lang, $phrase, 2);
+                $translate = (new GoogleTranslateForFree())->translate($thisLang, $lang, $phrase, 2);
             } catch (\Exception $e) {
                 $translate = $phrase;
             }
