@@ -28,6 +28,7 @@ class Resource
     //protected $autoTranslate = true;
     protected $autoTranslate = false;
     protected $isShowPerPage = false;
+    protected ?array $filter = null;
 
     public function actions()
     {
@@ -105,9 +106,19 @@ class Resource
         return $this->orderBy;
     }
 
+    public function setOrderBy(string $orderBy): void
+    {
+        $this->orderBy = $orderBy;
+    }
+
     public function getFilter()
     {
-        return session($this->getSessionKeyFilter());;
+        return $this->filter ?? session($this->getSessionKeyFilter());;
+    }
+
+    public function setFilter(array $filter): void
+    {
+        $this->filter = $filter;
     }
 
     public function getPerPageThis()
@@ -612,6 +623,25 @@ class Resource
 
     public function getCollection($getAllRecords = false)
     {
+        $orderBy = $this->getOrderBy();
+        $perPage = $this->getPerPageThis();
+
+        $collection = $this->prepareQuery();
+
+        if ($getAllRecords) {
+            return $collection->orderByRaw($orderBy)->get();
+        }
+
+        return $collection->orderByRaw($orderBy)->paginate($perPage);
+    }
+
+    public function countRecords(): int
+    {
+        return $this->prepareQuery()->count();
+    }
+
+    public function prepareQuery()
+    {
         $collection = $this->model()->with($this->relations);
         $filter = $this->getFilter();
         $orderBy = $this->getOrderBy();
@@ -644,7 +674,7 @@ class Resource
 
                         if ($this->isTextField($allFields, $field)) {
 
-                         //   $value = mb_convert_case($value, MB_CASE_TITLE, 'UTF-8');
+                            //   $value = mb_convert_case($value, MB_CASE_TITLE, 'UTF-8');
 
                             $query->where($fieldName, '=', $value)
                                 ->orWhereRaw('LOWER(`'.$fieldName.'`) LIKE ? ',['%'.trim(mb_strtolower($value)).'%']);
@@ -672,7 +702,7 @@ class Resource
                     $collection = $collection->where(function ($query) use ($field, $value, $allFields) {
                         if ($this->isTextField($allFields, $field)) {
 
-                          //  $value = mb_convert_case($value, MB_CASE_TITLE, 'UTF-8');
+                            //  $value = mb_convert_case($value, MB_CASE_TITLE, 'UTF-8');
 
                             $query->where($field, '=', $value)
                                 ->orWhereRaw('LOWER(`'.$field.'`) LIKE ? ',['%'.trim(mb_strtolower($value)).'%']);
@@ -684,11 +714,7 @@ class Resource
             }
         }
 
-        if ($getAllRecords) {
-           return $collection->orderByRaw($orderBy)->get();
-        }
-
-        return $collection->orderByRaw($orderBy)->paginate($perPage);
+        return $collection;
     }
 
     protected function getRelationsHasOne($allFields, $field)
