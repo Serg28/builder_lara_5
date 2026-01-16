@@ -28,6 +28,7 @@ class Resource
     //protected $autoTranslate = true;
     protected $autoTranslate = false;
     protected $isShowPerPage = false;
+    protected ?array $filter = null;
 
     public function actions()
     {
@@ -105,9 +106,19 @@ class Resource
         return $this->orderBy;
     }
 
+    public function setOrderBy(string $orderBy): void
+    {
+        $this->orderBy = $orderBy;
+    }
+
     public function getFilter()
     {
-        return session($this->getSessionKeyFilter());;
+        return $this->filter ?? session($this->getSessionKeyFilter());;
+    }
+
+    public function setFilter(array $filter): void
+    {
+        $this->filter = $filter;
     }
 
     public function getPerPageThis()
@@ -614,31 +625,31 @@ class Resource
     {
         $orderBy = $this->getOrderBy();
         $perPage = $this->getPerPageThis();
-    
+
         $collection = $this->prepareQuery();
-    
+
         if ($getAllRecords) {
             return $collection->orderByRaw($orderBy)->get();
         }
-    
+
         return $collection->orderByRaw($orderBy)->paginate($perPage);
     }
-    
+
     public function countRecords(): int
     {
         return $this->prepareQuery()->count();
     }
-    
+
     public function prepareQuery()
     {
         $collection = $this->model()->with($this->relations);
         $filter = $this->getFilter();
         $collection = $this->getFilterScope($collection);
-    
+
         if (isset($filter['filter']) && is_array($filter['filter'])) {
-    
+
             $allFields = $this->getAllFields();
-    
+
             foreach ($filter['filter'] as $field => $value) {
                 if (is_null($value) || $value == '') {
                     continue;
@@ -654,43 +665,43 @@ class Resource
                 }
 
                 if ($hasOneRelation = $this->getRelationsHasOne($allFields, $field)) {
-    
+
                     $collection = $collection->whereHas($hasOneRelation, function($query) use ($field, $value, $allFields) {
-    
+
                         $fieldName = $this->getFieldName($allFields, $field);
-    
+
                         if ($this->isTextField($allFields, $field)) {
-    
+
                             //   $value = mb_convert_case($value, MB_CASE_TITLE, 'UTF-8');
-    
+
                             $query->where($fieldName, '=', $value)
                                 ->orWhereRaw('LOWER(`'.$fieldName.'`) LIKE ? ',['%'.trim(mb_strtolower($value)).'%']);
                         } else {
                             $query->where($fieldName, '=', $value);
                         }
                     });
-    
+
                 } else {
                     if (is_array($value)) {
                         if ($value['from'] || $value['to']) {
-    
+
                             if ($value['from']) {
                                 $collection = $collection->where($field, '>=', $value['from']);
                             }
-    
+
                             if ($value['to']) {
                                 $collection = $collection->where($field, '<=', $value['to'] . ' 23:59:59');
                             }
                         }
-    
+
                         continue;
                     }
-    
+
                     $collection = $collection->where(function ($query) use ($field, $value, $allFields) {
                         if ($this->isTextField($allFields, $field)) {
-    
+
                             //  $value = mb_convert_case($value, MB_CASE_TITLE, 'UTF-8');
-    
+
                             $query->where($field, '=', $value)
                                 ->orWhereRaw('LOWER(`'.$field.'`) LIKE ? ',['%'.trim(mb_strtolower($value)).'%']);
                         } else {
@@ -700,7 +711,7 @@ class Resource
                 }
             }
         }
-    
+
         return $collection;
     }
 
