@@ -43,6 +43,23 @@ class Authenticate
             return $this->returnIfNotHasAccess(__cms('Пользователь не активирован'));
         }
 
+        $adminRoles = $user->roles->filter(function($role) {
+            return $role->hasAccess('admin.access');
+        });
+
+        if ($adminRoles->isNotEmpty()) {
+            $user->setRelation('roles', $adminRoles);
+            $user->setRelation('groups', $adminRoles);
+
+            // Ресетим закэшированный экземпляр разрешений Sentinel, чтобы он пересчитался на основе новых ролей
+            $reflect = new \ReflectionClass($user);
+            if ($reflect->hasProperty('permissionsInstance')) {
+                $prop = $reflect->getProperty('permissionsInstance');
+                $prop->setAccessible(true);
+                $prop->setValue($user, null);
+            }
+        }
+
         if (! $user->hasAccess(['admin.access'])) {
             return $this->returnIfNotHasAccess(__cms('Нет прав на вход в cms'));
         }
