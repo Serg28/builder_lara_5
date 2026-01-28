@@ -297,8 +297,11 @@ class Resource
     {
         $fields = $this->getAllFields();
         Validator::make($request, $this->getRules($fields))->validate();
-
-        foreach ($fields as $field) {
+        $requestFields = array_keys($request);
+        foreach ($fields as $k => $field) {
+            if (! in_array($k, $requestFields)) {
+                continue;
+            }
             $nameField = $field->getNameField();
             if ($nameField != 'id') {
 
