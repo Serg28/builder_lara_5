@@ -136,7 +136,7 @@ class Definition extends Field
             : '';
     }
 
-    public function getTable($definition, $parseJsonData)
+    /*public function getTable($definition, $parseJsonData)
     {
         $definitionRelation = $this->getDefinitionRelation($definition);
 
@@ -186,6 +186,73 @@ class Definition extends Field
                 'hasActions'
             ))->render(),
             'count_records' => 0,
+        ];
+    } */
+
+    public function getTable($definition, $parseJsonData)
+    {
+        $definitionRelation = $this->getDefinitionRelation($definition);
+
+        // если связи нет — просто возвращаем пустой HTML
+        if (!$definitionRelation) {
+            return ['html' => '', 'count_records' => 0];
+        }
+
+        $attributes = json_encode($parseJsonData);
+        $perPage = $definitionRelation->getPerPage();
+
+        if (request('count')) {
+            session()->put($definitionRelation->getSessionKeyPerPage(), ['per_page' => request('count')]);
+        }
+
+        $count = $definitionRelation->getPerPageThis();
+        $model = $definition->model();
+
+        if (!request('id')) {
+            return ['html' => '', 'count_records' => 0];
+        }
+
+        $listModel = $model::find(request('id'));
+
+        if (!$listModel) {
+            return ['html' => '', 'count_records' => 0];
+        }
+
+        if (!method_exists($listModel, $this->relation)) {
+            return ['html' => '', 'count_records' => 0];
+        }
+
+        $list = $listModel->{$this->relation}()->paginate($count);
+        $list->appends(['count' => $count]);
+
+        $fieldsDefinition = $this->head($definition);
+
+        $list->map(function ($item) use ($fieldsDefinition, $definition) {
+            $item->fields = clone $fieldsDefinition;
+            $fieldsDefinition->map(function ($item2, $key) use ($item, $definition) {
+                $item->fields[$key] = clone $item2;
+                $item2->setValue($item);
+                $item->fields[$key]->value = $item2->getValueForList($definition);
+            });
+        });
+
+        $urlAction = 'actions/' . $definition->getNameDefinition();
+        $isSortable = $definitionRelation->getIsSortable();
+        $hasActions = $this->getHasActions();
+
+        return [
+            'html' => view('admin::form.fields.partials.input_definition_table_data', compact(
+                'definitionRelation',
+                'fieldsDefinition',
+                'list',
+                'attributes',
+                'urlAction',
+                'isSortable',
+                'perPage',
+                'count',
+                'hasActions'
+            ))->render(),
+            'count_records' => $list->total(),
         ];
     }
 
