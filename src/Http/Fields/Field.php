@@ -22,19 +22,19 @@ use Linecore\Cms\Models\Language;
  *
  * @package Linecore\Cms\Fields
  */
-abstract class Field
+class Field
 {
     /** @var string Отображаемое название поля */
-    protected string $name;
+    protected $name;
 
     /** @var string Атрибут модели */
-    protected string $attribute;
+    protected $attribute;
 
     /** @var bool Отображать только в форме редактирования */
-    protected bool $onlyForm = false;
+    protected $onlyForm = false;
 
     /** @var bool Быстрое редактирование в таблице */
-    protected bool $fastEdit = false;
+    protected $fastEdit = false;
 
     /** @var mixed Текущее значение поля */
     public $value = '';
@@ -43,58 +43,58 @@ abstract class Field
     protected $valueLanguage;
 
     /** @var bool Возможность сортировки по полю */
-    protected bool $isSortable = false;
+    protected $isSortable = false;
 
     /** @var mixed Значение по умолчанию */
     protected $defaultValue;
 
     /** @var string|null Placeholder для поля ввода */
-    protected ?string $placeholderValue = null;
+    protected $placeholderValue;
 
     /** @var array|null Правила валидации */
-    protected ?array $rules = null;
+    protected $rules = null;
 
     /** @var string|null Текст для пустого значения в выпадающем списке */
-    protected ?string $nullValue = null;
+    protected $nullValue;
 
     /** @var bool Мультиязычное поле */
     protected $language;
 
     /** @var bool Поле типа ManyToMany */
-    protected bool $isManyToMany = false;
+    protected $isManyToMany = false;
 
     /** @var mixed Настройки фильтра */
     protected $filter;
 
     /** @var string Текст комментария-подсказки */
-    protected string $commentText = '';
+    protected $commentText = '';
 
     /** @var string|null Связь HasOne */
-    protected ?string $relationHasOne = null;
+    protected $relationHasOne;
 
     /** @var string|null Связь MorphOne */
-    protected ?string $relationMorphOne = null;
+    protected $relationMorphOne;
 
     /** @var string|null CSS-класс для поля */
-    protected ?string $classNameField = null;
+    protected $classNameField;
 
     /** @var mixed Все данные записи */
     protected $allData;
 
     /** @var string Текущая локаль */
-    protected string $locale;
+    protected $locale;
 
     /** @var bool Только для чтения при редактировании */
-    protected bool $isReadonlyForEdit = false;
+    protected $isReadonlyForEdit = false;
 
     /** @var bool Автоматический перевод */
-    protected bool $isAutoTranslate = false;
+    protected $isAutoTranslate = false;
 
     /** @var bool Скрытое поле */
-    protected bool $isHide = false;
+    protected $isHide = false;
 
     /** @var bool Сохранение при изменении */
-    protected bool $isSaveOnChange = false;
+    protected $isSaveOnChange = false;
 
     /**
      * Создание нового экземпляра поля
@@ -102,7 +102,7 @@ abstract class Field
      * @param string $name Отображаемое название
      * @param string|null $attribute Атрибут модели (по умолчанию генерируется из названия)
      */
-    public function __construct(string $name, ?string $attribute = null)
+    public function __construct(string $name, $attribute = null)
     {
         $this->name = $name;
         $this->attribute = $attribute ?? str_replace(' ', '_', Str::lower($name));
@@ -117,23 +117,12 @@ abstract class Field
      * @param string $value Исходная JSON-строка
      * @return string Нормализованная JSON-строка
      */
-    protected function normalizeJson(string $value): string
+    function fixJson($value)
     {
         $value = preg_replace("/[\r\n]+/", "\\r\\n", $value);
         $value = str_replace("\t", '\t', $value);
-
-        return json_encode(
-            json_decode($value),
-            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
-        );
-    }
-
-    /**
-     * @deprecated Используйте normalizeJson()
-     */
-    protected function fixJson($value)
-    {
-        return $this->normalizeJson($value);
+        $value = json_encode(json_decode($value), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        return $value;
     }
 
     public function setValue($value)

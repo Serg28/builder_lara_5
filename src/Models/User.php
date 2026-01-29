@@ -11,127 +11,75 @@
 
 namespace Linecore\Cms;
 
-use App\Models\Group;
-use Cartalyst\Sentinel\Activations\EloquentActivation;
 use Cartalyst\Sentinel\Users\EloquentUser;
+use DB;
+use Cartalyst\Sentinel\Activations\EloquentActivation;
+use App\Models\Group;
 
 /**
  * Модель пользователя CMS
- *
- * Расширяет EloquentUser из Sentinel для работы с пользователями
- * административной панели. Предоставляет методы для работы с аватарами,
- * группами и проверки прав доступа.
- *
- * @package Linecore\Cms
- *
- * @property int $id
- * @property string $email
- * @property string $first_name
- * @property string $last_name
- * @property string|null $picture
  */
 class User extends EloquentUser
 {
-    /**
-     * Таблица модели
-     */
-    protected $table = 'users';
-
-    /**
-     * Путь к аватару по умолчанию
-     */
-    protected const DEFAULT_AVATAR = '/packages/linecore/cms/img/default-avatar.gif';
-
-    /**
-     * Связь с группами пользователя
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
-     */
     public function groups()
     {
-        return $this->belongsToMany(
-            Group::class,
-            'role_users',
-            'user_id',
-            'role_id'
-        );
+        return $this->belongsToMany(Group::class, 'role_users',  'user_id', 'role_id');
     }
 
-    /**
-     * Связь с активацией аккаунта
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne
-     */
     public function activation()
     {
         return $this->hasOne(EloquentActivation::class);
     }
 
     /**
-     * Установка массива заполняемых полей
-     *
-     * @param array<string> $params Список полей
-     * @return void
+     * @var string
      */
-    public function setFillable(array $params): void
+    protected $table = 'users';
+
+    /**
+     * @param array $params
+     */
+    public function setFillable(array $params)
     {
         $this->fillable = $params;
     }
 
     /**
-     * Получение URL аватара пользователя
+     * @param array $imgParam
      *
-     * @param array<string, mixed> $imgParam Параметры изображения для glide
-     * @return string URL аватара
+     * @return mixed|string
      */
-    public function getAvatar(array $imgParam): string
+    public function getAvatar(array $imgParam)
     {
-        $imagePath = $this->picture ?? self::DEFAULT_AVATAR;
+        $image = $this->picture ?? '/packages/linecore/cms/img/blank_avatar.gif';
 
-        return glide($imagePath, $imgParam);
+        return glide($image, $imgParam);
     }
 
     /**
-     * Получение полного имени пользователя
-     *
-     * @return string Полное имя (Имя Фамилия)
+     * @return string
      */
-    public function getFullName(): string
+    public function getFullName()
     {
-        return trim("{$this->first_name} {$this->last_name}");
+        return $this->first_name.' '.$this->last_name;
     }
 
-    /**
-     * Проверка доступа к разделу CMS
-     *
-     * @param string $link Путь к разделу
-     * @param string $action Тип действия (view, edit, delete и т.д.)
-     * @return bool
-     */
-    public function hasAccessForCms(string $link, string $action = 'view'): bool
+    public function hasAccessForCms($link, $action = 'view')
     {
-        $cleanLink = explode('?', $link)[0];
-        $permission = str_replace('/', '', $cleanLink) . '.' . $action;
-
-        return $this->hasAccess([$permission]);
+        $link = str_replace(['/'], [''], explode('?',$link)[0]).'.'. $action;
+        return $this->hasAccess([$link]);
     }
 
-    /**
-     * Проверка доступа к действиям в текущем разделе CMS
-     *
-     * @param string $action Тип действия
-     * @return bool
-     */
-    public function hasAccessActionsForCms(string $action): bool
+    public function hasAccessActionsForCms($action)
     {
-        $urlSegments = explode('/', request()->path());
-        $currentSection = last($urlSegments);
+        $urlArray =  explode('/', request()->path());
 
-        // Разрешаем доступ для групп и foreign_field запросов
+        $url = last($urlArray);
+
         if (request()->is('*/groups') || request()->has('foreign_field')) {
             return true;
         }
 
-        return $this->hasAccessForCms($currentSection, $action);
+        return $this->hasAccessForCms($url, $action);
     }
 }

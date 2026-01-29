@@ -11,65 +11,29 @@
 
 namespace Linecore\Cms\Setting;
 
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Redirect;
 
-/**
- * Настройки страницы авторизации
- *
- * Определяет параметры отображения и поведение страницы входа
- * в административную панель CMS.
- *
- * @package Linecore\Cms\Setting
- */
 class Login
 {
-    /**
-     * URL фонового изображения страницы авторизации
-     */
-    protected string $backgroundUrl = '/packages/linecore/cms/img/login-background.jpg';
+    protected $backgroundUrl = '/packages/linecore/cms/img/login-bg.jpg';
+    protected $css;
 
-    /**
-     * Дополнительные CSS-стили
-     */
-    protected ?string $css = null;
-
-    /**
-     * Действие после успешной авторизации
-     *
-     * @return RedirectResponse
-     */
-    public function onLogin(): RedirectResponse
+    public function onLogin()
     {
         return Redirect::to('/admin/tree');
     }
 
-    /**
-     * Действие после выхода из системы
-     *
-     * @return RedirectResponse
-     */
-    public function onLogout(): RedirectResponse
+    public function onLogout()
     {
         return Redirect::to('/');
     }
 
-    /**
-     * Получение URL фонового изображения
-     *
-     * @return string
-     */
-    public function getBackground(): string
+    public function getBackground()
     {
         return $this->backgroundUrl;
     }
 
-    /**
-     * Получение дополнительных CSS-стилей
-     *
-     * @return string|null
-     */
-    public function getCss(): ?string
+    public function getCss()
     {
         return $this->css;
     }

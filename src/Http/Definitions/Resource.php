@@ -37,7 +37,7 @@ use ReflectionClass;
  * @property string $model Полный путь к классу модели Eloquent
  * @property string $title Заголовок ресурса для отображения в UI
  */
-abstract class Resource
+class Resource
 {
     use CacheResource;
     use CloneResource;
@@ -45,75 +45,76 @@ abstract class Resource
 
     /**
      * Сортировка по умолчанию
+     * @var string
      */
-    protected string $orderBy = 'created_at desc';
+    protected $orderBy = 'created_at desc';
 
     /**
      * Включение drag-and-drop сортировки
+     * @var bool
      */
-    protected bool $isSortable = false;
+    protected $isSortable = false;
 
     /**
      * Варианты количества записей на странице
-     *
-     * @var array<int>
+     * @var array
      */
-    protected array $perPage = [20, 100, 1000];
+    protected $perPage = [20, 100, 1000];
 
     /**
      * Тег для инвалидации кэша
+     * @var string|null
      */
-    protected ?string $cacheTag = null;
+    protected $cacheTag;
 
     /**
      * Список полей ManyToMany для обновления
-     *
-     * @var array<string>
+     * @var array
      */
-    protected array $updateManyToManyList = [];
+    protected $updateManyToManyList = [];
 
     /**
      * Список полей HasOne для обновления
-     *
-     * @var array<string>
+     * @var array
      */
-    protected array $updateHasOneList = [];
+    protected $updateHasOneList = [];
 
     /**
      * Список полей MorphOne для обновления
-     *
-     * @var array<string>
+     * @var array
      */
-    protected array $updateMorphOneList = [];
+    protected $updateMorphOneList = [];
 
     /**
      * Связи для eager loading
-     *
-     * @var array<string>
+     * @var array
      */
-    protected array $relations = [];
+    protected $relations = [];
 
     /**
      * Дополнительный scope для фильтрации
+     * @var mixed
      */
     protected $filterScope;
 
     /**
      * Автоматический перевод полей
+     * @var bool
      */
-    protected bool $autoTranslate = false;
+    protected $autoTranslate = false;
 
     /**
      * Отображение селектора количества записей
+     * @var bool
      */
-    protected bool $isShowPerPage = false;
+    protected $isShowPerPage = false;
 
     /**
      * Определение доступных действий над записями
      *
      * @return Actions
      */
-    public function actions(): Actions
+    public function actions()
     {
         return Actions::make()
             ->insert()
@@ -136,9 +137,9 @@ abstract class Resource
     /**
      * Определение дополнительных кнопок действий
      *
-     * @return array<class-string>
+     * @return array
      */
-    public function buttons(): array
+    public function buttons()
     {
         return [];
     }
@@ -146,9 +147,9 @@ abstract class Resource
     /**
      * Определение карточек статистики для дашборда
      *
-     * @return array<class-string>
+     * @return array
      */
-    public function cards(): array
+    public function cards()
     {
         return [];
     }
@@ -158,7 +159,7 @@ abstract class Resource
      *
      * @return string
      */
-    public function getTableView(): string
+    public function getTableView()
     {
         return 'admin::table';
     }
@@ -168,7 +169,7 @@ abstract class Resource
      *
      * @return string
      */
-    public function getTitle(): string
+    public function getTitle() : string
     {
         return __cms($this->title);
     }

@@ -1,21 +1,7 @@
 <?php
 
-/**
- * Linecore CMS - View Composers
- *
- * @package     Linecore\Cms
- * @author      Linecore Team <sales@linecore.com>
- * @copyright   2024 Linecore
- * @license     Proprietary
- */
-
 use Illuminate\View\View as ViewParam;
 
-/*
-|--------------------------------------------------------------------------
-| Navigation Composer
-|--------------------------------------------------------------------------
-*/
 View::composer('admin::partials.navigation', function (ViewParam $view) {
     $user = Sentinel::getUser();
     $menu = config('cms.admin.menu');
@@ -23,42 +9,35 @@ View::composer('admin::partials.navigation', function (ViewParam $view) {
     $view->with('user', $user)->with('menu', $menu);
 });
 
-/*
-|--------------------------------------------------------------------------
-| Default Layout Composer
-|--------------------------------------------------------------------------
-*/
+
 View::composer(['admin::layouts.default', 'admin::partials.scripts'], function (ViewParam $view) {
     $skin = Cookie::get('skin') ?: 'smart-style-4';
     $thisLang = Cookie::get('lang_admin') ?: config('cms.translations.cms.language_default');
     $customJs = config('cms.admin.custom_js');
     $customCss = config('cms.admin.custom_css');
-    
-    $logo = config('cms.admin.logo_url') ?: '/packages/linecore/cms/img/linecore-logo.png';
-    $logoWhite = config('cms.admin.logo_url_white') ?: '/packages/linecore/cms/img/linecore-logo-white.png';
+    $logo = config('cms.admin.logo_url') ?: '/packages/linecore/cms/img/logo.png';
+    $logoWhite = config('cms.admin.logo_url_white') ?: '/packages/linecore/cms/img/logo-w.png';
 
-    if ($skin && $skin !== 'smart-style-0') {
+    if ($skin && $skin != 'smart-style-0') {
         $logo = $logoWhite;
     }
 
     $view->with(compact('skin', 'thisLang', 'customJs', 'customCss', 'logo'));
 });
 
-/*
-|--------------------------------------------------------------------------
-| New Layout Composer
-|--------------------------------------------------------------------------
-*/
 View::composer(['admin::new.layouts.default', 'admin::new.partials.scripts'], function (ViewParam $view) {
+
     $admin = new \App\Cms\Admin();
 
     $skin = Cookie::get('skin') ?: 'smart-style-4';
     $thisLang = Cookie::get('lang_admin') ?: config('cms.translations.cms.language_default');
     $customJs = config('cms.admin.custom_js');
     $customCss = config('cms.admin.custom_css');
-    $logoWhite = config('cms.admin.logo_url_white') ?: '/packages/linecore/cms/img/linecore-logo-white.png';
+    $logoWhite = config('cms.admin.logo_url_white') ?: '/packages/linecore/cms/img/logo-w.png';
 
-    $logo = ($skin && $skin !== 'smart-style-0') ? $logoWhite : $logoWhite;
+    if ($skin && $skin != 'smart-style-0') {
+        $logo = $logoWhite;
+    }
 
     $view->with(compact('skin', 'thisLang', 'customJs', 'customCss', 'logo', 'admin'));
 });
