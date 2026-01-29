@@ -9,12 +9,12 @@ use Illuminate\Support\Str;
 
 class BaseModel extends Model
 {
-    use \Vis\Builder\Helpers\Traits\TranslateTrait,
-        \Vis\Builder\Helpers\Traits\SeoTrait,
-        \Vis\Builder\Helpers\Traits\ImagesTrait,
-        \Vis\Builder\Helpers\Traits\QuickEditTrait,
+    use \Linecore\Cms\Helpers\Traits\TranslateTrait,
+        \Linecore\Cms\Helpers\Traits\SeoTrait,
+        \Linecore\Cms\Helpers\Traits\ImagesTrait,
+        \Linecore\Cms\Helpers\Traits\QuickEditTrait,
         \Venturecraft\Revisionable\RevisionableTrait,
-        \Vis\Builder\Helpers\Traits\Rememberable;
+        \Linecore\Cms\Helpers\Traits\Rememberable;
 
     protected $revisionFormattedFieldNames = [
         'title'             => 'Название',

@@ -2,7 +2,7 @@
 
 namespace App\Cms;
 
-use Vis\Builder\Setting\AdminBase;
+use Linecore\Cms\Setting\AdminBase;
 
 class Admin extends AdminBase
 {

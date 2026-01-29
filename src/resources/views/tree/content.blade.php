@@ -51,7 +51,7 @@
                 <div class="dataTables_paginate paging_bootstrap_full">
                     {{$children->appends(request()->all())->links('admin::list.pagination-bootstrap-4')}}
 
-                    @if (is_array(config('builder.'.$treeName.'.pagination.per_page')))
+                    @if (is_array(config('cms.'.$treeName.'.pagination.per_page')))
                         @include('admin::tree.partials.pagination_show_amount')
                     @endif
                 </div>

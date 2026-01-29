@@ -1,50 +1,139 @@
 <?php
 
-namespace Vis\Builder\Fields;
+/**
+ * Linecore CMS - Content Management System for Laravel
+ *
+ * @package     Linecore\Cms
+ * @author      Linecore Team <sales@linecore.com>
+ * @copyright   2024 Linecore
+ * @license     Proprietary
+ */
+
+namespace Linecore\Cms\Fields;
 
 use Illuminate\Support\Str;
-use Vis\Builder\Models\Language;
+use Linecore\Cms\Models\Language;
 
-class Field
+/**
+ * Базовый класс поля формы
+ *
+ * Определяет базовую функциональность для всех типов полей в административной панели.
+ * Наследуйте этот класс для создания кастомных типов полей.
+ *
+ * @package Linecore\Cms\Fields
+ */
+abstract class Field
 {
-    protected $name;
-    protected $attribute;
-    protected $onlyForm = false;
-    protected $fastEdit = false;
-    public $value = '';
-    protected $valueLanguage;
-    protected $isSortable = false;
-    protected $defaultValue;
-    protected $placeholderValue;
-    protected $rules = null;
-    protected $nullValue;
-    protected $language;
-    protected $isManyToMany = false;
-    protected $filter;
-    protected $commentText = '';
-    protected $relationHasOne;
-    protected $relationMorphOne;
-    protected $classNameField;
-    protected $allData;
-    protected $locale;
-    protected $isReadonlyForEdit = false;
-    protected $isAutoTranslate = false;
-    protected $isHide = false;
-    protected $isSaveOnChange = false;
+    /** @var string Отображаемое название поля */
+    protected string $name;
 
-    public function __construct(string $name, $attribute = null)
+    /** @var string Атрибут модели */
+    protected string $attribute;
+
+    /** @var bool Отображать только в форме редактирования */
+    protected bool $onlyForm = false;
+
+    /** @var bool Быстрое редактирование в таблице */
+    protected bool $fastEdit = false;
+
+    /** @var mixed Текущее значение поля */
+    public $value = '';
+
+    /** @var mixed Значения для мультиязычных полей */
+    protected $valueLanguage;
+
+    /** @var bool Возможность сортировки по полю */
+    protected bool $isSortable = false;
+
+    /** @var mixed Значение по умолчанию */
+    protected $defaultValue;
+
+    /** @var string|null Placeholder для поля ввода */
+    protected ?string $placeholderValue = null;
+
+    /** @var array|null Правила валидации */
+    protected ?array $rules = null;
+
+    /** @var string|null Текст для пустого значения в выпадающем списке */
+    protected ?string $nullValue = null;
+
+    /** @var bool Мультиязычное поле */
+    protected $language;
+
+    /** @var bool Поле типа ManyToMany */
+    protected bool $isManyToMany = false;
+
+    /** @var mixed Настройки фильтра */
+    protected $filter;
+
+    /** @var string Текст комментария-подсказки */
+    protected string $commentText = '';
+
+    /** @var string|null Связь HasOne */
+    protected ?string $relationHasOne = null;
+
+    /** @var string|null Связь MorphOne */
+    protected ?string $relationMorphOne = null;
+
+    /** @var string|null CSS-класс для поля */
+    protected ?string $classNameField = null;
+
+    /** @var mixed Все данные записи */
+    protected $allData;
+
+    /** @var string Текущая локаль */
+    protected string $locale;
+
+    /** @var bool Только для чтения при редактировании */
+    protected bool $isReadonlyForEdit = false;
+
+    /** @var bool Автоматический перевод */
+    protected bool $isAutoTranslate = false;
+
+    /** @var bool Скрытое поле */
+    protected bool $isHide = false;
+
+    /** @var bool Сохранение при изменении */
+    protected bool $isSaveOnChange = false;
+
+    /**
+     * Создание нового экземпляра поля
+     *
+     * @param string $name Отображаемое название
+     * @param string|null $attribute Атрибут модели (по умолчанию генерируется из названия)
+     */
+    public function __construct(string $name, ?string $attribute = null)
     {
         $this->name = $name;
         $this->attribute = $attribute ?? str_replace(' ', '_', Str::lower($name));
         $this->locale = config('app.locale');
     }
 
-    function fixJson($value)
+    /**
+     * Нормализация JSON-строки
+     *
+     * Исправляет проблемы с переносами строк и табуляцией в JSON.
+     *
+     * @param string $value Исходная JSON-строка
+     * @return string Нормализованная JSON-строка
+     */
+    protected function normalizeJson(string $value): string
     {
         $value = preg_replace("/[\r\n]+/", "\\r\\n", $value);
         $value = str_replace("\t", '\t', $value);
-        $value = json_encode(json_decode($value), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        return $value;
+
+        return json_encode(
+            json_decode($value),
+            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @deprecated Используйте normalizeJson()
+     */
+    protected function fixJson($value)
+    {
+        return $this->normalizeJson($value);
     }
 
     public function setValue($value)

@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * Linecore CMS - Content Management System for Laravel
+ *
+ * @package     Linecore\Cms
+ * @author      Linecore Team <sales@linecore.com>
+ * @copyright   2024 Linecore
+ * @license     Proprietary
+ */
+
 namespace Vis\TranslationsCMS;
 
 use Illuminate\Database\Eloquent\Model;
@@ -17,13 +26,13 @@ class Translate extends Model
     public function generateTranslate($language, $phrase)
     {
         try {
-            $languageDefault = config('builder.translations.cms.language_default');
+            $languageDefault = config('cms.translations.cms.language_default');
 
             if ($language == $languageDefault) {
                 return json_encode(['lang' => $language, 'text' => $phrase]);
             }
 
-            $translator = new Translator(config('builder.translations.cms.api_yandex_key'));
+            $translator = new Translator(config('cms.translations.cms.api_yandex_key'));
 
             $translation = $translator->translate($phrase, $languageDefault . '-' . $language);
 
@@ -37,7 +46,7 @@ class Translate extends Model
 
     public function createNewTranslate($phrase)
     {
-        $languages = config('builder.translations.cms.languages');
+        $languages = config('cms.translations.cms.languages');
 
         $newPhrase = Trans::create([
             'phrase' => $phrase

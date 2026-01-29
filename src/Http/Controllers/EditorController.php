@@ -1,11 +1,11 @@
 <?php
 
-namespace Vis\Builder;
+namespace Linecore\Cms;
 
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Str;
-use Vis\Builder\Http\Requests\EditorFile;
-use Vis\Builder\Http\Requests\EditorImage;
+use Linecore\Cms\Http\Requests\EditorFile;
+use Linecore\Cms\Http\Requests\EditorImage;
 use Illuminate\Support\Facades\File;
 
 class EditorController extends Controller

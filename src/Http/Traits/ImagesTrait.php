@@ -1,9 +1,9 @@
 <?php
 
-namespace Vis\Builder\Helpers\Traits;
+namespace Linecore\Cms\Helpers\Traits;
 
 use Illuminate\Support\Facades\Config;
-use Vis\Builder\Setting;
+use Linecore\Cms\Setting;
 
 trait ImagesTrait
 {
@@ -99,7 +99,7 @@ trait ImagesTrait
         $imagesRes = [];
         foreach ($images as $imgOne) {
             if ($paramImg) {
-                if (config('builder.watermark.active') && $imgOne) {
+                if (config('cms.watermark.active') && $imgOne) {
                     $imagesRes[] = '/img/watermark/'.ltrim($imgOne, '/');
                 } else {
                     $imagesRes[] = glide($imgOne, $paramImg);
@@ -140,7 +140,7 @@ trait ImagesTrait
 
     public function getWatermark($width = '', $height = '', $options = [])
     {
-        if (config('builder.watermark.active') && $this->picture) {
+        if (config('cms.watermark.active') && $this->picture) {
             return '/img/watermark/'.ltrim($this->picture, '/');
         } else {
             return $this->getImgPath($width, $height, $options);

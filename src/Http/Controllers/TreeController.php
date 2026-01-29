@@ -1,6 +1,6 @@
 <?php
 
-namespace Vis\Builder;
+namespace Linecore\Cms;
 
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\App;

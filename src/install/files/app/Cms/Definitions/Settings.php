@@ -2,14 +2,14 @@
 
 namespace App\Cms\Definitions;
 
-use Vis\Builder\Fields\{Checkbox, File, ForeignAjax, Froala, Hidden, Id, Select, Text, Relations\Options, Textarea};
-use Vis\Builder\Definitions\Resource;
+use Linecore\Cms\Fields\{Checkbox, File, ForeignAjax, Froala, Hidden, Id, Select, Text, Relations\Options, Textarea};
+use Linecore\Cms\Definitions\Resource;
 use Illuminate\Validation\Rule;
-use Vis\Builder\Fields\Custom\TextSetting;
+use Linecore\Cms\Fields\Custom\TextSetting;
 
 class Settings extends Resource
 {
-    public $model = \Vis\Builder\Setting::class;
+    public $model = \Linecore\Cms\Setting::class;
     public $title = 'Настройки';
     protected $orderBy = 'id desc';
 

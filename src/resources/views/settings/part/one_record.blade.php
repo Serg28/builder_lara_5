@@ -2,8 +2,8 @@
     <a onclick="Settings.getEdit({{$el->id}})">{{$el->title}}</a>
 </td>
 <td><span class="select_text">setting('{{$el->slug}}')</span></td>
-<td>{{__cms(config('builder.settings.type')[$el->type])}}</td>
-<td>{{__cms(isset(config('builder.settings.groups')[$el->group_type])? config('builder.settings.groups')[$el->group_type] : "")}}</td>
+<td>{{__cms(config('cms.settings.type')[$el->type])}}</td>
+<td>{{__cms(isset(config('cms.settings.groups')[$el->group_type])? config('cms.settings.groups')[$el->group_type] : "")}}</td>
 <td>
   @if($el->type==1 || $el->type==6)
         <a onclick="Settings.getEdit({{$el->id}})">{{__cms('Текстовое поле')}}</a>

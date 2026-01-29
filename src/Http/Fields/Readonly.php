@@ -1,6 +1,6 @@
 <?php
 
-namespace Vis\Builder\Fields;
+namespace Linecore\Cms\Fields;
 
 class Readonly extends Field
 {

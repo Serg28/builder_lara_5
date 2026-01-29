@@ -167,7 +167,7 @@ return [
         /*
          * Package Service Providers...
          */
-        Vis\Builder\BuilderServiceProvider::class,
+        Linecore\Cms\CmsServiceProvider::class,
         Cartalyst\Sentinel\Laravel\SentinelServiceProvider::class,
         Devfactory\Minify\MinifyServiceProvider::class,
         Baum\Providers\BaumServiceProvider::class,
@@ -245,7 +245,7 @@ return [
         'Debugbar'              => Barryvdh\Debugbar\Facade::class,
         'Image'                 => Intervention\Image\Facades\Image::class,
         'LaravelLocalization'   => Mcamara\LaravelLocalization\Facades\LaravelLocalization::class,
-        'Jarboe'                => Vis\Builder\Facades\Jarboe::class,
+        'Jarboe'                => Linecore\Cms\Facades\Jarboe::class,
     ],
 
 ];

@@ -2,9 +2,9 @@
 
 namespace App\Cms\Definitions;
 
-use Vis\Builder\Services\Actions;
+use Linecore\Cms\Services\Actions;
 use App\Models\Article;
-use Vis\Builder\Fields\{Color,
+use Linecore\Cms\Fields\{Color,
     Hidden,
     ManyToManyAjax,
     MultiImage,
@@ -19,7 +19,7 @@ use Vis\Builder\Fields\{Color,
     File,
     Text,
     Definition};
-use Vis\Builder\Definitions\Resource;
+use Linecore\Cms\Definitions\Resource;
 
 class Articles extends Resource
 {

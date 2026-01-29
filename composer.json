@@ -1,11 +1,11 @@
 {
-    "name": "vis/builder_lara_5",
-    "description": "Builder cms",
+    "name": "linecore/linecore-cms",
+    "description": "Linecore CMS",
     "license": "proprietary",
     "authors": [
         {
-            "name": "vis",
-            "email": "artur@vis-design.com"
+            "name": "Linecore",
+            "email": "sales@linecore.com"
         }
     ],
     "require": {
@@ -38,13 +38,13 @@
             "src/Settings"
         ],
         "psr-4": {
-            "Vis\\Builder\\": "src/"
+            "Linecore\\Cms\\": "src/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Vis\\Builder\\BuilderServiceProvider"
+                "Linecore\\Cms\\CmsServiceProvider"
             ]
         }
     }

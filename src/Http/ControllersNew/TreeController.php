@@ -1,10 +1,10 @@
 <?php
 
-namespace Vis\Builder\ControllersNew;
+namespace Linecore\Cms\ControllersNew;
 
 use Illuminate\Support\Str;
-use Vis\Builder\Services\Revisions;
-use Vis\Builder\Libs\GoogleTranslateForFree;
+use Linecore\Cms\Services\Revisions;
+use Linecore\Cms\Libs\GoogleTranslateForFree;
 
 class TreeController
 {

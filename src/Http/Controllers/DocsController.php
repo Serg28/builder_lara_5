@@ -1,12 +1,12 @@
 <?php
 
-namespace Vis\Builder;
+namespace Linecore\Cms;
 
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\File;
-use Vis\Builder\Http\Requests\ShowDocRequest;
-use Vis\Builder\Interfaces\DocSearchInterface;
-use Vis\Builder\Helpers\Traits\ResolvesDefinitionTitle;
+use Linecore\Cms\Http\Requests\ShowDocRequest;
+use Linecore\Cms\Interfaces\DocSearchInterface;
+use Linecore\Cms\Helpers\Traits\ResolvesDefinitionTitle;
 
 // TODO: вынести логику из контроллера, рефакторинг
 class DocsController extends Controller
@@ -22,8 +22,8 @@ class DocsController extends Controller
     public function index(DocSearchInterface $fileSearch, ShowDocRequest $request)
     {
         $query = trim(request('q', ''));
-        $this->dir  = config('builder.documentation.path_app', resource_path('docs/definitions'));
-        $this->fileExt = config('builder.documentation.extension', 'html');
+        $this->dir  = config('cms.documentation.path_app', resource_path('docs/definitions'));
+        $this->fileExt = config('cms.documentation.extension', 'html');
 
         return view('admin::documentation_page.index', [
             'documents' => $this->list(),
@@ -36,7 +36,7 @@ class DocsController extends Controller
     private function list()
     {
         $docs = [];
-        // $dir  = config('builder.documentation.path_app', resource_path('docs/definitions'));
+        // $dir  = config('cms.documentation.path_app', resource_path('docs/definitions'));
         if (!is_dir($this->dir)) {
             return view('admin::documentation_page.index', ['docs' => []]);
         }
@@ -77,7 +77,7 @@ class DocsController extends Controller
         $definition = $request->validatedDefinition() ?? null;
         if(!$definition) return null;
 
-        // $dir = config('builder.documentation.path_app', resource_path('docs/definitions'));
+        // $dir = config('cms.documentation.path_app', resource_path('docs/definitions'));
 
         if (!File::isDirectory($this->dir)) {
             return null;

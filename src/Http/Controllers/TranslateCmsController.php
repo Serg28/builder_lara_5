@@ -1,14 +1,14 @@
 <?php
 
-namespace Vis\Builder\Http\Controllers;
+namespace Linecore\Cms\Http\Controllers;
 
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
-use Vis\Builder\Http\Requests\TranslateCms;
-use Vis\Builder\Models\{TranslationsPhrasesCms, TranslationsCms};
-use Vis\Builder\Libs\GoogleTranslateForFree;
+use Linecore\Cms\Http\Requests\TranslateCms;
+use Linecore\Cms\Models\{TranslationsPhrasesCms, TranslationsCms};
+use Linecore\Cms\Libs\GoogleTranslateForFree;
 
 /**
  * Class TranslateController.
@@ -21,7 +21,7 @@ class TranslateCmsController extends Controller
     public function __construct()
     {
         $this->countShow = request('count_show') ? : '20';
-        $this->lanuages = config('builder.translations.cms.languages');
+        $this->lanuages = config('cms.translations.cms.languages');
     }
 
     public function index()

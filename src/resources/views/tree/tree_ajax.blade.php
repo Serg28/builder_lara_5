@@ -49,7 +49,7 @@
     });
 
   $(".breadcrumb").html("<li><a href='/admin'>{{__cms('Главная')}}</a></li> <li>{{__cms('Структура сайта')}}</li>");
-  $("title").text("{{__cms('Структура сайта')}} - {{{ __cms(config('builder.admin.caption')) }}}");
+  $("title").text("{{__cms('Структура сайта')}} - {{{ __cms(config('cms.admin.caption')) }}}");
 
   try {
         Tree.sortTable();

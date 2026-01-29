@@ -1,6 +1,6 @@
 <?php
 
-namespace Vis\Builder\Libs;
+namespace Linecore\Cms\Libs;
 
 /**
  * GoogleTranslateForFree.php.

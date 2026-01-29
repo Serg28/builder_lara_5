@@ -1,6 +1,6 @@
 <?php
 
-namespace Vis\Builder\Services;
+namespace Linecore\Cms\Services;
 
 class Listing
 {

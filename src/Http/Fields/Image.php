@@ -1,6 +1,6 @@
 <?php
 
-namespace Vis\Builder\Fields;
+namespace Linecore\Cms\Fields;
 
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;

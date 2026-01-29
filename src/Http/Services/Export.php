@@ -1,9 +1,9 @@
 <?php
 
-namespace Vis\Builder\Services;
+namespace Linecore\Cms\Services;
 
 use Maatwebsite\Excel\Concerns\Exportable;
-use Vis\Builder\Interfaces\Button;
+use Linecore\Cms\Interfaces\Button;
 use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\FromView;
 

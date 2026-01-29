@@ -61,6 +61,6 @@
 @if (isset($def['options']['caption']))
     <script>
         $(".breadcrumb").html("<li><a href='/admin'>{{__cms('Главная')}}</a></li> <li>{{ __cms($def['options']['caption'] ?? '') }}</li>");
-        $("title").text("{{ __cms($def['options']['caption'] ?? '') }} - {{ __cms(config('builder.admin.caption')) }}");
+        $("title").text("{{ __cms($def['options']['caption'] ?? '') }} - {{ __cms(config('cms.admin.caption')) }}");
     </script>
 @endif

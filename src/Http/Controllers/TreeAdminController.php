@@ -1,9 +1,9 @@
 <?php
 
-namespace Vis\Builder;
+namespace Linecore\Cms;
 
 use Illuminate\Routing\Controller;
-use Vis\Builder\ControllersNew\TreeController;
+use Linecore\Cms\ControllersNew\TreeController;
 use App\Cms\Tree\Tree as CmsTree;
 use Illuminate\Http\Request;
 

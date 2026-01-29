@@ -1,6 +1,6 @@
 <?php
 
-namespace Vis\Builder\Http\ViewComposers;
+namespace Linecore\Cms\Http\ViewComposers;
 
 use Illuminate\View\View;
 use Cartalyst\Sentinel\Laravel\Facades\Sentinel;

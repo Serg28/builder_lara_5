@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Vis\Builder\TreeController;
+use Linecore\Cms\TreeController;
 
 class HomeController extends TreeController
 {

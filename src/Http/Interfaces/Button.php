@@ -1,6 +1,6 @@
 <?php
 
-namespace Vis\Builder\Interfaces;
+namespace Linecore\Cms\Interfaces;
 
 use Illuminate\Contracts\View\View;
 

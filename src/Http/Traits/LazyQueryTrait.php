@@ -1,6 +1,6 @@
 <?php
 
-namespace Vis\Builder\Helpers\Traits;
+namespace Linecore\Cms\Helpers\Traits;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\LazyCollection;

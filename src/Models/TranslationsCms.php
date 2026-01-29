@@ -1,10 +1,19 @@
 <?php
 
-namespace Vis\Builder\Models;
+/**
+ * Linecore CMS - Content Management System for Laravel
+ *
+ * @package     Linecore\Cms
+ * @author      Linecore Team <sales@linecore.com>
+ * @copyright   2024 Linecore
+ * @license     Proprietary
+ */
+
+namespace Linecore\Cms\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
-use Vis\Builder\Libs\GoogleTranslateForFree;
+use Linecore\Cms\Libs\GoogleTranslateForFree;
 
 class TranslationsCms extends Model
 {
@@ -16,7 +25,7 @@ class TranslationsCms extends Model
 
     public function createNewTranslate($phrase)
     {
-        $languages = config('builder.translations.cms.languages');
+        $languages = config('cms.translations.cms.languages');
 
         $newPhrase = TranslationsPhrasesCms::create([
             'phrase' => $phrase

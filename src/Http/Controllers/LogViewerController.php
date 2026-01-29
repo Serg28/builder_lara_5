@@ -1,11 +1,11 @@
 <?php
 
-namespace Vis\Builder;
+namespace Linecore\Cms;
 
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Request;
-use Vis\Builder\Libs\LaravelLogViewer;
+use Linecore\Cms\Libs\LaravelLogViewer;
 
 class LogViewerController extends Controller
 {

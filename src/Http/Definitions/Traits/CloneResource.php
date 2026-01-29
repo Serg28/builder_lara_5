@@ -1,6 +1,6 @@
 <?php
 
-namespace Vis\Builder\Definitions\Traits;
+namespace Linecore\Cms\Definitions\Traits;
 
 trait CloneResource
 {

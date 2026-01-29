@@ -1,6 +1,6 @@
 <?php
 
-namespace Vis\Builder;
+namespace Linecore\Cms;
 
 use Illuminate\Support\Facades\Config;
 use Intervention\Image\Filters\FilterInterface;
@@ -10,11 +10,11 @@ class Watermark implements FilterInterface
 {
     public function applyFilter(Image $image)
     {
-        return $image->widen(config('builder.watermark.width'))->insert(
-            config('builder.watermark.path_watermark'),
-            config('builder.watermark.position'),
-            config('builder.watermark.x'),
-            config('builder.watermark.y')
+        return $image->widen(config('cms.watermark.width'))->insert(
+            config('cms.watermark.path_watermark'),
+            config('cms.watermark.position'),
+            config('cms.watermark.x'),
+            config('cms.watermark.y')
         );
     }
 }

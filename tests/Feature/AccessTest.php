@@ -1,8 +1,8 @@
 <?php
 
-namespace Vis\Builder\Tests\Feature;
+namespace Linecore\Cms\Tests\Feature;
 
-use Vis\Builder\Tests\BaseClassTest;
+use Linecore\Cms\Tests\BaseClassTest;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 

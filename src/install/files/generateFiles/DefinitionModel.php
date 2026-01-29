@@ -2,10 +2,10 @@
 
 namespace App\Cms\Definitions;
 
-use Vis\Builder\Services\Actions;
+use Linecore\Cms\Services\Actions;
 use App\Models\modelName;
-use Vis\Builder\Fields\{Datetime, Id, Text, Checkbox, Textarea};
-use Vis\Builder\Definitions\Resource;
+use Linecore\Cms\Fields\{Datetime, Id, Text, Checkbox, Textarea};
+use Linecore\Cms\Definitions\Resource;
 
 class modelPluralName extends Resource
 {

@@ -1,8 +1,8 @@
 <?php
 
-namespace Vis\Builder\Fields;
+namespace Linecore\Cms\Fields;
 
-use Vis\Builder\Definitions\Resource;
+use Linecore\Cms\Definitions\Resource;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use phpDocumentor\Reflection\Types\Collection;

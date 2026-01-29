@@ -1,10 +1,10 @@
 <?php
 
-namespace Vis\Builder\Services;
+namespace Linecore\Cms\Services;
 
 use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
-use Vis\Builder\ControllersNew\TreeController;
+use Linecore\Cms\ControllersNew\TreeController;
 
 class Actions
 {

@@ -1,9 +1,18 @@
 <?php
 
-namespace Vis\Builder;
+/**
+ * Linecore CMS - Content Management System for Laravel
+ *
+ * @package     Linecore\Cms
+ * @author      Linecore Team <sales@linecore.com>
+ * @copyright   2024 Linecore
+ * @license     Proprietary
+ */
+
+namespace Linecore\Cms;
 
 use Illuminate\Database\Eloquent\Model;
-use Vis\Builder\Helpers\Traits\TranslateTrait;
+use Linecore\Cms\Helpers\Traits\TranslateTrait;
 
 class Setting extends Model
 {

@@ -1,8 +1,8 @@
 <?php
 
-namespace Vis\Builder\Helpers\Traits;
+namespace Linecore\Cms\Helpers\Traits;
 
-use Vis\Builder\Helpers\Traits\Query\Builder;
+use Linecore\Cms\Helpers\Traits\Query\Builder;
 
 trait Rememberable
 {

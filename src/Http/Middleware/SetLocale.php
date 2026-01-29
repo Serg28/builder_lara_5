@@ -1,9 +1,9 @@
-<?php namespace Vis\Builder;
+<?php namespace Linecore\Cms;
 
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Application;
-use Vis\Builder\Models\Language as LanguageModel;
+use Linecore\Cms\Models\Language as LanguageModel;
 
 class SetLocale {
 

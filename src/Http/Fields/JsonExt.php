@@ -1,8 +1,8 @@
 <?php
 
-namespace Vis\Builder\Fields;
+namespace Linecore\Cms\Fields;
 
-use Vis\Builder\Fields\Text;
+use Linecore\Cms\Fields\Text;
 
 /**
  * Поле для редактирования массива объектов JSON вида:

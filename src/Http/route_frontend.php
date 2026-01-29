@@ -5,7 +5,7 @@ $arrSegments = explode('/', $urlPath);
 
 if ($arrSegments[0] != 'admin' && !str_contains($urlPath, 'livewire') && $arrSegments[0] != 'api') {
     try {
-        $controllerMethodArray = (new \Vis\Builder\Services\FindAndCheckUrlForTree())->getRoute($arrSegments);
+        $controllerMethodArray = (new \Linecore\Cms\Services\FindAndCheckUrlForTree())->getRoute($arrSegments);
 
         if ($controllerMethodArray) {
             Route::group(

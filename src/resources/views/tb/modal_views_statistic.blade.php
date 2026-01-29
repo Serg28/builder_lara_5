@@ -33,4 +33,4 @@
     </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 
-<script src="/packages/vis/builder/js/xchart/js/script.js"></script>
+<script src="/packages/linecore/cms/js/xchart/js/script.js"></script>

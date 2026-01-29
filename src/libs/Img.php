@@ -1,6 +1,6 @@
 <?php
 
-namespace Vis\Builder;
+namespace Linecore\Cms;
 
 use Intervention\Image\Facades\Image;
 
@@ -51,12 +51,12 @@ class Img
         try {
             $img = Image::make(public_path($source));
 
-            if (config('builder.watermark.active') && file_exists(config('builder.watermark.path'))) {
+            if (config('cms.watermark.active') && file_exists(config('cms.watermark.path'))) {
                 $img->insert(
-                    config('builder.watermark.path'),
-                    config('builder.watermark.position'),
-                    config('builder.watermark.x'),
-                    config('builder.watermark.y')
+                    config('cms.watermark.path'),
+                    config('cms.watermark.position'),
+                    config('cms.watermark.x'),
+                    config('cms.watermark.y')
                 );
             }
 
@@ -122,12 +122,12 @@ class Img
         try {
             $img = Image::make(public_path($source));
 
-            if (config('builder.watermark.active') && file_exists(config('builder.watermark.path'))) {
+            if (config('cms.watermark.active') && file_exists(config('cms.watermark.path'))) {
                 $img->insert(
-                    config('builder.watermark.path'),
-                    config('builder.watermark.position'),
-                    config('builder.watermark.x'),
-                    config('builder.watermark.y')
+                    config('cms.watermark.path'),
+                    config('cms.watermark.position'),
+                    config('cms.watermark.x'),
+                    config('cms.watermark.y')
                 );
             }
 

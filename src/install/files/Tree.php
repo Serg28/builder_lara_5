@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Request;
-use Vis\Builder\Tree as TreeBuilder;
+use Linecore\Cms\Tree as TreeBuilder;
 
 class Tree extends TreeBuilder
 {

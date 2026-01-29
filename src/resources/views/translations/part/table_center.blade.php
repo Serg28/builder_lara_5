@@ -1,6 +1,6 @@
 <script>
  $(".breadcrumb").html("<li><a href='/admin'>{{__cms('Главная')}}</a></li> <li>{{__cms('Переводы')}}</li>");
- $("title").text("{{__cms('Переводы')}} - {{ __cms(config('builder.admin.caption')) }}");
+ $("title").text("{{__cms('Переводы')}} - {{ __cms(config('cms.admin.caption')) }}");
 </script>
 
  <div class="jarviswidget jarviswidget-color-blue " id="wid-id-4" data-widget-editbutton="false" data-widget-colorbutton="false">
@@ -40,4 +40,4 @@
    @include("admin::translations.part.pop_trans_add")
 </div>
 <div class='load_ajax'></div>
-<script src="{{asset('packages/linecore/builder/translations.js')}}?2"></script>
+<script src="{{asset('packages/linecore/cms/translations.js')}}?2"></script>

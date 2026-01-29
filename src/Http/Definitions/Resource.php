@@ -1,60 +1,174 @@
 <?php
 
-namespace Vis\Builder\Definitions;
+/**
+ * Linecore CMS - Content Management System for Laravel
+ *
+ * @package     Linecore\Cms
+ * @author      Linecore Team <sales@linecore.com>
+ * @copyright   2024 Linecore
+ * @license     Proprietary
+ */
 
-use Vis\Builder\Services\Listing;
+namespace Linecore\Cms\Definitions;
+
 use Illuminate\Support\Arr;
-use Vis\Builder\Fields\{Definition, Password, Virtual};
-use Vis\Builder\Fields\Field;
 use Illuminate\Support\Facades\Validator;
-use Vis\Builder\Services\Actions;
-use Vis\Builder\Libs\GoogleTranslateForFree;
-use Vis\Builder\Definitions\Traits\{CacheResource, CloneResource, HasDocumentation};
 use Illuminate\Support\Str;
+use Linecore\Cms\Definitions\Traits\CacheResource;
+use Linecore\Cms\Definitions\Traits\CloneResource;
+use Linecore\Cms\Definitions\Traits\HasDocumentation;
+use Linecore\Cms\Fields\Definition;
+use Linecore\Cms\Fields\Field;
+use Linecore\Cms\Fields\Password;
+use Linecore\Cms\Fields\Virtual;
+use Linecore\Cms\Libs\GoogleTranslateForFree;
+use Linecore\Cms\Services\Actions;
+use Linecore\Cms\Services\Listing;
+use ReflectionClass;
 
-class Resource
+/**
+ * Базовый класс ресурса CMS
+ *
+ * Определяет структуру и поведение CRUD-операций для моделей в административной панели.
+ * Наследуйте этот класс для создания собственных определений ресурсов.
+ *
+ * @package Linecore\Cms\Definitions
+ *
+ * @property string $model Полный путь к классу модели Eloquent
+ * @property string $title Заголовок ресурса для отображения в UI
+ */
+abstract class Resource
 {
-    use CacheResource, CloneResource, HasDocumentation;
+    use CacheResource;
+    use CloneResource;
+    use HasDocumentation;
 
-    protected $orderBy = 'created_at desc';
-    protected $isSortable = false;
-    protected $perPage = [20, 100, 1000];
-    protected $cacheTag;
-    protected $updateManyToManyList = [];
-    protected $updateHasOneList = [];
-    protected $updateMorphOneList = [];
-    protected $relations = [];
+    /**
+     * Сортировка по умолчанию
+     */
+    protected string $orderBy = 'created_at desc';
+
+    /**
+     * Включение drag-and-drop сортировки
+     */
+    protected bool $isSortable = false;
+
+    /**
+     * Варианты количества записей на странице
+     *
+     * @var array<int>
+     */
+    protected array $perPage = [20, 100, 1000];
+
+    /**
+     * Тег для инвалидации кэша
+     */
+    protected ?string $cacheTag = null;
+
+    /**
+     * Список полей ManyToMany для обновления
+     *
+     * @var array<string>
+     */
+    protected array $updateManyToManyList = [];
+
+    /**
+     * Список полей HasOne для обновления
+     *
+     * @var array<string>
+     */
+    protected array $updateHasOneList = [];
+
+    /**
+     * Список полей MorphOne для обновления
+     *
+     * @var array<string>
+     */
+    protected array $updateMorphOneList = [];
+
+    /**
+     * Связи для eager loading
+     *
+     * @var array<string>
+     */
+    protected array $relations = [];
+
+    /**
+     * Дополнительный scope для фильтрации
+     */
     protected $filterScope;
-    //protected $autoTranslate = true;
-    protected $autoTranslate = false;
-    protected $isShowPerPage = false;
 
-    public function actions()
+    /**
+     * Автоматический перевод полей
+     */
+    protected bool $autoTranslate = false;
+
+    /**
+     * Отображение селектора количества записей
+     */
+    protected bool $isShowPerPage = false;
+
+    /**
+     * Определение доступных действий над записями
+     *
+     * @return Actions
+     */
+    public function actions(): Actions
     {
-        return Actions::make()->insert()->update()->clone()->revisions()->delete();
+        return Actions::make()
+            ->insert()
+            ->update()
+            ->clone()
+            ->revisions()
+            ->delete();
     }
 
+    /**
+     * Создание экземпляра модели ресурса
+     *
+     * @return \Illuminate\Database\Eloquent\Model
+     */
     public function model()
     {
         return new $this->model;
     }
 
-    public function buttons()
+    /**
+     * Определение дополнительных кнопок действий
+     *
+     * @return array<class-string>
+     */
+    public function buttons(): array
     {
         return [];
     }
 
-    public function cards()
+    /**
+     * Определение карточек статистики для дашборда
+     *
+     * @return array<class-string>
+     */
+    public function cards(): array
     {
         return [];
     }
 
-    public function getTableView()
+    /**
+     * Получение view для таблицы
+     *
+     * @return string
+     */
+    public function getTableView(): string
     {
         return 'admin::table';
     }
 
-    public function getTitle() : string
+    /**
+     * Получение локализованного заголовка ресурса
+     *
+     * @return string
+     */
+    public function getTitle(): string
     {
         return __cms($this->title);
     }
@@ -259,7 +373,7 @@ class Resource
         return [
             'id' => $recordNew->id,
             'html' => $this->getSingleRow($recordNew),
-            'isTree' => is_subclass_of($recordNew, 'Vis\Builder\Tree')
+            'isTree' => is_subclass_of($recordNew, 'Linecore\Cms\Tree')
         ];
     }
 

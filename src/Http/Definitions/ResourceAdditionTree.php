@@ -1,9 +1,9 @@
 <?php
 
-namespace Vis\Builder\Definitions;
+namespace Linecore\Cms\Definitions;
 
-use Vis\Builder\ControllersNew\TreeController;
-use Vis\Builder\Services\Listing;
+use Linecore\Cms\ControllersNew\TreeController;
+use Linecore\Cms\Services\Listing;
 
 class ResourceAdditionTree extends Resource
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Vis\Builder;
+namespace Linecore\Cms;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +16,7 @@ class AdminSeeder extends Seeder
     {
         DB::table('users')->insert([
 
-            'email'       => 'admin@vis-design.com',
+            'email'       => 'admin@linecore.com',
             'password'    => bcrypt('secret'),
             'first_name'  => 'admin',
             'last_name'   => 'admin',

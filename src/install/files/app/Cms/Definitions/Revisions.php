@@ -2,10 +2,10 @@
 
 namespace App\Cms\Definitions;
 
-use Vis\Builder\Services\Actions;
-use Vis\Builder\Revision;
-use Vis\Builder\Fields\{ForeignAjax, Id, Datetime, Text, Relations\Options};
-use Vis\Builder\Definitions\Resource;
+use Linecore\Cms\Services\Actions;
+use Linecore\Cms\Revision;
+use Linecore\Cms\Fields\{ForeignAjax, Id, Datetime, Text, Relations\Options};
+use Linecore\Cms\Definitions\Resource;
 
 class Revisions extends Resource
 {

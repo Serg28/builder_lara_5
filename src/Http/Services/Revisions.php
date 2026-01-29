@@ -1,8 +1,8 @@
 <?php
 
-namespace Vis\Builder\Services;
+namespace Linecore\Cms\Services;
 
-use Vis\Builder\Revision;
+use Linecore\Cms\Revision;
 
 class Revisions {
 

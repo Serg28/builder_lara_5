@@ -1,6 +1,6 @@
 <?php
 
-namespace Vis\Builder;
+namespace Linecore\Cms;
 
 use Cartalyst\Sentinel\Laravel\Facades\{Sentinel, Activation};
 use Closure;

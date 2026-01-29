@@ -1,6 +1,6 @@
 <?php
 
-namespace Vis\Builder\ControllersNew;
+namespace Linecore\Cms\ControllersNew;
 
 use Illuminate\Support\Facades\Cache;
 

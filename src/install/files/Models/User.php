@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Vis\Builder\User as UserBuilder;
+use Linecore\Cms\User as UserBuilder;
 
 class User extends UserBuilder
 {

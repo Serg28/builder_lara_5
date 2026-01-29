@@ -1,6 +1,6 @@
 <?php
 
-namespace Vis\Builder\Http\Traits;
+namespace Linecore\Cms\Http\Traits;
 
 use Illuminate\Support\Facades\Storage;
 

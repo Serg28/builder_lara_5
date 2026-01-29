@@ -1,6 +1,6 @@
 <?php
 
-namespace Vis\Builder;
+namespace Linecore\Cms;
 
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Config;
@@ -19,11 +19,11 @@ class SettingsController extends Controller
      */
     public function fetchIndex()
     {
-        $breadcrumb[config('builder.settings.title_page')] = '';
-        $groupsSettings = config('builder.settings.groups');
+        $breadcrumb[config('cms.settings.title_page')] = '';
+        $groupsSettings = config('cms.settings.groups');
 
         $data = Setting::orderBy('id', 'desc');
-        $title = config('builder.settings.title_page');
+        $title = config('cms.settings.title_page');
 
         //filter group
         if (request('group')) {
@@ -32,7 +32,7 @@ class SettingsController extends Controller
         }
 
         $data = $data->paginate(20);
-        $groups = config('builder.settings.groups');
+        $groups = config('cms.settings.groups');
 
         $view = Request::ajax() ? 'settings.part.settings_center' : 'settings.settings_all';
 
@@ -44,8 +44,8 @@ class SettingsController extends Controller
      */
     public function fetchCreate()
     {
-        $type = config('builder.settings.type');
-        $groups = config('builder.settings.groups');
+        $type = config('cms.settings.type');
+        $groups = config('cms.settings.groups');
 
         return view('admin::settings.part.form_settings', compact('type', 'groups'));
     }
@@ -98,8 +98,8 @@ class SettingsController extends Controller
         $id = request('id');
 
         $info = Setting::findOrFail($id);
-        $type = config('builder.settings.type');
-        $groups = config('builder.settings.groups');
+        $type = config('cms.settings.type');
+        $groups = config('cms.settings.groups');
 
         $select_info = [];
         if ($info->type == 2 || $info->type == 3 || $info->type == 5) {

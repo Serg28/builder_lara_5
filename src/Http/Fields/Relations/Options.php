@@ -1,6 +1,6 @@
 <?php
 
-namespace Vis\Builder\Fields\Relations;
+namespace Linecore\Cms\Fields\Relations;
 
 class Options
 {

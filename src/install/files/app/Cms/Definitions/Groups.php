@@ -3,14 +3,14 @@
 namespace App\Cms\Definitions;
 
 use App\Models\Group;
-use Vis\Builder\Services\Actions;
-use Vis\Builder\Fields\{
+use Linecore\Cms\Services\Actions;
+use Linecore\Cms\Fields\{
     Id,
     Text,
     Permissions
 };
 
-use Vis\Builder\Definitions\Resource;
+use Linecore\Cms\Definitions\Resource;
 
 class Groups extends Resource
 {

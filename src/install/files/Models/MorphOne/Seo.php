@@ -3,11 +3,11 @@
 namespace App\Models\MorphOne;
 
 use Illuminate\Database\Eloquent\Model;
-use Vis\Builder\Fields\{Text, Textarea, Checkbox, Froala};
+use Linecore\Cms\Fields\{Text, Textarea, Checkbox, Froala};
 
 class Seo extends Model
 {
-    use \Vis\Builder\Helpers\Traits\TranslateTrait;
+    use \Linecore\Cms\Helpers\Traits\TranslateTrait;
 
     protected $table = 'seo';
     protected $guarded = [];

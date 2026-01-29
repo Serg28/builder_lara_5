@@ -2,9 +2,9 @@
 
 namespace App\Cms\Tree\Templates;
 
-use Vis\Builder\Fields\{Checkbox, Froala, Id, Image, MultiImage, Text, Textarea};
+use Linecore\Cms\Fields\{Checkbox, Froala, Id, Image, MultiImage, Text, Textarea};
 
-use Vis\Builder\Definitions\ResourceTree;
+use Linecore\Cms\Definitions\ResourceTree;
 
 class Contacts extends ResourceTree
 {

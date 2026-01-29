@@ -1,11 +1,11 @@
 <?php
 
-namespace Vis\Builder;
+namespace Linecore\Cms;
 
 use Illuminate\Routing\Controller;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
-use Vis\Builder\Services\Listing;
+use Linecore\Cms\Services\Listing;
 
 class ExportController extends Controller
 {

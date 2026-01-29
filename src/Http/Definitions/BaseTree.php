@@ -1,6 +1,6 @@
 <?php
 
-namespace Vis\Builder\Definitions;
+namespace Linecore\Cms\Definitions;
 
 use App\Models\Tree;
 use Illuminate\Support\Arr;

@@ -1,8 +1,8 @@
 <?php
 
-namespace Vis\Builder\Services;
+namespace Linecore\Cms\Services;
 
-use Vis\Builder\Interfaces\Button;
+use Linecore\Cms\Interfaces\Button;
 
 class ButtonStrategy
 {

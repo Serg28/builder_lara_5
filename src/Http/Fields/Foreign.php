@@ -1,9 +1,9 @@
 <?php
 
-namespace Vis\Builder\Fields;
+namespace Linecore\Cms\Fields;
 
 use Illuminate\Support\Arr;
-use Vis\Builder\Definitions\Resource;
+use Linecore\Cms\Definitions\Resource;
 
 class Foreign extends Field
 {

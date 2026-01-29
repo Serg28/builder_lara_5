@@ -1,8 +1,8 @@
-# Linecore Builder CMS - Руководство разработчика
+# Linecore CMS - Руководство разработчика
 
 ## Обзор
 
-Linecore Builder - это мощная CMS-система для Laravel, которая предоставляет готовую админ-панель с полным набором CRUD-операций, системой древовидных страниц, мультиязычностью и расширенными возможностями управления контентом.
+Linecore CMS — современная и гибкая система управления контентом для Laravel. Предоставляет полнофункциональную административную панель с поддержкой CRUD-операций, иерархических страниц (древовидная структура), мультиязычности и расширенных возможностей для управления контентом.
 
 ## Архитектура системы
 
@@ -10,17 +10,17 @@ Linecore Builder - это мощная CMS-система для Laravel, кот
 
 #### 1. Definitions (Определения ресурсов)
 - **Назначение**: Определяют структуру и поведение таблиц в админ-панели
-- **Базовый класс**: `Vis\Builder\Definitions\Resource`
+- **Базовый класс**: `Linecore\Cms\Definitions\Resource`
 - **Расположение**: `app/Cms/Definitions/`
 
 #### 2. Fields (Поля)
 - **Назначение**: Типы полей для форм с различным поведением
-- **Базовый класс**: `Vis\Builder\Fields\Field`
-- **Расположение**: `app/Cms/Fields/` (кастомные), `vendor/vis/builder_lara_5/src/Http/Fields/` (встроенные)
+- **Базовый класс**: `Linecore\Cms\Fields\Field`
+- **Расположение**: `app/Cms/Fields/` (кастомные), `vendor/linecore/linecore-cms/src/Http/Fields/` (встроенные)
 
 #### 3. Tree (Древовидные страницы)
 - **Назначение**: Управление иерархическими страницами сайта
-- **Базовый класс**: `Vis\Builder\Definitions\BaseTree`
+- **Базовый класс**: `Linecore\Cms\Definitions\BaseTree`
 - **Расположение**: `app/Cms/Tree/`
 
 #### 4. Services (Сервисы)
@@ -29,12 +29,12 @@ Linecore Builder - это мощная CMS-система для Laravel, кот
 
 #### 5. Buttons (Кнопки)
 - **Назначение**: Дополнительные кнопки в админ-панели
-- **Базовый класс**: `Vis\Builder\Services\ButtonBase`
+- **Базовый класс**: `Linecore\Cms\Services\ButtonBase`
 - **Расположение**: `app/Cms/Buttons/`
 
 #### 6. Cards (Карточки)
 - **Назначение**: Виджеты для дашборда
-- **Базовый класс**: `Vis\Builder\Services\Value`
+- **Базовый класс**: `Linecore\Cms\Services\Value`
 - **Расположение**: `app/Cms/Cards/`
 
 ## Основные возможности
@@ -60,7 +60,7 @@ Linecore Builder - это мощная CMS-система для Laravel, кот
 - **ManyToMany** - для `belongsToMany` связей
 - **hasMany** - поле `Definition` с методом `->hasMany()`
 ```php
-use Vis\Builder\Fields\Definition;
+use Linecore\Cms\Fields\Definition;
 
 Definition::make('Наборы ключей')
     ->hasMany('paymentKeys', PaymentMethodKeys::class)
@@ -76,7 +76,7 @@ PaymentDefinition::make('Платежи')
 - **Options** - для настройки выбора связанных данных
 
 ```php
-use Vis\Builder\Fields\Relations\Options;
+use Linecore\Cms\Fields\Relations\Options;
 
 // Основное использование
 Foreign::make('Метод оплаты', 'pay_method_id')
@@ -105,9 +105,9 @@ Foreign::make('Причина отмены', 'cancel_reason_id')
 
 namespace App\Cms\Definitions;
 
-use Vis\Builder\Definitions\Resource;
-use Vis\Builder\Fields\{Text, Image, Checkbox, Select};
-use Vis\Builder\Services\Actions;
+use Linecore\Cms\Definitions\Resource;
+use Linecore\Cms\Fields\{Text, Image, Checkbox, Select};
+use Linecore\Cms\Services\Actions;
 
 class ExampleResource extends Resource
 {
@@ -540,7 +540,7 @@ JsonExt::make('Конфигурация', 'config')
 
 namespace App\Cms\Fields;
 
-use Vis\Builder\Fields\Field;
+use Linecore\Cms\Fields\Field;
 
 class CustomField extends Field
 {
@@ -600,7 +600,7 @@ app/Cms/Tree/
 namespace App\Cms\Tree;
 
 use App\Cms\Tree\Templates\{Article, News, Main};
-use Vis\Builder\Definitions\BaseTree;
+use Linecore\Cms\Definitions\BaseTree;
 
 class Tree extends BaseTree
 {
@@ -622,8 +622,8 @@ class Tree extends BaseTree
 
 namespace App\Cms\Tree\Templates;
 
-use Vis\Builder\Definitions\ResourceTree;
-use Vis\Builder\Fields\{Text, Image, Checkbox, Tinymce};
+use Linecore\Cms\Definitions\ResourceTree;
+use Linecore\Cms\Fields\{Text, Image, Checkbox, Tinymce};
 
 class Article extends ResourceTree
 {
@@ -658,7 +658,7 @@ class Article extends ResourceTree
 
 namespace App\Cms\Services;
 
-use Vis\Builder\Services\Listing;
+use Linecore\Cms\Services\Listing;
 
 class CustomListing extends Listing
 {
@@ -688,7 +688,7 @@ class CustomListing extends Listing
 
 namespace App\Cms\Services;
 
-use Vis\Builder\Services\Actions;
+use Linecore\Cms\Services\Actions;
 
 class CustomActions extends Actions
 {
@@ -722,8 +722,8 @@ class CustomActions extends Actions
 namespace App\Cms\Buttons;
 
 use Illuminate\Contracts\View\View;
-use Vis\Builder\Interfaces\Button;
-use Vis\Builder\Services\ButtonBase;
+use Linecore\Cms\Interfaces\Button;
+use Linecore\Cms\Services\ButtonBase;
 
 class CustomButton extends ButtonBase implements Button
 {
@@ -765,7 +765,7 @@ public function buttons()
 
 namespace App\Cms\Cards;
 
-use Vis\Builder\Services\Value;
+use Linecore\Cms\Services\Value;
 use App\Models\Order;
 
 class OrdersCount extends Value
@@ -976,13 +976,13 @@ public function getFieldForm($definition)
 
 ```bash
 # Основные конфиги
-php artisan vendor:publish --provider='Vis\Builder\BuilderServiceProvider' --tag=builder
+php artisan vendor:publish --provider='Linecore\Cms\CmsServiceProvider' --tag=linecore-cms
 
 # Конфиг CMS
-php artisan vendor:publish --provider='Vis\Builder\BuilderServiceProvider' --tag=builder-cms-config
+php artisan vendor:publish --provider='Linecore\Cms\CmsServiceProvider' --tag=linecore-cms-cms-config
 
 # Публичные ассеты
-php artisan vendor:publish --provider='Vis\Builder\BuilderServiceProvider' --tag=public
+php artisan vendor:publish --provider='Linecore\Cms\CmsServiceProvider' --tag=public
 ```
 
 ### Генерация пароля для админпанели
@@ -1199,9 +1199,9 @@ Text::make('Имя', 'receiver_first_name')
 namespace App\Cms\Definitions;
 
 use App\Models\Product;
-use Vis\Builder\Definitions\Resource;
-use Vis\Builder\Fields\{Text, Image, Checkbox, Select, Number, Tinymce};
-use Vis\Builder\Services\Actions;
+use Linecore\Cms\Definitions\Resource;
+use Linecore\Cms\Fields\{Text, Image, Checkbox, Select, Number, Tinymce};
+use Linecore\Cms\Services\Actions;
 
 class Products extends Resource
 {
@@ -1305,7 +1305,7 @@ class Products extends Resource
 ### Настройка
 1. В нужные Definition подключить кнопку ButtonDocumentation:
 ```php
-    use namespace Vis\Builder\Services\Documentation\ButtonDocumentation;
+    use namespace Linecore\Cms\Services\Documentation\ButtonDocumentation;
 
     public function buttons(): array
     {
@@ -1325,6 +1325,6 @@ class Products extends Resource
 3. В раздел Пользователи - Группы выставить разрешение для данного пункта меню у нужный групп пользователей.
 
 4. Публикация ресурсов, конфига
-- php artisan vendor:publish --provider="Vis\Builder\BuilderServiceProvider" --tag=builder-docs-views
-- php artisan vendor:publish --provider="Vis\Builder\BuilderServiceProvider" --tag=builder-docs-config
-- php artisan vendor:publish --provider="Vis\Builder\BuilderServiceProvider" --tag=builder-docs
+- php artisan vendor:publish --provider="Linecore\Cms\CmsServiceProvider" --tag=linecore-cms-docs-views
+- php artisan vendor:publish --provider="Linecore\Cms\CmsServiceProvider" --tag=linecore-cms-docs-config
+- php artisan vendor:publish --provider="Linecore\Cms\CmsServiceProvider" --tag=linecore-cms-docs

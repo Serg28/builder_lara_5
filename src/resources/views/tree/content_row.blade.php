@@ -6,8 +6,8 @@
         <i class="fa {{$item->isHasChildren() ? 'fa-folder' : 'fa-file-o'}}"></i>&nbsp;
         <a href="?node={{ $item->id }}" class="node_link">{{ $item->title }}</a>
     </td>
-    @if(config('builder.' . $treeName . '.list_fields'))
-        @foreach(config('builder.' . $treeName . '.list_fields') as $fieldNameDB => $field)
+    @if(config('cms.' . $treeName . '.list_fields'))
+        @foreach(config('cms.' . $treeName . '.list_fields') as $fieldNameDB => $field)
             <td style="text-align: center">
                 @php $fieldClass =  $controller->getField($fieldNameDB); @endphp
 
@@ -26,8 +26,8 @@
                 data-pk="{{ $item->id }}"
                 data-value="{{ $item->template }}"
                 data-original-title="{{__cms("Выберите шаблон")}}">
-                    @if(isset(config('builder.' . $treeName . '.templates')[$item->template]['title']))
-                        {{config('builder.' . $treeName . '.templates')[$item->template]['title']}}
+                    @if(isset(config('cms.' . $treeName . '.templates')[$item->template]['title']))
+                        {{config('cms.' . $treeName . '.templates')[$item->template]['title']}}
                     @else
                         {{ $item->template }}
                     @endif

@@ -1,8 +1,8 @@
 <?php
 
-namespace Vis\Builder\ControllersNew;
+namespace Linecore\Cms\ControllersNew;
 
-use Vis\Builder\Services\Listing;
+use Linecore\Cms\Services\Listing;
 
 class ListController
 {

@@ -1,9 +1,9 @@
 <?php
 
-namespace Vis\Builder\Services;
+namespace Linecore\Cms\Services;
 
 use Illuminate\Contracts\View\View;
-use Vis\Builder\Interfaces\Button;
+use Linecore\Cms\Interfaces\Button;
 
 class Import extends ButtonBase implements Button
 {

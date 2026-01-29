@@ -1,13 +1,13 @@
 <?php
 
 use Illuminate\Database\QueryException;
-use Vis\Builder\Models\TranslationsCms;
-use Vis\Builder\Models\TranslationsPhrasesCms;
-use Vis\Builder\Models\Language;
+use Linecore\Cms\Models\TranslationsCms;
+use Linecore\Cms\Models\TranslationsPhrasesCms;
+use Linecore\Cms\Models\Language;
 use Illuminate\Support\Facades\Cache;
 use App\Cms\Definitions\Settings;
 use Illuminate\Support\Facades\App;
-use Vis\Builder\Services\Translate;
+use Linecore\Cms\Services\Translate;
 
 if (! function_exists('defaultLanguage')) {
     function defaultLanguage(): ?string
@@ -45,7 +45,7 @@ if (! function_exists('languagesOfSite')) {
 if (! function_exists('adminLang')) {
     function adminLang(bool $normalizeUaKey = true) : string
     {
-        $lang = Cookie::get('lang_admin') ?: config('builder.translations.cms.language_default');
+        $lang = Cookie::get('lang_admin') ?: config('cms.translations.cms.language_default');
 
         if($normalizeUaKey) {
             // совместимость со старым кодом
@@ -156,7 +156,7 @@ if (!function_exists('glide')) {
             }
 
             // Если плейсхолдер не используется, вызываем метод get()
-            return (new Vis\Builder\Img())->get($source, $options);
+            return (new Linecore\Cms\Img())->get($source, $options);
         });
     }
 }
@@ -176,7 +176,7 @@ if (! function_exists('__cms')) {
     function __cms($phrase, array $replacePhrase = []) : ?string
     {
         return once(function () use ($phrase, $replacePhrase) {
-            // $thisLang = Cookie::get('lang_admin', config('builder.translations.cms.language_default'));
+            // $thisLang = Cookie::get('lang_admin', config('cms.translations.cms.language_default'));
             $thisLang = adminLang(false);
 
             $arrayTranslate = TranslationsPhrasesCms::fillCacheTrans();

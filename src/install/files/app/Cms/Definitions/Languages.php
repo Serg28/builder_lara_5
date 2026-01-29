@@ -2,10 +2,10 @@
 
 namespace App\Cms\Definitions;
 
-use Vis\Builder\Services\Actions;
-use Vis\Builder\Models\Language;
-use Vis\Builder\Fields\{Checkbox, Select};
-use Vis\Builder\Definitions\Resource;
+use Linecore\Cms\Services\Actions;
+use Linecore\Cms\Models\Language;
+use Linecore\Cms\Fields\{Checkbox, Select};
+use Linecore\Cms\Definitions\Resource;
 
 class Languages extends Resource
 {

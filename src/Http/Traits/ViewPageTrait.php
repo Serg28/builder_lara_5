@@ -1,8 +1,8 @@
 <?php
 
-namespace Vis\Builder\Helpers\Traits;
+namespace Linecore\Cms\Helpers\Traits;
 
-use Vis\Builder\ViewPage;
+use Linecore\Cms\ViewPage;
 
 /**
  * Trait ViewPageTrait.

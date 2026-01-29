@@ -1,6 +1,6 @@
 <?php
 
-namespace Vis\Builder;
+namespace Linecore\Cms;
 
 use Closure;
 use Illuminate\Http\RedirectResponse;

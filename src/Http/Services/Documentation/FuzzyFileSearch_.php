@@ -1,9 +1,9 @@
 <?php
 
-namespace Vis\Builder\Services\Documentation;
+namespace Linecore\Cms\Services\Documentation;
 
 use Illuminate\Support\Facades\File;
-use Vis\Builder\Interfaces\DocSearchInterface;
+use Linecore\Cms\Interfaces\DocSearchInterface;
 
 /**
  * Класс поиска в файлах с нечетким поиском (fuzzy search)

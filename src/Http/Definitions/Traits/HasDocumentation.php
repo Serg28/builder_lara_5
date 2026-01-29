@@ -1,6 +1,6 @@
 <?php
 
-namespace Vis\Builder\Definitions\Traits;
+namespace Linecore\Cms\Definitions\Traits;
 
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
@@ -46,7 +46,7 @@ trait HasDocumentation
             return null;
         }
 
-        $ext = config('builder.documentation.extension', 'html');
+        $ext = config('cms.documentation.extension', 'html');
         $slug      = strtolower($slug);
         $locale    = $locale ? strtolower($locale) : null;
         $candidates = [];

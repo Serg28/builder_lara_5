@@ -4,7 +4,7 @@ namespace App\Cms\Tree;
 
 use App\Cms\Tree\Templates\Contacts;
 use App\Cms\Tree\Templates\Node;
-use Vis\Builder\Definitions\BaseTree;
+use Linecore\Cms\Definitions\BaseTree;
 
 class Tree extends BaseTree
 {

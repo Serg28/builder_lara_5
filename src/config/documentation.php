@@ -15,10 +15,10 @@ return [
     | Редактор по умолчанию
     |--------------------------------------------------------------------------
     | Здесь можно задать класс поля, который будет использоваться в редакторе
-    | по умолчанию. Например: \Vis\Builder\Fields\Textarea::class
+    | по умолчанию. Например: \Linecore\Cms\Fields\Textarea::class
     | Или любой кастомный, например TinyMce::class
     */
-    //'editor_default' => \Vis\Builder\Fields\Textarea::class,
+    //'editor_default' => \Linecore\Cms\Fields\Textarea::class,
     'editor_default' => \App\Cms\Fields\Tinymce::class,
     
     /*

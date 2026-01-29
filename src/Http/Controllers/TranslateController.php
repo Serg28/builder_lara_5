@@ -1,13 +1,13 @@
 <?php
 
-namespace Vis\Builder\Http\Controllers;
+namespace Linecore\Cms\Http\Controllers;
 
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Response;
-use Vis\Builder\Http\Requests\Translate;
-use Vis\Builder\Models\Translations;
-use Vis\Builder\Models\TranslationsPhrases;
+use Linecore\Cms\Http\Requests\Translate;
+use Linecore\Cms\Models\Translations;
+use Linecore\Cms\Models\TranslationsPhrases;
 
 class TranslateController extends Controller
 {

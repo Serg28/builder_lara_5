@@ -1,6 +1,6 @@
 <?php
 
-namespace Vis\Builder\Http\Requests;
+namespace Linecore\Cms\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Gloudemans\Shoppingcart\Facades\Cart;

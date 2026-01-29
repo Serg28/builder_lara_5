@@ -1,8 +1,17 @@
 <?php
 
-namespace Vis\Builder\Services;
+/**
+ * Linecore CMS - Content Management System for Laravel
+ *
+ * @package     Linecore\Cms
+ * @author      Linecore Team <sales@linecore.com>
+ * @copyright   2024 Linecore
+ * @license     Proprietary
+ */
 
-use Vis\Builder\Models\TranslationsPhrases;
+namespace Linecore\Cms\Services;
+
+use Linecore\Cms\Models\TranslationsPhrases;
 use Illuminate\Support\Facades\Lang;
 
 class Translate

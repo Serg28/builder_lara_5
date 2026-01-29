@@ -1,11 +1,11 @@
 <?php
 
-namespace Vis\Builder\Services\Documentation;
+namespace Linecore\Cms\Services\Documentation;
 
 use Illuminate\Contracts\View\View;
-use Vis\Builder\Interfaces\Button;
-use Vis\Builder\Services\ButtonBase;
-use Vis\Builder\Definitions\Traits\HasDocumentation;
+use Linecore\Cms\Interfaces\Button;
+use Linecore\Cms\Services\ButtonBase;
+use Linecore\Cms\Definitions\Traits\HasDocumentation;
 
 class ButtonDocumentation extends ButtonBase implements Button
 {

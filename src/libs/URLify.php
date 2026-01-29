@@ -1,6 +1,6 @@
 <?php
 
-namespace Vis\Builder\Helpers;
+namespace Linecore\Cms\Helpers;
 
 /**
  * A PHP port of URLify.js from the Django project

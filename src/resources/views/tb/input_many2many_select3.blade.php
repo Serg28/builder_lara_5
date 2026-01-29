@@ -15,7 +15,7 @@
 
 <script type="text/javascript">
     $(document).ready(function () {
-        //  $.localise('ui-multiselect', {language: 'ru', path: '/packages/vis/builder/js/multiselect_master/js/locale/'});
+        //  $.localise('ui-multiselect', {language: 'ru', path: '/packages/linecore/cms/js/multiselect_master/js/locale/'});
         $(".multiselect").multiselect();
 
         var depended = {

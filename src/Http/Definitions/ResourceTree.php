@@ -1,9 +1,9 @@
 <?php
 
-namespace Vis\Builder\Definitions;
+namespace Linecore\Cms\Definitions;
 
 use App\Models\Tree;
-use Vis\Builder\Services\Listing;
+use Linecore\Cms\Services\Listing;
 
 class ResourceTree extends Resource
 {

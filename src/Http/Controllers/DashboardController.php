@@ -1,6 +1,6 @@
 <?php
 
-namespace Vis\Builder;
+namespace Linecore\Cms;
 
 use Illuminate\Routing\Controller;
 
@@ -14,7 +14,7 @@ class DashboardController extends Controller
      */
     public function showPage()
     {
-        $dashboardConfig = config('builder.dashboard');
+        $dashboardConfig = config('cms.dashboard');
 
         $columns = $dashboardConfig['columns'];
         $countColoums = count($columns);

@@ -1,6 +1,6 @@
 <?php
 
-namespace Vis\Builder\Tests;
+namespace Linecore\Cms\Tests;
 
 use Tests\TestCase;
 use App\Models\User;

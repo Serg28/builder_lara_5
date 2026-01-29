@@ -1,6 +1,6 @@
 <?php
 
-namespace Vis\Builder;
+namespace Linecore\Cms;
 
 class OptmizationImg
 {
@@ -9,10 +9,10 @@ class OptmizationImg
         $infoImg = new \SplFileInfo($pathImg);
         $fullPathPicture = public_path().$pathImg;
 
-        if (config('builder.optimization_img.active')) {
-            $commandPng = config('builder.optimization_img.png_path');
-            $commandJpg = config('builder.optimization_img.jpg_path');
-            $commandGif = config('builder.optimization_img.gif_path');
+        if (config('cms.optimization_img.active')) {
+            $commandPng = config('cms.optimization_img.png_path');
+            $commandJpg = config('cms.optimization_img.jpg_path');
+            $commandGif = config('cms.optimization_img.gif_path');
 
             try {
                 if ($infoImg->getExtension() == 'png') {
@@ -29,7 +29,7 @@ class OptmizationImg
             }
         }
 
-        if (config('builder.optimization_img.webp_optimize')) {
+        if (config('cms.optimization_img.webp_optimize')) {
             /*try {
                 $newFile = str_replace(['.png', '.jpg', '.jpeg'], '.webp', $fullPathPicture);
 

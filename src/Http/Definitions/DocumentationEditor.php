@@ -1,14 +1,14 @@
 <?php
 
-namespace Vis\Builder\Definitions;
+namespace Linecore\Cms\Definitions;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
-use Vis\Builder\Fields\Textarea;
-use Vis\Builder\Http\Requests\DocumentationRequest;
-use Vis\Builder\Services\Listing;
-use Vis\Builder\Helpers\Traits\ResolvesDefinitionTitle;
+use Linecore\Cms\Fields\Textarea;
+use Linecore\Cms\Http\Requests\DocumentationRequest;
+use Linecore\Cms\Services\Listing;
+use Linecore\Cms\Helpers\Traits\ResolvesDefinitionTitle;
 
 class DocumentationEditor extends Resource
 {
@@ -37,8 +37,8 @@ class DocumentationEditor extends Resource
     {
         $this->checkPermissions();
 
-        $dir = config('builder.documentation.path_app', resource_path('docs/definitions')) . DIRECTORY_SEPARATOR;
-        $ext = config('builder.documentation.extension', 'html');
+        $dir = config('cms.documentation.path_app', resource_path('docs/definitions')) . DIRECTORY_SEPARATOR;
+        $ext = config('cms.documentation.extension', 'html');
 
         $files = File::glob($dir . '*.' . $ext) ?: [];
 
@@ -75,8 +75,8 @@ class DocumentationEditor extends Resource
         $contentByLang = [];
         $name = '';
 
-        $dir = config('builder.documentation.path_app', resource_path('docs/definitions')) . DIRECTORY_SEPARATOR;
-        $ext = config('builder.documentation.extension', 'html');
+        $dir = config('cms.documentation.path_app', resource_path('docs/definitions')) . DIRECTORY_SEPARATOR;
+        $ext = config('cms.documentation.extension', 'html');
 
         if ($fileName) {
             $base = strtolower(preg_replace('/\.'.$ext.'$/i', '', $fileName));
@@ -91,7 +91,7 @@ class DocumentationEditor extends Resource
             }
         }
 
-        $fieldClass = config('builder.documentation.editor_default', Textarea::class);
+        $fieldClass = config('cms.documentation.editor_default', Textarea::class);
         $field = $fieldClass::make('Содержимое', 'content')->language();
         $field->setValue(['content' => json_encode($contentByLang, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)]);
 
@@ -105,7 +105,7 @@ class DocumentationEditor extends Resource
 
     public function saveEditForm($request): array
     {
-        $ext = config('builder.documentation.extension', 'html');
+        $ext = config('cms.documentation.extension', 'html');
 
         $data = $request instanceof Request ? $request->all() : (array)$request;
 
@@ -118,7 +118,7 @@ class DocumentationEditor extends Resource
         $nameBase = $data['name'];
         $originalBase = $data['original_name'] ?? null;
 
-        $dir = config('builder.documentation.path_app', resource_path('docs/definitions')) . DIRECTORY_SEPARATOR;
+        $dir = config('cms.documentation.path_app', resource_path('docs/definitions')) . DIRECTORY_SEPARATOR;
 
         if ($originalBase !== $nameBase && File::glob($dir . $nameBase . '*.' . $ext)) {
             return ['success' => false, 'message' => "Файл с именем {$nameBase} уже существует."];

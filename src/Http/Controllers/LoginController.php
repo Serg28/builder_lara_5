@@ -1,13 +1,13 @@
 <?php
 
-namespace Vis\Builder;
+namespace Linecore\Cms;
 
 use App\Cms\Admin;
 use Cartalyst\Sentinel\Laravel\Facades\Sentinel;
 use Illuminate\Routing\Controller;
 use Cartalyst\Sentinel\Checkpoints\NotActivatedException;
 use Cartalyst\Sentinel\Checkpoints\ThrottlingException;
-use Vis\Builder\Http\Requests\Login;
+use Linecore\Cms\Http\Requests\Login;
 
 class LoginController extends Controller
 {

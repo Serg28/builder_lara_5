@@ -1,8 +1,8 @@
 <?php
 
-namespace Vis\Builder\Fields;
+namespace Linecore\Cms\Fields;
 
-use Vis\Builder\Definitions\Resource;
+use Linecore\Cms\Definitions\Resource;
 
 class ManyToManyAjax extends ManyToMany
 {

@@ -1,9 +1,9 @@
 <?php
 
-namespace Vis\Builder\Fields\Custom;
+namespace Linecore\Cms\Fields\Custom;
 
-use Vis\Builder\Fields\Text;
-use Vis\Builder\Setting;
+use Linecore\Cms\Fields\Text;
+use Linecore\Cms\Setting;
 
 class TextSetting extends Text
 {

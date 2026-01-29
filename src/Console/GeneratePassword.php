@@ -1,6 +1,15 @@
 <?php
 
-namespace Vis\Builder;
+/**
+ * Linecore CMS - Content Management System for Laravel
+ *
+ * @package     Linecore\Cms
+ * @author      Linecore Team <sales@linecore.com>
+ * @copyright   2024 Linecore
+ * @license     Proprietary
+ */
+
+namespace Linecore\Cms;
 
 use Cartalyst\Sentinel\Laravel\Facades\Sentinel;
 use Illuminate\Console\Command;
@@ -37,7 +46,7 @@ class GeneratePassword extends Command
         Sentinel::update($userAdmin, ['password' => $newPassword]);
 
         $this->info('Access in cms: ');
-        $this->info('Login: admin@vis-design.com');
+        $this->info('Login: admin@linecore.com');
         $this->info('Password: '.$newPassword);
     }
 

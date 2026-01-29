@@ -4,8 +4,8 @@ namespace App\Cms\Definitions;
 
 use App\Models\User;
 use Carbon\Carbon;
-use Vis\Builder\Services\Actions;
-use Vis\Builder\Fields\{
+use Linecore\Cms\Services\Actions;
+use Linecore\Cms\Fields\{
     ManyToMany,
     ReadonlyField,
     Relations\Options,
@@ -15,7 +15,7 @@ use Vis\Builder\Fields\{
     Text
 };
 
-use Vis\Builder\Definitions\Resource;
+use Linecore\Cms\Definitions\Resource;
 
 class Users extends Resource
 {

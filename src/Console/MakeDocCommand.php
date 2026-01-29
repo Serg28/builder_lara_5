@@ -1,11 +1,20 @@
 <?php
 
-namespace Vis\Builder\Console;
+/**
+ * Linecore CMS - Content Management System for Laravel
+ *
+ * @package     Linecore\Cms
+ * @author      Linecore Team <sales@linecore.com>
+ * @copyright   2024 Linecore
+ * @license     Proprietary
+ */
+
+namespace Linecore\Cms\Console;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
-use Vis\Builder\Definitions\DocumentationEditor;
+use Linecore\Cms\Definitions\DocumentationEditor;
 
 class MakeDocCommand extends Command
 {
@@ -19,7 +28,7 @@ class MakeDocCommand extends Command
         // нормализуем имя через метод редактора
         $rawName = $this->argument('definition');
         $fileName = $editor->normalize($rawName);
-        $ext = config('builder.documentation.extension', 'html');
+        $ext = config('cms.documentation.extension', 'html');
 
         if (!$fileName) {
             $this->error('Некорректное имя: не удалось сформировать имя файла.');
@@ -27,7 +36,7 @@ class MakeDocCommand extends Command
         }
 
         // путь к документации из конфига
-        $dir = config('builder.documentation.path_app', resource_path('docs/definitions')) . DIRECTORY_SEPARATOR;
+        $dir = config('cms.documentation.path_app', resource_path('docs/definitions')) . DIRECTORY_SEPARATOR;
         File::ensureDirectoryExists($dir);
 
         // языки

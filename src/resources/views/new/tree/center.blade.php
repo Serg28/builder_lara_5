@@ -1,7 +1,7 @@
 
 <div id="table-preloader" class="smoke_lol"><i class="fa fa-gear fa-4x fa-spin"></i></div>
 
-@if(config('builder.'.$treeName.'.tree_menu') != "hide")
+@if(config('cms.'.$treeName.'.tree_menu') != "hide")
     <p><a class="show_hide_tree">{{__cms('Показать дерево')}}</a></p>
 @endif
 
@@ -27,7 +27,7 @@
 
 <script>
 
-    Tree.admin_prefix = '{{ config('builder.admin.uri') }}';
+    Tree.admin_prefix = '{{ config('cms.admin.uri') }}';
     Tree.parent_id = '{{ $current->id }}';
 
     showTree = 0;

@@ -1,62 +1,155 @@
 <?php
 
-namespace Vis\Builder\Setting;
+/**
+ * Linecore CMS - Content Management System for Laravel
+ *
+ * @package     Linecore\Cms
+ * @author      Linecore Team <sales@linecore.com>
+ * @copyright   2024 Linecore
+ * @license     Proprietary
+ */
 
+namespace Linecore\Cms\Setting;
+
+/**
+ * Базовые настройки административной панели
+ *
+ * Абстрактный класс, определяющий базовую конфигурацию админ-панели:
+ * заголовок, логотип, favicon и дополнительные CSS/JS ресурсы.
+ *
+ * @package Linecore\Cms\Setting
+ */
 abstract class AdminBase
 {
-    protected $caption = 'Административная часть сайта';
-    protected $logoUrl = '/packages/vis/builder/img/logo-w.png';
-    protected $faviconUrl = '/packages/vis/builder/img/favicon/favicon.ico';
-    protected $css;
-    protected $js;
+    /**
+     * Заголовок административной панели
+     */
+    protected string $caption = 'Linecore CMS';
 
-    public function accessIp()
+    /**
+     * URL логотипа в шапке
+     */
+    protected string $logoUrl = '/packages/linecore/cms/img/linecore-logo.png';
+
+    /**
+     * URL favicon
+     */
+    protected string $faviconUrl = '/packages/linecore/cms/img/favicon/favicon.ico';
+
+    /**
+     * Дополнительные CSS-файлы
+     *
+     * @var array<string>|null
+     */
+    protected ?array $css = null;
+
+    /**
+     * Дополнительные JS-файлы
+     *
+     * @var array<string>|null
+     */
+    protected ?array $js = null;
+
+    /**
+     * Получение списка разрешённых IP-адресов
+     *
+     * @return array<string>
+     */
+    public function accessIp(): array
     {
-        if (!setting('ip')) {
+        $ipSetting = setting('ip');
+
+        if (empty($ipSetting)) {
             return [];
         }
 
-        return array_map('trim', explode(',', setting('ip')));
+        return array_map('trim', explode(',', $ipSetting));
     }
 
-    public function getCaption()
+    /**
+     * Получение заголовка панели
+     *
+     * @return string
+     */
+    public function getCaption(): string
     {
         return __cms($this->caption);
     }
 
-    public function getLogo()
+    /**
+     * Получение URL логотипа
+     *
+     * @return string
+     */
+    public function getLogo(): string
     {
         return $this->logoUrl;
     }
 
-    public function getFaviconUrl()
+    /**
+     * Получение URL favicon
+     *
+     * @return string
+     */
+    public function getFaviconUrl(): string
     {
         return $this->faviconUrl;
     }
 
-    public function getCss()
+    /**
+     * Получение списка дополнительных CSS-файлов
+     *
+     * @return array<string>|null
+     */
+    public function getCss(): ?array
     {
-        if (is_array($this->css)) {
-            return $this->css;
-        }
+        return $this->css;
     }
 
-    public function getJs()
+    /**
+     * Получение списка дополнительных JS-файлов
+     *
+     * @return array<string>|null
+     */
+    public function getJs(): ?array
     {
-        if (is_array($this->js)) {
-            return $this->js;
-        }
+        return $this->js;
     }
 
-    public function login()
+    /**
+     * Получение класса настроек страницы входа
+     *
+     * @return class-string<Login>
+     */
+    public function login(): string
     {
         return Login::class;
     }
 
-    public function dashbord()
+    /**
+     * Конфигурация дашборда
+     *
+     * Переопределите этот метод для настройки виджетов дашборда.
+     *
+     * @return void
+     */
+    public function dashboard(): void
     {
-
+        // Переопределите в наследнике
     }
 
-    abstract public function menu();
+    /**
+     * @deprecated Используйте dashboard()
+     */
+    public function dashbord(): void
+    {
+        $this->dashboard();
+    }
+
+    /**
+     * Определение меню административной панели
+     *
+     * @return array<array>
+     */
+    abstract public function menu(): array;
 }

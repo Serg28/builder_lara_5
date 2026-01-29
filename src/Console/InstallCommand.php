@@ -1,6 +1,15 @@
 <?php
 
-namespace Vis\Builder;
+/**
+ * Linecore CMS - Content Management System for Laravel
+ *
+ * @package     Linecore\Cms
+ * @author      Linecore Team <sales@linecore.com>
+ * @copyright   2024 Linecore
+ * @license     Proprietary
+ */
+
+namespace Linecore\Cms;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -61,7 +70,7 @@ class InstallCommand extends Command
         $this->info('start migration');
 
         \Artisan::call('migrate', [
-            '--path' => 'vendor/vis/builder_lara_5/src/Migrations',
+            '--path' => 'vendor/linecore/linecore-cms/src/Migrations',
         ]);
 
         \Artisan::call('db:seed', [

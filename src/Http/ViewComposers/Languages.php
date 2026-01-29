@@ -1,9 +1,9 @@
 <?php
 
-namespace Vis\Builder\Http\ViewComposers;
+namespace Linecore\Cms\Http\ViewComposers;
 
 use Illuminate\View\View;
-use Vis\Builder\Models\Language;
+use Linecore\Cms\Models\Language;
 
 class Languages
 {

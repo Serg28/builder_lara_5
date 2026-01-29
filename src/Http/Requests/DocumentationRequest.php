@@ -1,6 +1,6 @@
 <?php
 
-namespace Vis\Builder\Http\Requests;
+namespace Linecore\Cms\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -30,7 +30,7 @@ class DocumentationRequest extends FormRequest
 
     protected function prepareForValidation()
     {
-        $ext = config('builder.documentation.extension', 'html');
+        $ext = config('cms.documentation.extension', 'html');
 
         if ($this->has('name')) {
             $this->merge(['name' => strtolower(preg_replace('/\.'.$ext.'$/i', '', $this->input('name')))]);

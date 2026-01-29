@@ -1,8 +1,8 @@
 <?php
 
-namespace Vis\Builder;
+namespace Linecore\Cms;
 
-use Vis\Builder\Services\Actions;
+use Linecore\Cms\Services\Actions;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Str;
 

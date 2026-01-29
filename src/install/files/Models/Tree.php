@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Support\Facades\App;
-use Vis\Builder\Tree as TreeBuilder;
+use Linecore\Cms\Tree as TreeBuilder;
 use App\Models\MorphOne\Seo;
 
 class Tree extends TreeBuilder

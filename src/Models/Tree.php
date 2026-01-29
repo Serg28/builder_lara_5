@@ -1,6 +1,15 @@
 <?php
 
-namespace Vis\Builder;
+/**
+ * Linecore CMS - Content Management System for Laravel
+ *
+ * @package     Linecore\Cms
+ * @author      Linecore Team <sales@linecore.com>
+ * @copyright   2024 Linecore
+ * @license     Proprietary
+ */
+
+namespace Linecore\Cms;
 
 use Illuminate\Support\Facades\Cache;
 use Request;
@@ -12,13 +21,13 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Tree extends Model
 {
-    use \Vis\Builder\Helpers\Traits\Rememberable,
-        \Vis\Builder\Helpers\Traits\TranslateTrait,
-        \Vis\Builder\Helpers\Traits\SeoTrait,
-        \Vis\Builder\Helpers\Traits\ImagesTrait,
-        \Vis\Builder\Helpers\Traits\ViewPageTrait,
+    use \Linecore\Cms\Helpers\Traits\Rememberable,
+        \Linecore\Cms\Helpers\Traits\TranslateTrait,
+        \Linecore\Cms\Helpers\Traits\SeoTrait,
+        \Linecore\Cms\Helpers\Traits\ImagesTrait,
+        \Linecore\Cms\Helpers\Traits\ViewPageTrait,
         \Venturecraft\Revisionable\RevisionableTrait,
-        \Vis\Builder\Helpers\Traits\QuickEditTrait,
+        \Linecore\Cms\Helpers\Traits\QuickEditTrait,
         \Bkwld\Cloner\Cloneable,
         NodeTrait;
 

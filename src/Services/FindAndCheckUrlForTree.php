@@ -1,6 +1,15 @@
 <?php
 
-namespace Vis\Builder\Services;
+/**
+ * Linecore CMS - Content Management System for Laravel
+ *
+ * @package     Linecore\Cms
+ * @author      Linecore Team <sales@linecore.com>
+ * @copyright   2024 Linecore
+ * @license     Proprietary
+ */
+
+namespace Linecore\Cms\Services;
 
 use App\Cms\Tree\Tree;
 use Illuminate\Support\Facades\App;

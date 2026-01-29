@@ -1,10 +1,10 @@
 <?php
 
-namespace Vis\Builder\Services\Documentation;
+namespace Linecore\Cms\Services\Documentation;
 
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Cache;
-use Vis\Builder\Interfaces\DocSearchInterface;
+use Linecore\Cms\Interfaces\DocSearchInterface;
 
 /**
  * Быстрый поиск по файлам с нечетким поиском и автоматической индексацией
