@@ -6,6 +6,7 @@ use Vis\Builder\Definitions\Resource;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use phpDocumentor\Reflection\Types\Collection;
+use Vis\Builder\ManyToManySynced;
 
 class ManyToMany extends Field
 {
@@ -83,6 +84,12 @@ class ManyToMany extends Field
         if ($collectionString) {
             $model->{$this->options->getRelation()}()->syncWithoutDetaching($collectionArray);
         }
+
+        ManyToManySynced::dispatch(
+            $model,
+            $this->options->getRelation(),
+            collect($collectionArray)->filter()->toArray(),
+        );
     }
 
     public function getNameField() : string

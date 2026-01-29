@@ -37,6 +37,7 @@
     "autoload": {
         "classmap": [
             "src/Models",
+            "src/Events",
             "src/libs",
             "src/Http/Controllers",
             "src/Http/ControllersNew",
