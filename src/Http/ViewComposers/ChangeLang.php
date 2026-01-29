@@ -8,7 +8,7 @@ class ChangeLang
 {
     public function compose(View $view)
     {
-        $languages = config("builder.translations.cms.languages");
+        $languages = config("cms.translations.cms.languages");
         // $thisLang = request()->cookie('lang_admin') ?: config('cms.translations.cms.language_default');
 
         $thisLang = adminLang(false);

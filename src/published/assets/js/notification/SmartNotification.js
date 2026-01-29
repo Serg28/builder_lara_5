@@ -1,6 +1,6 @@
 // Smart Notification (bootstraphunter.com)
 
-$.sound_path = "/packages/vis/builder/sound/";
+$.sound_path = "/packages/linecore/cms/sound/";
 
 $(document).ready(function () {
 
