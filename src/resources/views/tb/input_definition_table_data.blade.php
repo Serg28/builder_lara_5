@@ -15,7 +15,7 @@
             <td class="handle col_sort"><i class="fa fa-sort"></i></td>
             @foreach($arrayDefinitionFields as $name => $field)
                 <?php
-                $nameClass = "Vis\\Builder\\Fields\\" . ucfirst($field['type']) . "Field";
+                $nameClass = "Linecore\\Cms\\Fields\\" . ucfirst($field['type']) . "Field";
                 $resultObjectFild = new $nameClass($name, $field, [], [], []);
                 ?>
             <td>{!! $resultObjectFild->getListValueDefinitionPopup($data) !!}</td>

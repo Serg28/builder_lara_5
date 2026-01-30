@@ -74,7 +74,7 @@ class InstallCommand extends Command
         ]);
 
         \Artisan::call('db:seed', [
-            '--class' => 'Vis\\Builder\\AdminSeeder',
+            '--class' => 'Linecore\\Cms\\AdminSeeder',
         ]);
 
         $this->insertTranslateData();
