@@ -110,7 +110,7 @@ class Image extends Field
 
     private function saveInImageStore($fileName, $link)
     {
-        if (! class_exists('\Vis\ImageStorage\Image')) {
+        if (! class_exists('\Linecore\ImageStorage\Image')) {
             return;
         }
 
@@ -118,7 +118,7 @@ class Image extends Field
             $fileName :
             str_replace($this->path, '', $link);
 
-        $imgStorage = new \Vis\ImageStorage\Image();
+        $imgStorage = new \Linecore\ImageStorage\Image();
         $imgStorage->file_folder = $this->path;
         $imgStorage->file_source = $fileName;
         $imgStorage->file_cms_preview = $fileCmsPreview;
@@ -127,31 +127,31 @@ class Image extends Field
 
     private function getImagesWithImageStorage($definition) : array
     {
-        if (!class_exists('\Vis\ImageStorage\Image')) {
+        if (!class_exists('\Linecore\ImageStorage\Image')) {
             return [
                 'status' => 'success',
                 'data'   => 'Не подключен пакет ImageStorage',
             ];
         }
 
-        $list = \Vis\ImageStorage\Image::orderBy('created_at', 'desc');
+        $list = \Linecore\ImageStorage\Image::orderBy('created_at', 'desc');
 
         if (request('tag')) {
-            $list->leftJoin('vis_tags2entities', 'id_entity', '=', 'vis_images.id')->where('entity_type', 'Vis\ImageStorage\Image')->where('id_tag', request('tag'));
+            $list->leftJoin('vis_tags2entities', 'id_entity', '=', 'linecore_images.id')->where('entity_type', 'Linecore\ImageStorage\Image')->where('id_tag', request('tag'));
         }
 
         if (request('gallary')) {
-            $list->leftJoin('vis_images2galleries', 'id_image', '=', 'vis_images.id')->where('id_gallery', request('gallary'));
+            $list->leftJoin('linecore_images2galleries', 'id_image', '=', 'linecore_images.id')->where('id_gallery', request('gallary'));
         }
 
         if (request('q')) {
-            $list->where('vis_images.title', 'like', request('q').'%');
+            $list->where('linecore_images.title', 'like', request('q').'%');
         }
 
-        $list = $list->groupBy('vis_images.id')->paginate(18);
+        $list = $list->groupBy('linecore_images.id')->paginate(18);
 
-        $tags = \Vis\ImageStorage\Tag::where('is_active', 1)->orderBy('title', 'asc')->get();
-        $galleries = \Vis\ImageStorage\Gallery::where('is_active', 1)->orderBy('title', 'asc')->get();
+        $tags = \Linecore\ImageStorage\Tag::where('is_active', 1)->orderBy('title', 'asc')->get();
+        $galleries = \Linecore\ImageStorage\Gallery::where('is_active', 1)->orderBy('title', 'asc')->get();
 
         return [
             'status' => 'success',
