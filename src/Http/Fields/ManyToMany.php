@@ -54,7 +54,17 @@ class ManyToMany extends Field
         }
 
         if (request()->q) {
-            $collection = $collection->where($this->options->getKeyField(), 'like', request()->q . '%');
+            // $collection = $collection->where($this->options->getKeyField(), 'like', request()->q . '%');
+            $keyField = $this->options->getKeyField();
+
+            $fieldExpr = str_contains($keyField, '->')
+                ? "JSON_UNQUOTE(JSON_EXTRACT(" . str_replace('->', ", '$.", $keyField) . "'))"
+                : $keyField;
+
+            $collection = $collection->whereRaw(
+                "$fieldExpr LIKE ?",
+                [request()->q . '%']
+            );
         }
 
         return $collection->get();
