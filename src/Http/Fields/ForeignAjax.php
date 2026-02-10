@@ -68,7 +68,10 @@ class ForeignAjax extends Foreign
             ? "JSON_UNQUOTE(JSON_EXTRACT(" . str_replace('->', ", '$.", $keyField) . "'))"
             : $keyField;
 
-        $modelRelated = $modelRelated->whereRaw("$fieldExpr LIKE ?", ['%' . $this->convertQuery(request()->q) . '%']);
+        $modelRelated = $modelRelated->whereRaw(
+            "LOWER($fieldExpr) LIKE ?",
+            ['%' . mb_strtolower($this->convertQuery(request()->q)) . '%']
+        );
 
         if (count($where)) {
             foreach ($where as $param) {
