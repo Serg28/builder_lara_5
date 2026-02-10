@@ -62,8 +62,8 @@ class ManyToMany extends Field
                 : $keyField;
 
             $collection = $collection->whereRaw(
-                "$fieldExpr LIKE ?",
-                [request()->q . '%']
+                "LOWER($fieldExpr) LIKE ?",
+                [mb_strtolower(request()->q) . '%']
             );
         }
 
