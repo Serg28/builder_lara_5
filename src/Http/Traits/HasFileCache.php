@@ -45,6 +45,18 @@ use Illuminate\Support\Facades\Storage;
  *  Кожен кеш створюється окремо для кожної мови,
  *  що повертається функцією languagesOfSite().
  *
+ *  ---
+ *  Доступні ключі конфігурації тегу:
+ *  - name:           (string)      базова назва файлу кешу.
+ *  - query:          (callable)    функція, що повертає QueryBuilder, Collection або масив.
+ *  - return_array:   (bool)        якщо true, дані в кеші будуть масивами, а не об'єктами. За замовчуванням false.
+ *  - use_l2_cache:   (bool)        якщо true, дані дублюються в Redis. За замовчуванням false.
+ *  - sort_by:        (string|null) поле для сортування після локалізації (наприклад, 'title').
+ *                                  За замовчуванням null — порядок визначається виключно запитом.
+ *  - sort_recursive: (string|null) ключ дочірніх елементів для рекурсивного сортування (наприклад, 'children').
+ *  - sort_root:      (bool)        чи сортувати кореневий рівень. За замовчуванням true.
+ *                                  Якщо false — сортуються лише дочірні елементи.
+ *
  * ПРИКЛАД ВИЗНАЧЕННЯ В МОДЕЛІ:
  * ```php
  * protected static function getFileCacheDefinitions(): array
@@ -54,7 +66,10 @@ use Illuminate\Support\Facades\Storage;
  *             'name' => 'main_menu',
  *             'query' => fn () => static::query()->where('is_active', 1)->get(['id', 'title']),
  *             'return_array' => true,
- *             'use_l2_cache' => true
+ *             'use_l2_cache' => true,
+ *             'sort_by' => 'title',
+ *             'sort_recursive' => 'children',
+ *             'sort_root' => false,
  *         ]
  *     ];
  * }
@@ -267,6 +282,15 @@ trait HasFileCache
             // Рекурсивна локалізація даних перед збереженням
             $localized = static::localizeValue($raw, $lang);
 
+            $sortBy = $defs[$tag]['sort_by'] ?? null;
+            $sortRecursive = $defs[$tag]['sort_recursive'] ?? null;
+
+            if ($sortBy !== null) {
+                $sortRoot = $defs[$tag]['sort_root'] ?? true;
+                $sortRecursive = $defs[$tag]['sort_recursive'] ?? null;
+                $localized = static::sortLocalized($localized, $sortBy, $sortRecursive, $sortRoot);
+            }
+
             // Приведення до колекції для Json-серіалізації
             $localizedData = collect(is_array($localized) && ! empty($localized) && ! array_is_list($localized) ? [$localized] : $localized);
 
@@ -286,6 +310,53 @@ trait HasFileCache
         }
 
         app()->setLocale($originalLocale);
+    }
+
+    /**
+     * Рекурсивне сортування локалізованих даних за вказаним полем.
+     * Застосовується після localizeValue(), коли значення вже перекладені.
+     *
+     * Використовується разом із ключами визначення кешу:
+     * - sort_by:        (string|null)  поле для сортування (наприклад, 'title'). За замовчуванням null — сортування вимкнено.
+     * - sort_recursive: (string|null)  ключ дочірніх елементів для рекурсії (наприклад, 'children').
+     * - sort_root:      (bool)         чи сортувати кореневий рівень. За замовчуванням true.
+     *
+     * @param mixed       $data          Масив або колекція даних
+     * @param string      $field         Поле для сортування (наприклад, 'title')
+     * @param string|null $childrenKey   Ключ дочірніх елементів для рекурсії (наприклад, 'children')
+     * @param bool        $sortCurrent   Чи сортувати поточний рівень (false — лише дочірні)
+     */
+    protected static function sortLocalized(mixed $data, string $field, ?string $childrenKey = null, bool $sortCurrent = true): mixed
+    {
+        $isCollection = $data instanceof Collection;
+        $arr = $isCollection ? $data->all() : (array) $data;
+
+        // Рекурсивно сортуємо children
+        if ($childrenKey !== null) {
+            foreach ($arr as &$item) {
+                if (is_array($item) && isset($item[$childrenKey]) && is_array($item[$childrenKey])) {
+                    // Дочірні рівні завжди сортуються ($sortCurrent = true)
+                    $item[$childrenKey] = static::sortLocalized($item[$childrenKey], $field, $childrenKey, true);
+                } elseif (is_object($item) && isset($item->$childrenKey)) {
+                    $item->$childrenKey = static::sortLocalized($item->$childrenKey, $field, $childrenKey, true);
+                }
+            }
+            unset($item);
+        }
+
+        // Сортуємо поточний рівень лише якщо дозволено
+        if ($sortCurrent) {
+            usort($arr, static function ($a, $b) use ($field) {
+                $valA = is_array($a) ? ($a[$field] ?? '') : ($a->$field ?? '');
+                $valB = is_array($b) ? ($b[$field] ?? '') : ($b->$field ?? '');
+
+                $collator = new \Collator(app()->getLocale());
+
+                return $collator->compare((string) $valA, (string) $valB);
+            });
+        }
+
+        return $isCollection ? collect($arr) : $arr;
     }
 
     /**
