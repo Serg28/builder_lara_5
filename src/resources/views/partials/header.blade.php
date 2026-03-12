@@ -16,5 +16,6 @@
         </div>
         @include('admin::partials.notification')
         @include('admin::partials.change_lang')
+        @include('admin::partials.system_topmenu')
     </div>
 </header>
