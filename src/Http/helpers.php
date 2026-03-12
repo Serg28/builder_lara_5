@@ -24,24 +24,19 @@ if (! function_exists('defaultLanguage')) {
     }
 }
 
-/*
 if (! function_exists('languagesOfSite')) {
     function languagesOfSite()
     {
-        return (new Language())->getLanguages()->pluck('language');
-    }
-}*/
-if (! function_exists('languagesOfSite')) {
-    function languagesOfSite()
-    {
-        try {
-            return (new Language())->getLanguages()->pluck('language');
-        } catch (QueryException $e) {
-            // Возвращаем пустую коллекцию, если таблицы нет
-            return collect();
-        }
+        return rescue(
+            fn () => (new Language())->getLanguages()
+                ->pluck('language')
+                ->whenEmpty(fn () => collect(['ua','ru','en'])),
+
+            collect(['ua','ru','en'])
+        );
     }
 }
+
 if (! function_exists('adminLang')) {
     function adminLang(bool $normalizeUaKey = true) : string
     {
