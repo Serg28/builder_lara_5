@@ -8,8 +8,8 @@
          @else
             src="{{glide($value, ['w'=>'130','h'=>'130']) }}"
          @endif
-         data_src_original= "/{{$value}}"
-         src_original = "/{{$value}}"
+         data_src_original= "{{$value}}"
+         src_original = "{{$value}}"
          data-width = '120'
          data-height = '120'
     />
