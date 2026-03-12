@@ -12,6 +12,9 @@
         Route::group(
             ['prefix' => 'admin', 'middleware' => 'auth.admin'],
             function () {
+
+                Route::get('/clear-cache', 'Vis\Builder\ControllersNew\ResetCacheController@index')->name('admin.clear-cache');
+
                 Route::post('change-range-card', 'Vis\Builder\ChangeRangeController@changeValue');
                 Route::post('change-range-trend', 'Vis\Builder\ChangeRangeController@changeValue');
 

@@ -15,5 +15,7 @@
             <span> <a href="/admin/logout" title="{{__cms("Выход")}}" data-action="userLogout" ><i class="fal fa-sign-out"></i></a> </span>
         </div>
         @include('admin::partials.change_lang')
+
+        @include('admin::partials.system_topmenu')
     </div>
 </header>
