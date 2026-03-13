@@ -1,17 +1,18 @@
-<li >
+@php $normalizedValue = '/' . ltrim($value, '/'); @endphp
+<li>
     <img class="image-attr-editable"
-         data-tbnum="{{$key ?? ""}}"
-         @if (strpos($value, '.svg'))
-            width = '120'
+         data-tbnum="{{$key ?? ''}}"
+         @if (strpos($normalizedValue, '.svg'))
+            width='120'
             height='120'
-            src="/{{$value}}"
+            src="{{$normalizedValue}}"
          @else
-            src="{{glide($value, ['w'=>'130','h'=>'130']) }}"
+            src="{{glide($normalizedValue, ['w'=>'130','h'=>'130'])}}"
          @endif
-         data_src_original= "{{$value}}"
-         src_original = "{{$value}}"
-         data-width = '120'
-         data-height = '120'
+         data_src_original="{{$normalizedValue}}"
+         src_original="{{$normalizedValue}}"
+         data-width='120'
+         data-height='120'
     />
 
     <div class="tb-btn-delete-wrap">
