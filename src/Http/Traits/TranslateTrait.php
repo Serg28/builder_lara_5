@@ -20,28 +20,23 @@ trait TranslateTrait
     public function t_htmlfix($ident)
     {
         $content = nl2br($this->t($ident));
-
+    
         $content = preg_replace_callback('/<table[^>]*>.*?<\/table>/s', function($match) {
             return preg_replace('/<br\s*\/?>/i', '', $match[0]);
         }, $content);
-
-        $content = str_replace( ["\r\n", "\n\r", "\\r\\n", "\\n\\r","\r", "\n"], '', $content );
-        $content = str_replace(['</tr><br /><tr>','</tr><br><tr>','</tr><br> <tr>','</tr><br/> <tr>'], '</tr><tr>', $content);
-        $content = str_replace(['</li><br /><li>','</li><br><li>'], '</li><li>', $content);
-
-//--
-        $content = $fieldArray->$lang ?? '';
-        if($content) {
-            // Detect the string encoding
+    
+        $content = str_replace(["\r\n", "\n\r", "\\r\\n", "\\n\\r", "\r", "\n"], '', $content);
+        $content = str_replace(['</tr><br /><tr>', '</tr><br><tr>', '</tr><br> <tr>', '</tr><br/> <tr>'], '</tr><tr>', $content);
+        $content = str_replace(['</li><br /><li>', '</li><br><li>'], '</li><li>', $content);
+    
+        if ($content) {
             $encoding = mb_detect_encoding($content);
-            // pass it to the DOMDocument constructor
             $doc = new \DOMDocument('', $encoding);
-
+    
             @$doc->loadHTML('<html><head>'
                 . '<meta http-equiv="content-type" content="text/html; charset='
                 . $encoding . '"></head><body>' . trim($content) . '</body></html>');
-
-            // extract the components we want
+    
             $nodes = $doc->getElementsByTagName('body')->item(0)->childNodes;
             $html = '';
             $len = $nodes->length;
@@ -50,9 +45,7 @@ trait TranslateTrait
             }
             return $html;
         }
-//--
-
-
-        return $fieldArray->$lang ?? '';
+    
+        return $content;
     }
 }
