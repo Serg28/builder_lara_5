@@ -30,6 +30,14 @@ class Definition extends Field
         return $this;
     }
 
+    public function belongsToMany($relation, $classDefinitionRelation = null)
+    {
+        $this->relation = $relation;
+        $this->definitionRelation = $classDefinitionRelation;
+        $this->typeRelative = 'belongsToMany';
+        return $this;
+    }
+
     public function hasActions(bool $value = true)
     {
         $this->hasActions = $value;
