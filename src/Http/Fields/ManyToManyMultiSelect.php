@@ -9,8 +9,9 @@ class ManyToManyMultiSelect extends ManyToMany
     public function save($collectionArray, $model)
     {
         $model->{$this->options->getRelation()}()->detach();
-
-        if (is_array($collectionArray) && $collectionArray[0]) {
+    
+        $collectionArray = array_filter($collectionArray);
+        if (is_array($collectionArray) && count($collectionArray)) {
            $model->{$this->options->getRelation()}()->syncWithoutDetaching($collectionArray);
         }
     }
