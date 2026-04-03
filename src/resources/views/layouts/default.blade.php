@@ -83,5 +83,20 @@
 
 <script src="/packages/linecore/builder/js/cropper_model.js"></script>
 @stack('scripts')
+
+<script>
+    if (typeof resetOrderFields !== 'function') {
+        function resetOrderFields()
+        {
+            const $form = $('form .filters-row');
+    
+            $form.find('input[type=text], input[type=number], input[type=email], input[type=password], textarea').val('');
+            $form.find('input[type=checkbox], input[type=radio]').prop('checked', false);
+            $form.find('select').prop('selectedIndex', 0);
+    
+            setTimeout(() => TableBuilder?.search?.(), 0);
+        }
+    }
+</script>    
 </body>
 </html>
