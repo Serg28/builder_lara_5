@@ -6,7 +6,7 @@ class Textarea extends Field
 {
     protected int $rows = 3;
 
-    protected ?int $maxRows = null;
+    protected ?int $maxRows = 5;
 
     /**
      * Устанавливает количество строк для textarea
