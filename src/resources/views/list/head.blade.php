@@ -61,6 +61,10 @@
                     onclick="TableBuilder.search();">
                 {{ __cms('Поиск')}}
             </button>
+            <button onclick="resetOrderFields(); return false;" class="btn btn-default btn-sm tb-search-btn" style="margin-top: 10px; min-width: 66px;"
+                        type="button">
+                {{ __cms('Сбросить')}}
+            </button>
         </td>
     </tr>
 @endif
