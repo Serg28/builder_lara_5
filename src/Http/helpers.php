@@ -128,8 +128,14 @@ if (! function_exists('print_arr')) {
 if (!function_exists('glide')) {
     function glide($source, array $options = [])
     {
-        // Уникальный ключ кеша на основе пути и параметров
-        $cacheKey = 'glide_' . md5($source . json_encode($options));
+        // Получаем время модификации исходного файла для инвалидации кэша
+        $fileModified = null;
+        if (is_string($source) && file_exists(public_path($source))) {
+            $fileModified = filemtime(public_path($source));
+        }
+
+        // Уникальный ключ кеша на основе пути, параметров и времени модификации файла
+        $cacheKey = 'glide_' . md5($source . json_encode($options) . '_' . $fileModified);
 
         // Проверяем, есть ли данные в кеше
         $cachedPath = cache()->tags(['glide'])->get($cacheKey);
