@@ -149,7 +149,7 @@ if (!function_exists('glide')) {
         return cache()->tags(['glide'])->rememberForever($cacheKey, function () use ($source, $options) {
             if (
                 env('IMG_PLACEHOLDER', true)
-                && (env('APP_ENV') === 'local' || env('APP_ENV') === 'testing')
+                && (config('app.env') === 'local' || config('app.env') === 'testing')
             ) {
                 $width = $options['w'] ?? 100;
                 $height = $options['h'] ?? 100;
