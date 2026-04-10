@@ -128,14 +128,17 @@ if (! function_exists('print_arr')) {
 if (!function_exists('glide')) {
     function glide($source, array $options = [])
     {
-        // Получаем время модификации исходного файла для инвалидации кэша
-        $fileModified = null;
+        // Для надёжной инвалидации кеша при FTP-загрузке используем пару mtime + filesize.
+        // Оба берутся из inode (stat) без чтения содержимого файла — работает ~0.001ms.
+        // FTP может сохранять оригинальный timestamp, но размер файла почти всегда меняется.
+        $fileKey = null;
         if (is_string($source) && file_exists(public_path($source))) {
-            $fileModified = filemtime(public_path($source));
+            $filePath = public_path($source);
+            $fileKey = filemtime($filePath) . '_' . filesize($filePath);
         }
 
-        // Уникальный ключ кеша на основе пути, параметров и времени модификации файла
-        $cacheKey = 'glide_' . md5($source . json_encode($options) . '_' . $fileModified);
+        // Уникальный ключ кеша на основе пути, параметров и связки mtime+filesize
+        $cacheKey = 'glide_' . md5($source . json_encode($options) . '_' . $fileKey);
 
         // Проверяем, есть ли данные в кеше
         $cachedPath = cache()->tags(['glide'])->get($cacheKey);
