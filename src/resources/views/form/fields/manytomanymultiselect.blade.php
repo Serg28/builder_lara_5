@@ -9,6 +9,7 @@ $selected = $field->getOptionsSelected($definition);
 	}
 </style>
 
+<input type="hidden" name="{{ $field->getNameField() }}[]" value="">
 <select class="multiselect" multiple="multiple" name="{{ $field->getNameField()}}[]" id="{{ $field->getNameField()}}">
 	@if (isset($selected) && count($selected))
 		@foreach($selected as $id => $selectOption)
@@ -24,7 +25,7 @@ $selected = $field->getOptionsSelected($definition);
 
 <script type="text/javascript">
     $(document).ready(function () {
-        //  $.localise('ui-multiselect', {language: 'ru', path: '/packages/vis/builder/js/multiselect_master/js/locale/'});
+        //  $.localise('ui-multiselect', {language: 'ru', path: '/packages/linecore/builder/js/multiselect_master/js/locale/'});
         $(".multiselect").multiselect();
     });
 </script>
