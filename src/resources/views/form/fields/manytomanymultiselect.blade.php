@@ -9,6 +9,7 @@ $selected = $field->getOptionsSelected($definition);
 	}
 </style>
 
+<input type="hidden" name="{{ $field->getNameField() }}[]" value="">
 <select class="multiselect" multiple="multiple" name="{{ $field->getNameField()}}[]" id="{{ $field->getNameField()}}">
 	@if (isset($selected) && count($selected))
 		@foreach($selected as $id => $selectOption)
