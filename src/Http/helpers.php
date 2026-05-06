@@ -52,15 +52,6 @@ if (! function_exists('adminLang')) {
 }
 /*
 if (! function_exists('setting')) {
-
-    function setting(string $slug)
-    {
-        return Cache::tags('settings')->rememberForever($slug . App::getLocale(), function() use ($slug) {
-            return (new Settings())->model()->getValue($slug);
-        });
-    }
-}*/
-if (! function_exists('setting')) {
     function setting(string $slug)
     {
         try {
@@ -77,7 +68,32 @@ if (! function_exists('setting')) {
         }
     }
 }
+*/
+if (! function_exists('setting')) {
+    function setting(string $slug)
+    {
+        static $loadedConfigs = [];
 
+        $key = 'setting_'.$slug . App::getLocale();
+
+        if (array_key_exists($key, $loadedConfigs)) {
+            $value = $loadedConfigs[$key];
+        } else {
+            try {
+                $value = Cache::tags(['settings'])->remember($key, 3600, function() use ($slug) {
+                    return (new Settings())->model()->getValue($slug);
+                });
+                $loadedConfigs[$key] = $value;
+            } catch (QueryException $e) {
+                return null;
+            } catch (Exception $e) {
+                return null;
+            }
+        }
+
+        return $value;
+    }
+}
 if (! function_exists('filesize_format')) {
 
     function filesize_format($bytes)
