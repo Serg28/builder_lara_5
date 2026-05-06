@@ -11,7 +11,6 @@ var TableBuilder = {
     form_preloader: '.form-preloader',
     form: '#modal_form',
     form_edit: '#modal_form_edit',
-    export_form: '#tb-export-form',
     form_label: '#modal_form_edit_label',
     form_wrapper: '#modal_wrapper',
     create_form: '#create_form',
@@ -99,8 +98,15 @@ var TableBuilder = {
             }
 
             if ($(this).attr("inlinestyles")) {
-                option.inlineStyles = JSON.parse($(this).attr("inlinestyles"))
+                option.inlineStyles = JSON.parse($(this).attr("inlinestyles"));
             }
+/*
+
+            option.paragraphStyles = {
+                class1: 'Class 1',
+                class2: 'Class 2'
+            };
+*/
 
             if ($(this).attr("options")) {
                 var optionsConfig = JSON.parse($(this).attr("options"));
@@ -139,6 +145,7 @@ var TableBuilder = {
     },
 
     getActionUrl: function (content) {
+
         if (content != undefined) {
             return content.parents('form').attr('action');
         }
@@ -312,6 +319,11 @@ var TableBuilder = {
             },
             error: function (xhr, ajaxOptions, thrownError) {
                 var errorResult = jQuery.parseJSON(xhr.responseText);
+                var errors = errorResult.errors;
+
+                errors.each(function( index , value ) {
+                    console.log( errors[index] );
+                });
 
                 TableBuilder.showErrorNotification(errorResult.message);
                 TableBuilder.hidePreloader();
@@ -319,6 +331,24 @@ var TableBuilder = {
         });
 
     }, // end getCreateForm
+
+    doSaveOnChange : function(content, id)
+    {
+        jQuery.ajax({
+            type: "POST",
+            url: TableBuilder.getActionUrl(),
+            data: {
+                "query_type" : "fast_save",
+                "name" : content.attr('name'),
+                "id" : id,
+                "value": content.val()
+            },
+            dataType: 'json',
+            success: function (data) {
+
+            },
+        });
+    },
 
     refreshMask : function () {
         jQuery("#modal_form_edit form, #modal_form form").find('input[data-mask]').each(function () {
@@ -495,6 +525,7 @@ var TableBuilder = {
             {name: "query_type", value: "show_revisions"},
             {name: "id", value: id},
         ];
+
         jQuery.ajax({
             type: "POST",
             url: TableBuilder.getActionUrl(context),
@@ -592,6 +623,24 @@ var TableBuilder = {
         });
     }, // end doDelete
 
+    getHtmlFroala : function(values, form) {
+
+        var textBlock = form + ' .text_block';
+
+        $(textBlock).each(function ( index ) {
+            var nameFroala = $(this).attr('name');
+
+            try {
+                var valueFroala = $(this).froalaEditor('codeView.get');
+            } catch (error) {
+                var valueFroala = $(this).froalaEditor('html.get');
+            }
+            values.push({ name: nameFroala, value: valueFroala });
+        });
+
+        return values;
+    },
+
     doEdit: function (id, table, foreign_field_id, foreign_attributes) {
         var form = '#edit_form_' + table;
 
@@ -604,6 +653,7 @@ var TableBuilder = {
         $('.fr-popup').remove();
 
         var values = $(TableBuilder.edit_form).serializeArray();
+        values = TableBuilder.getHtmlFroala(values, form);
 
         values.push({ name: 'id', value: id });
         values.push({ name: 'query_type', value: "save_edit_form" });
@@ -688,6 +738,7 @@ var TableBuilder = {
                 var errorResult = $.parseJSON(xhr.responseText);
 
                 TableBuilder.showErrorNotification(errorResult.message);
+
                 TableBuilder.hidePreloader();
                 TableBuilder.hideFormPreloader(TableBuilder.form_edit);
             }
@@ -807,6 +858,11 @@ var TableBuilder = {
                     if (TableBuilder.onDoCreate) {
                         TableBuilder.onDoCreate(TableBuilder.getActionUrl());
                     }
+
+                    if (response.isTree) {
+                        doAjaxLoadContent(location.href);
+                    }
+
                 } else {
                     var errors = '';
                     jQuery(response.errors).each(function (key, val) {
@@ -821,6 +877,7 @@ var TableBuilder = {
                 var errorResult = jQuery.parseJSON(xhr.responseText);
 
                 TableBuilder.showErrorNotification(errorResult.message);
+
                 TableBuilder.hidePreloader();
                 TableBuilder.hideFormPreloader(TableBuilder.form);
             }
@@ -848,19 +905,8 @@ var TableBuilder = {
         var data = new FormData();
         data.append("image", context.files[0]);
         data.append('ident', ident);
-        data.append('query_type', 'upload_photo');
         data.append('type', "single_photo");
-        data.append('baseIdent', baseIdent);
-
-
-        if (TableBuilder.getUrlParameter('id_tree') != undefined) {
-            data.append('page_id', TableBuilder.getUrlParameter('id_tree'));
-        }
-
-        if (TableBuilder.getUrlParameter('id') != undefined) {
-            data.append('page_id', TableBuilder.getUrlParameter('id'));
-        }
-
+        data.append('path_model', context.getAttribute('data-name-model'));
 
         var $progress = $(context).parents('.picture_block').find('.progress-bar');
 
@@ -887,7 +933,7 @@ var TableBuilder = {
             },
             data: data,
             type: "POST",
-            url: TableBuilder.getActionUrl($(context)),
+            url: '/admin/photo/upload',
             cache: false,
             contentType: false,
             processData: false,
@@ -918,6 +964,7 @@ var TableBuilder = {
             data.append("image", context.files[index]);
             data.append('ident', ident);
             data.append('baseIdent', baseIdent);
+            data.append('path_model', context.getAttribute('data-name-model'));
 
             data.append('query_type', 'upload_photo');
             if (TableBuilder.getUrlParameter('id_tree') != undefined) {
@@ -954,7 +1001,7 @@ var TableBuilder = {
                 },
                 data: data,
                 type: "POST",
-                url: TableBuilder.getActionUrl($(context)),
+                url: '/admin/photo/upload',
                 cache: false,
                 contentType: false,
                 processData: false,
@@ -1064,14 +1111,13 @@ var TableBuilder = {
     uploadFile: function (context, ident) {
         var data = new FormData();
         data.append("file", context.files[0]);
-        data.append('query_type', 'upload_file');
         data.append('ident', ident);
-        data.append('__node', TableBuilder.getUrlParameter('id_tree'));
+        data.append('path_model', context.getAttribute('data-name-model'));
 
         jQuery.ajax({
             data: data,
             type: "POST",
-            url: TableBuilder.getActionUrl(),
+            url: '/admin/file/upload',
             cache: false,
             contentType: false,
             processData: false,
@@ -1094,7 +1140,6 @@ var TableBuilder = {
             }
         });
     }, // end uploadFile
-
 
     uploadFileMulti : function (context, ident) {
         var arr = context.files;
@@ -1182,7 +1227,8 @@ var TableBuilder = {
 
         var data = {
             query_type: "select_with_uploaded",
-            ident : name
+            ident : name,
+            model_definitions : content.attr('data-name-model'),
         };
         section.find('#files_uploaded_table_' + name + ' tbody').html('<tr><td colspan="5" style="text-align: center">Загрузка...</td></tr>');
         $.post(
@@ -1203,21 +1249,22 @@ var TableBuilder = {
 
         var section = thisFileElement.parents('.pictures_input_field');
 
-        section.find("#files_uploaded_table_" + name).show();
+        section.find("#files_uploaded_table_" + baseName).show();
 
         var data = {
             query_type: "select_with_uploaded_images",
             ident : name,
             baseName : baseName,
-            page_id : pageId
+            page_id : pageId,
+            path_model: thisFileElement.attr('data-name-model')
         };
-        section.find('#files_uploaded_table_' + name + ' tbody').html('<tr><td colspan="5" style="text-align: center">Загрузка...</td></tr>');
+        section.find('#files_uploaded_table_' + baseName + ' tbody').html('<tr><td colspan="5" style="text-align: center">Загрузка...</td></tr>');
         $.post(
-            TableBuilder.getActionUrl(thisFileElement),
+            '/admin/photo/select_photos',
             data,
             function (response) {
-                section.find('#files_uploaded_table_' + name + ' tbody').html(response.data);
-                section.find('#files_uploaded_table_' + name + ' tbody').attr('data-type', type);
+                section.find('#files_uploaded_table_' + baseName + ' tbody').html(response.data);
+                section.find('#files_uploaded_table_' + baseName + ' tbody').attr('data-type', type);
             },
             'json'
         );
@@ -1250,7 +1297,7 @@ var TableBuilder = {
 
         if (type == 'multi') {
             section.find('#files_uploaded_table_' + name + ' .one_img_uploaded.selected img').each(function ( index ) {
-                var img = $(this).attr('data-path');
+                var img =  $(this).attr('data-path');
                 var html = '<li><img src="' + img + '" data_src_original = "' + img + '" width="120px"><div class="tb-btn-delete-wrap"><button class="btn2 btn-default btn-sm tb-btn-image-delete" type="button" onclick="TableBuilder.deleteImage(this);"><i class="fa fa-times"></i></button></div></li>';
                 section.find('.tb-uploaded-image-container_' + name + ' ul').append(html);
 
@@ -1259,6 +1306,7 @@ var TableBuilder = {
             });
         } else {
             var img = section.find('#files_uploaded_table_' + name + ' .one_img_uploaded.selected img').attr('data-path');
+            
             if (img != undefined) {
                 section.find('[type=hidden]').val(img);
                 section.find('.image-container_' + name).html('<div style="position: relative; display: inline-block;"><img src="' + img + '" width="200px"><div class="tb-btn-delete-wrap"><button class="btn btn-default btn-sm tb-btn-image-delete" type="button" onclick="TableBuilder.deleteSingleImage(\'picture\', this);"><i class="fa fa-times"></i></button></div></div>');
@@ -1300,20 +1348,19 @@ var TableBuilder = {
         var idTag = context.parents('.filter_gallary_images').find('[name=id_tag]').val();
         var searchQuery = context.parents('.filter_gallary_images').find('[name=q]').val();
         var ident = context.parents('.filter_gallary_images').find('[name=ident]').val();
-        var baseName = context.parents('.filter_gallary_images').find('[name=baseName]').val();
+        var pathModel = context.parents('.filter_gallary_images').find('[name=path_model]').val();
 
         var data = {
-            query_type: "select_with_uploaded_images",
             ident : ident,
-            baseName : baseName,
             tag : idTag,
             gallary : idGallary,
-            q : searchQuery
+            q : searchQuery,
+            path_model : pathModel
         };
         var section = context.parents('tbody');
 
         $.post(
-            TableBuilder.getActionUrl(),
+            '/admin/photo/select_photos',
             data,
             function (response) {
                 section.html(response.data);
@@ -1368,30 +1415,6 @@ var TableBuilder = {
             doAjaxLoadContent(location.href);
         });
     }, // end setPerPageAmount
-
-    doExport: function (type, urlBasic) {
-        var values = $(TableBuilder.export_form).serializeArray();
-        values.push({ name: 'type', value: type });
-        values.push({ name: 'query_type', value: "export" });
-
-        var out = new Array();
-        $.each(values, function (index, val) {
-            out.push(val['name'] + '=' + val['value']);
-        });
-
-        if (urlBasic == undefined) {
-            urlBasic = document.location.pathname;
-        }
-
-        if (document.location.search) {
-            var url = urlBasic + document.location.search + '&' + out.join('&');
-        } else {
-            var url = urlBasic + '?' + out.join('&');
-        }
-
-        location.href = url;
-
-    }, // end doExport
 
     flushStorage: function () {
         TableBuilder.storage = {};
@@ -1715,7 +1738,13 @@ var TableBuilder = {
     },
 
     checkActionSelect : function (value) {
+
         $("section.section_field").hide();
+
+        if (!value) {
+            return;
+        }
+
         $("section.section_field." + value).show();
     },
 

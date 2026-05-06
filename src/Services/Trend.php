@@ -2,6 +2,7 @@
 
 namespace Vis\Builder\Services;
 
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 class Trend
@@ -13,7 +14,10 @@ class Trend
     {
         $result = $this->aggregate($model, $field, 'count');
 
-        return $this->returnResult($result);
+        return [
+            'labels' => Arr::pluck($result, 'x'),
+            'values' => Arr::pluck($result, 'y')
+        ];
     }
 
     public function avgByDays($model, $field = 'id')

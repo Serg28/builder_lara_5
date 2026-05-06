@@ -2,7 +2,7 @@
 
 namespace Vis\Builder;
 
-use Intervention\Image\Facades\Image;
+use Intervention\Image\Laravel\Facades\Image;
 
 class Img
 {
@@ -13,6 +13,9 @@ class Img
     private $width = null;
     private $height = null;
     private $quality = 90;
+
+    // Кеширование конфигурационных значений водяного знака
+    private static $watermarkConfig = null;
 
     //Оригинал
     /*public function _get($source, $options)
@@ -82,6 +85,9 @@ class Img
             return;
         }
 
+        // Уникальный ключ кеша на основе пути и параметров
+        $cacheKey = 'glide_' . md5($source . json_encode($options));
+
         $this->setOptions($options);
         $source = '/' . ltrim($source, '/');
         $sourceArray = pathinfo($source);
@@ -109,6 +115,8 @@ class Img
         $webpFileName = $filename . '.webp';
         $webpPicturePath = $this->pathFolder . '/' . $webpFileName;
 
+        //Временно отключено из-за некорректной обработки webp
+        //TODO: проверить генерацию webp для логотипов
         if ($this->supportsWebP()) {
             $this->picturePath = $webpPicturePath;
         }
@@ -118,14 +126,16 @@ class Img
         }
 
         try {
-            $img = Image::make(public_path($source));
+            $img = Image::read(public_path($source));
 
-            if (config('builder.watermark.active') && file_exists(config('builder.watermark.path'))) {
-                $img->insert(
-                    config('builder.watermark.path'),
-                    config('builder.watermark.position'),
-                    config('builder.watermark.x'),
-                    config('builder.watermark.y')
+            // Получаем кешированную конфигурацию водяного знака
+            $watermarkConfig = $this->getWatermarkConfig();
+            if ($watermarkConfig['active'] && file_exists($watermarkConfig['path'])) {
+                $img->place(
+                    $watermarkConfig['path'],
+                    $watermarkConfig['position'],
+                    $watermarkConfig['x'],
+                    $watermarkConfig['y']
                 );
             }
 
@@ -138,6 +148,9 @@ class Img
 
             OptmizationImg::run($this->picturePath);
 
+            // Сохранение пути в кеш
+            cache()->tags(['glide'])->forever($cacheKey, $this->picturePath);
+
             return $this->picturePath;
         } catch (\Exception $e) {
             return $e->getMessage();
@@ -146,7 +159,7 @@ class Img
 
     private function checkFileCorrect($sourceArray)
     {
-       return !isset($sourceArray['extension']) || !isset($sourceArray['dirname']) ? false : true;
+        return !isset($sourceArray['extension']) || !isset($sourceArray['dirname']) ? false : true;
     }
 
     protected function setOptions($options)
@@ -167,40 +180,47 @@ class Img
     protected function createRatioImg($img, $options)
     {
         if (isset($options['fit']) && $options['fit'] == 'crop') {
-            $img->fit(
+            $img->cover(
                 $this->width,
-                $this->height,
-                function ($constraint) {
-                    $constraint->aspectRatio();
-                    $constraint->upsize();
-                }
+                $this->height
             );
 
             return;
         }
 
-        $img->resize(
+        $img->scaleDown(
             $this->width,
-            $this->height,
-            function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            }
+            $this->height
         );
     }
 
     protected function checkExistPicture()
     {
-        return file_exists(public_path($this->picturePath));
-    }
+        //return file_exists(public_path($this->picturePath));
+        $filePath = public_path($this->picturePath);
 
+        return file_exists($filePath) && filesize($filePath) > 0;
+    }
+    
     // Function to check if the browser supports WebP
     private function supportsWebP()
     {
-        if (config('builder.optimization_img.active')) {
-            //return true;
-            return (strpos($_SERVER['HTTP_ACCEPT'], 'image/webp') !== false ||
-                strpos(request()->header('Accept'), 'image/webp') !== false);
+        //return strpos($_SERVER['HTTP_ACCEPT'], 'image/webp') !== false;
+        return strpos(request()->header('Accept'), 'image/webp') !== false;
+    }
+
+    // Метод для получения и кеширования конфигурации водяного знака
+    private function getWatermarkConfig()
+    {
+        if (self::$watermarkConfig === null) {
+            self::$watermarkConfig = [
+                'active' => config('builder.watermark.active'),
+                'path' => config('builder.watermark.path'),
+                'position' => config('builder.watermark.position'),
+                'x' => config('builder.watermark.x'),
+                'y' => config('builder.watermark.y'),
+            ];
         }
+        return self::$watermarkConfig;
     }
 }

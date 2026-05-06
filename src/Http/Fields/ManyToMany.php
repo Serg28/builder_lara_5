@@ -6,6 +6,7 @@ use Vis\Builder\Definitions\Resource;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use phpDocumentor\Reflection\Types\Collection;
+use Vis\Builder\ManyToManySynced;
 
 class ManyToMany extends Field
 {
@@ -27,7 +28,7 @@ class ManyToMany extends Field
         $data = [];
 
         foreach ($collection as $item) {
-            $data[$item->id] = $item->name;
+            $data[$item->id] = $item->t('name');
         }
 
         return $data;
@@ -36,7 +37,7 @@ class ManyToMany extends Field
     public function getDataWithWhereAndOrder(Resource $definition)
     {
         $modelRelated = $definition->model()->{$this->options->getRelation()}()->getRelated();
-        $collection = $modelRelated::select(['id', $this->options->getKeyField() . ' as name']);
+        $collection = $modelRelated::select(['id', $this->options->getKeyField().' as name']);
         $where = $this->options->getWhereCollection();
         $order = $this->options->getOrderCollection();
 
@@ -53,7 +54,17 @@ class ManyToMany extends Field
         }
 
         if (request()->q) {
-            $collection = $collection->where($this->options->getKeyField(), 'like', request()->q . '%');
+            // $collection = $collection->where($this->options->getKeyField(), 'like', request()->q . '%');
+            $keyField = $this->options->getKeyField();
+
+            $fieldExpr = str_contains($keyField, '->')
+                ? "JSON_UNQUOTE(JSON_EXTRACT(" . str_replace('->', ", '$.", $keyField) . "'))"
+                : $keyField;
+
+            $collection = $collection->whereRaw(
+                "LOWER($fieldExpr) LIKE ?",
+                [mb_strtolower(request()->q) . '%']
+            );
         }
 
         return $collection->get();
@@ -74,9 +85,21 @@ class ManyToMany extends Field
         return [];
     }
 
-    public function save($collectionIds, Model $model)
+    public function save($collectionString, $model)
     {
-        $model->{$this->options->getRelation()}()->sync($collectionIds);
+        $collectionArray = explode(',', $collectionString);
+
+        $model->{$this->options->getRelation()}()->detach();
+
+        if ($collectionString) {
+            $model->{$this->options->getRelation()}()->syncWithoutDetaching($collectionArray);
+        }
+
+        ManyToManySynced::dispatch(
+            $model,
+            $this->options->getRelation(),
+            collect($collectionArray)->filter()->toArray(),
+        );
     }
 
     public function getNameField() : string

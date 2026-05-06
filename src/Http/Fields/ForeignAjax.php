@@ -6,17 +6,25 @@ class ForeignAjax extends Foreign
 {
     public function setValue($item)
     {
-        $relation = $item->{$this->options->getRelation()};
+        $relation = $item->{$this->options->getRelation()}()
+            ->select([ "id", "{$this->options->getKeyField()} as name"])
+            ->first();
+
         $this->value = '';
 
         if ($relation) {
-            $this->value = $relation->{$this->options->getKeyField()};
+            $this->value = $relation->name;
         }
     }
 
     public function getValueForList($definition)
     {
         return $this->getValue();
+    }
+
+    public function getValueForExel($definition)
+    {
+        return $this->getValueForList($definition);
     }
 
     public function getValueForInput($definition)
@@ -27,11 +35,13 @@ class ForeignAjax extends Foreign
         if ($value) {
             $item = $model::find($value);
             if ($item) {
-                $related = $item->{$this->options->getRelation()};
+                $related = $item->{$this->options->getRelation()}()
+                    ->select([ "id", "{$this->options->getKeyField()} as name"])
+                    ->first();
 
                 return [
                     'id' => $related->id,
-                    'name' => $related->{$this->options->getKeyField()}
+                    'name' => $related->name
                 ];
             }
 
@@ -41,9 +51,10 @@ class ForeignAjax extends Foreign
     public function getValueForFilter($definition, $id)
     {
         $modelRelated = $definition->model()->{$this->options->getRelation()}()->getRelated();
-        $selectOption = $modelRelated::find($id);
+        $selectOption = $modelRelated::where('id', $id)->select([ "id", "{$this->options->getKeyField()} as name"])
+            ->first();
 
-        return $selectOption->{$this->options->getKeyField()};
+        return $selectOption?->name;
     }
 
     public function search($definition)
@@ -52,7 +63,15 @@ class ForeignAjax extends Foreign
         $modelRelated = $definition->model()->{$this->options->getRelation()}()->getRelated();
         $where = $this->options->getWhereCollection();
 
-        $modelRelated = $modelRelated->where($keyField, 'like', request()->q . "%");
+        // $modelRelated = $modelRelated->where($keyField, 'like', "%".$this->convertQuery(request()->q) . "%");
+        $fieldExpr = str_contains($keyField, '->')
+            ? "JSON_UNQUOTE(JSON_EXTRACT(" . str_replace('->', ", '$.", $keyField) . "'))"
+            : $keyField;
+
+        $modelRelated = $modelRelated->whereRaw(
+            "LOWER($fieldExpr) LIKE ?",
+            ['%' . mb_strtolower($this->convertQuery(request()->q)) . '%']
+        );
 
         if (count($where)) {
             foreach ($where as $param) {
@@ -65,6 +84,5 @@ class ForeignAjax extends Foreign
         return [
             'results' => $result
         ];
-
     }
 }

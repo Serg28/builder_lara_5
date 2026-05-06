@@ -1,0 +1,330 @@
+🔍 Проверка совместимости пакетов с Laravel 11/12...
+
+[1/37] Проверяем aaronfrancis/fast-paginate...
+  Текущая версия: ^1.0
+  Последняя версия: v2.0.0
+  Laravel requirement: не указано
+  ❓ Требования Laravel неясны
+
+[2/37] Проверяем akaunting/laravel-firewall...
+  Текущая версия: ^2
+  Последняя версия: 2.3.0
+  Laravel requirement: ^9.0|^10.0|^11.0|^12.0
+  ✅ Поддерживает Laravel 11 и 12
+
+[3/37] Проверяем arrilot/laravel-widgets...
+  Текущая версия: ^3.14
+  Последняя версия: 1.0.x-dev
+  Laravel requirement: не указано
+  ❓ Требования Laravel неясны
+
+[4/37] Проверяем biscolab/laravel-recaptcha...
+  Текущая версия: ^6
+  Последняя версия: v2.x-dev
+  Laravel requirement: 5.*
+  ❓ Требования Laravel неясны
+
+[5/37] Проверяем danharrin/livewire-rate-limiting...
+  Текущая версия: ^1.3
+  Последняя версия: v2.1.0
+  Laravel requirement: не указано
+  ❓ Требования Laravel неясны
+
+[6/37] Проверяем dedoc/scramble...
+  Текущая версия: ^0.12
+  Последняя версия: v0.12.22
+  Laravel requirement: не указано
+  ❓ Требования Laravel неясны
+
+[7/37] Проверяем deeplcom/deepl-php...
+  Текущая версия: ^1.11
+  Последняя версия: v1.12.0
+  Laravel requirement: не указано
+  ❓ Требования Laravel неясны
+
+[8/37] Проверяем fouladgar/laravel-otp...
+  Текущая версия: 4.3.0.*
+  Последняя версия: v5.5.0
+  Laravel requirement: не указано
+  ❓ Требования Laravel неясны
+
+[9/37] Проверяем hisorange/browser-detect...
+  Текущая версия: ^4.5
+  Последняя версия: 5.0.3
+  Laravel requirement: не указано
+  ❓ Требования Laravel неясны
+
+[10/37] Проверяем huy-nguyen/laravel-optimize-init-db-connection...
+  Текущая версия: ^1.0
+PHP Warning:  Undefined array key "latest_version" in /workspace/builder_lara_5/check-packages-compatibility.php on line 148
+  Последняя версия: 
+PHP Warning:  Undefined array key "laravel_requirement" in /workspace/builder_lara_5/check-packages-compatibility.php on line 149
+  Laravel requirement: 
+  ❌ Не удалось получить данные
+
+[11/37] Проверяем iksaku/laravel-mass-update...
+  Текущая версия: ^1.0
+  Последняя версия: 2.x-dev
+  Laravel requirement: не указано
+  ❓ Требования Laravel неясны
+
+[12/37] Проверяем kfoobar/flush-horizon...
+  Текущая версия: ^1.0
+  Последняя версия: v1.0.1
+  Laravel requirement: не указано
+  ❓ Требования Laravel неясны
+
+[13/37] Проверяем kwn/number-to-words...
+  Текущая версия: ^2.2
+  Последняя версия: 2.11.2
+  Laravel requirement: не указано
+  ❓ Требования Laravel неясны
+
+[14/37] Проверяем laragear/preload...
+  Текущая версия: ^2
+  Последняя версия: 3.x-dev
+  Laravel requirement: не указано
+  ❓ Требования Laravel неясны
+
+[15/37] Проверяем marcin-orlowski/laravel-api-response-builder...
+  Текущая версия: ^10
+  Последняя версия: v11.x-dev
+  Laravel requirement: ^11.0
+  ✅ Поддерживает Laravel 11 и 12
+
+[16/37] Проверяем plakidan/monobank-pay...
+  Текущая версия: ^0.2.0
+  Последняя версия: 0.2.3
+  Laravel requirement: не указано
+  ❓ Требования Laravel неясны
+
+[17/37] Проверяем rodenastyle/stream-parser...
+  Текущая версия: ^1.4
+  Последняя версия: 2.0.x-dev
+  Laravel requirement: не указано
+  ❓ Требования Laravel неясны
+
+[18/37] Проверяем rtconner/laravel-likeable...
+  Текущая версия: ~3.0
+  Последняя версия: 3.2.0
+  Laravel requirement: не указано
+  ❓ Требования Laravel неясны
+
+[19/37] Проверяем vxm/laravel-async...
+  Текущая версия: ^4
+  Последняя версия: v5.0.0
+  Laravel requirement: не указано
+  ❓ Требования Laravel неясны
+
+[20/37] Проверяем wire-elements/modal...
+  Текущая версия: ^2.0
+  Последняя версия: 2.0.0.x-dev
+  Laravel requirement: не указано
+  ❓ Требования Laravel неясны
+
+[21/37] Проверяем zoha/laravel-meta...
+  Текущая версия: ^2.0
+  Последняя версия: v2.0.2
+  Laravel requirement: >=8.0
+  ❓ Требования Laravel неясны
+
+[22/37] Проверяем laravel/horizon...
+  Текущая версия: ^5
+  Последняя версия: 5.x-dev
+  Laravel requirement: не указано
+  ❓ Требования Laravel неясны
+
+[23/37] Проверяем laravel/octane...
+  Текущая версия: ^2
+  Последняя версия: 2.x-dev
+  Laravel requirement: ^10.10.1|^11.0|^12.0
+  ✅ Поддерживает Laravel 11 и 12
+
+[24/37] Проверяем laravel/pulse...
+  Текущая версия: ^1
+  Последняя версия: 1.x-dev
+  Laravel requirement: не указано
+  ❓ Требования Laravel неясны
+
+[25/37] Проверяем laravel/sanctum...
+  Текущая версия: ^3.0
+  Последняя версия: 4.x-dev
+  Laravel requirement: не указано
+  ❓ Требования Laravel неясны
+
+[26/37] Проверяем laravel/socialite...
+  Текущая версия: ^5.2
+  Последняя версия: 5.x-dev
+  Laravel requirement: не указано
+  ❓ Требования Laravel неясны
+
+[27/37] Проверяем livewire/livewire...
+  Текущая версия: ^3
+  Последняя версия: 3.x-dev
+  Laravel requirement: не указано
+  ❓ Требования Laravel неясны
+
+[28/37] Проверяем maatwebsite/excel...
+  Текущая версия: ^3.1
+  Последняя версия: 3.1.x-dev
+  Laravel requirement: не указано
+  ❓ Требования Laravel неясны
+
+[29/37] Проверяем spatie/once...
+  Текущая версия: ^3.1
+  Последняя версия: 3.1.1
+  Laravel requirement: не указано
+  ❓ Требования Laravel неясны
+
+[30/37] Проверяем barryvdh/laravel-ide-helper...
+  Текущая версия: ^3
+  Последняя версия: 2.15.x-dev
+  Laravel requirement: не указано
+  ❓ Требования Laravel неясны
+
+[31/37] Проверяем beyondcode/laravel-query-detector...
+  Текущая версия: ^2
+  Последняя версия: 2.1.0
+  Laravel requirement: не указано
+  ❓ Требования Laravel неясны
+
+[32/37] Проверяем laravel/telescope...
+  Текущая версия: ^5.0
+  Последняя версия: 5.x-dev
+  Laravel requirement: ^8.37|^9.0|^10.0|^11.0|^12.0
+  ✅ Поддерживает Laravel 11 и 12
+
+[33/37] Проверяем laravel/pint...
+  Текущая версия: ^1.0
+  Последняя версия: v1.22.1
+  Laravel requirement: не указано
+  ❓ Требования Laravel неясны
+
+[34/37] Проверяем laravel/sail...
+  Текущая версия: ^1.0.1
+  Последняя версия: 1.x-dev
+  Laravel requirement: не указано
+  ❓ Требования Laravel неясны
+
+[35/37] Проверяем larastan/larastan...
+  Текущая версия: ^2.0
+  Последняя версия: 3.x-dev
+  Laravel requirement: не указано
+  ❓ Требования Laravel неясны
+
+[36/37] Проверяем nunomaduro/collision...
+  Текущая версия: ^7
+  Последняя версия: v8.x-dev
+  Laravel requirement: не указано
+  ❓ Требования Laravel неясны
+
+[37/37] Проверяем spatie/laravel-ignition...
+  Текущая версия: ^2.0
+  Последняя версия: v1.x-dev
+  Laravel requirement: не указано
+  ❓ Требования Laravel неясны
+
+================================================================================
+📊 СВОДКА РЕЗУЛЬТАТОВ
+================================================================================
+
+✅ СОВМЕСТИМЫЕ ПАКЕТЫ (4):
+   • akaunting/laravel-firewall
+   • marcin-orlowski/laravel-api-response-builder
+   • laravel/octane
+   • laravel/telescope
+
+⚠️  ТРЕБУЮТ ОБНОВЛЕНИЯ (0):
+
+❓ НЕОПРЕДЕЛЕННЫЙ СТАТУС (32):
+   • aaronfrancis/fast-paginate
+   • arrilot/laravel-widgets
+   • biscolab/laravel-recaptcha
+   • danharrin/livewire-rate-limiting
+   • dedoc/scramble
+   • deeplcom/deepl-php
+   • fouladgar/laravel-otp
+   • hisorange/browser-detect
+   • iksaku/laravel-mass-update
+   • kfoobar/flush-horizon
+   • kwn/number-to-words
+   • laragear/preload
+   • plakidan/monobank-pay
+   • rodenastyle/stream-parser
+   • rtconner/laravel-likeable
+   • vxm/laravel-async
+   • wire-elements/modal
+   • zoha/laravel-meta
+   • laravel/horizon
+   • laravel/pulse
+   • laravel/sanctum
+   • laravel/socialite
+   • livewire/livewire
+   • maatwebsite/excel
+   • spatie/once
+   • barryvdh/laravel-ide-helper
+   • beyondcode/laravel-query-detector
+   • laravel/pint
+   • laravel/sail
+   • larastan/larastan
+   • nunomaduro/collision
+   • spatie/laravel-ignition
+
+❌ ОШИБКИ ПРОВЕРКИ (1):
+   • huy-nguyen/laravel-optimize-init-db-connection
+
+--------------------------------------------------------------------------------
+📝 РЕКОМЕНДАЦИИ:
+--------------------------------------------------------------------------------
+2. Проверьте вручную следующие пакеты:
+   https://packagist.org/packages/aaronfrancis/fast-paginate
+   https://packagist.org/packages/arrilot/laravel-widgets
+   https://packagist.org/packages/biscolab/laravel-recaptcha
+   https://packagist.org/packages/danharrin/livewire-rate-limiting
+   https://packagist.org/packages/dedoc/scramble
+   https://packagist.org/packages/deeplcom/deepl-php
+   https://packagist.org/packages/fouladgar/laravel-otp
+   https://packagist.org/packages/hisorange/browser-detect
+   https://packagist.org/packages/iksaku/laravel-mass-update
+   https://packagist.org/packages/kfoobar/flush-horizon
+   https://packagist.org/packages/kwn/number-to-words
+   https://packagist.org/packages/laragear/preload
+   https://packagist.org/packages/plakidan/monobank-pay
+   https://packagist.org/packages/rodenastyle/stream-parser
+   https://packagist.org/packages/rtconner/laravel-likeable
+   https://packagist.org/packages/vxm/laravel-async
+   https://packagist.org/packages/wire-elements/modal
+   https://packagist.org/packages/zoha/laravel-meta
+   https://packagist.org/packages/laravel/horizon
+   https://packagist.org/packages/laravel/pulse
+   https://packagist.org/packages/laravel/sanctum
+   https://packagist.org/packages/laravel/socialite
+   https://packagist.org/packages/livewire/livewire
+   https://packagist.org/packages/maatwebsite/excel
+   https://packagist.org/packages/spatie/once
+   https://packagist.org/packages/barryvdh/laravel-ide-helper
+   https://packagist.org/packages/beyondcode/laravel-query-detector
+   https://packagist.org/packages/laravel/pint
+   https://packagist.org/packages/laravel/sail
+   https://packagist.org/packages/larastan/larastan
+   https://packagist.org/packages/nunomaduro/collision
+   https://packagist.org/packages/spatie/laravel-ignition
+   https://packagist.org/packages/huy-nguyen/laravel-optimize-init-db-connection
+
+3. Ваши форки требуют создания веток laravel-11-12-support:
+   • babenkoivan/scout-elasticsearch-driver
+   • bumbummen99/shoppingcart
+   • arturishe21/laravel-liqpay
+   • maksa988/laravel-wayforpay
+   • usamamuneerchaudhary/commentify
+
+4. Основные изменения для Laravel 11/12:
+   • PHP: ^8.2
+   • Laravel Framework: ^11.0|^12.0
+   • Predis: ^2.0
+   • Возможно PHPUnit: ^10.0
+   • Возможно Collision: ^8.0
+
+================================================================================
+🎯 Готово! Проверьте результаты и обновите пакеты по необходимости.
+================================================================================

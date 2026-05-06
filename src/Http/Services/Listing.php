@@ -28,9 +28,14 @@ class Listing
 
     public function getUrlAction()
     {
+        return '/admin/actions/' . $this->getThisUrl();
+    }
+
+    public function getThisUrl()
+    {
         $arraySlugs = explode('/', request()->url());
 
-        return '/admin/actions/' . last($arraySlugs);
+        return last($arraySlugs);
     }
 
     public function isSortable()
@@ -64,7 +69,9 @@ class Listing
 
     public function isShowAmount()
     {
-        return is_array($this->definition->getPerPage());
+        $perPage = $this->definition->getPerPage();
+
+        return is_array($perPage) && count($perPage);
     }
 
     public function getPerPage()

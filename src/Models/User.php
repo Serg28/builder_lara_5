@@ -22,7 +22,6 @@ class User extends EloquentUser
         return $this->hasOne(EloquentActivation::class);
     }
 
-
     /**
      * @var string
      */
@@ -54,5 +53,25 @@ class User extends EloquentUser
     public function getFullName()
     {
         return $this->first_name.' '.$this->last_name;
+    }
+
+    public function hasAccessForCms($link, $action = 'view')
+    {
+        //$link = str_replace(['/'], [''], $link).'.'. $action;
+        $link = str_replace(['/'], [''], explode('?',$link)[0]).'.'. $action;
+        return $this->hasAccess([$link]);
+    }
+
+    public function hasAccessActionsForCms($action)
+    {
+        $urlArray =  explode('/', request()->path());
+
+        $url = last($urlArray);
+
+        if (request()->is('*/groups') || request()->has('foreign_field')) {
+            return true;
+        }
+
+        return $this->hasAccessForCms($url, $action);
     }
 }

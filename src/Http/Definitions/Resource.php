@@ -4,12 +4,18 @@ namespace Vis\Builder\Definitions;
 
 use Vis\Builder\Services\Listing;
 use Illuminate\Support\Arr;
-use Vis\Builder\Fields\Definition;
-use Illuminate\Support\Facades\Cache;
+use Vis\Builder\Fields\{Definition, Password, Virtual};
+use Vis\Builder\Fields\Field;
 use Illuminate\Support\Facades\Validator;
+use Vis\Builder\Services\Actions;
+use Vis\Builder\Libs\GoogleTranslateForFree;
+use Vis\Builder\Definitions\Traits\{CacheResource, CloneResource, HasDocumentation};
+use Illuminate\Support\Str;
 
 class Resource
 {
+    use CacheResource, CloneResource, HasDocumentation;
+
     protected $orderBy = 'created_at desc';
     protected $isSortable = false;
     protected $perPage = [20, 100, 1000];
@@ -18,10 +24,25 @@ class Resource
     protected $updateHasOneList = [];
     protected $updateMorphOneList = [];
     protected $relations = [];
+    protected $filterScope;
+    //protected $autoTranslate = true;
+    protected $autoTranslate = false;
+    protected $isShowPerPage = false;
+    protected ?array $filter = null;
+
+    public function actions()
+    {
+        return Actions::make()->insert()->update()->clone()->revisions()->delete();
+    }
 
     public function model()
     {
         return new $this->model;
+    }
+
+    public function buttons()
+    {
+        return [];
     }
 
     public function cards()
@@ -29,11 +50,36 @@ class Resource
         return [];
     }
 
+    public function getTableView()
+    {
+        return 'admin::table';
+    }
+
     public function getTitle() : string
     {
         return __cms($this->title);
     }
 
+    public static function staticTitle(): string
+    {
+        static $cache = [];
+
+        $class = static::class;
+        if (isset($cache[$class])) {
+            return $cache[$class];
+        }
+
+        $ref = new \ReflectionClass($class);
+        $prop = $ref->getProperty('title');
+        $prop->setAccessible(true);
+
+        return $cache[$class] = __cms(
+            $prop->isStatic()
+                ? $prop->getValue()
+                : $prop->getValue($ref->newInstanceWithoutConstructor())
+        );
+    }
+    
     public function getPerPage()
     {
         return $this->perPage;
@@ -44,14 +90,9 @@ class Resource
         return $this->isSortable;
     }
 
-    public function getCacheKey()
+    public function getIsShowPerPage()
     {
-        return $this->cacheTag ?: $this->getNameDefinition();
-    }
-
-    public function clearCache()
-    {
-        Cache::tags($this->getCacheKey())->flush();
+        return $this->isShowPerPage;
     }
 
     public function getOrderBy()
@@ -65,19 +106,36 @@ class Resource
         return $this->orderBy;
     }
 
+    public function setOrderBy(string $orderBy): void
+    {
+        $this->orderBy = $orderBy;
+    }
+
     public function getFilter()
     {
-        return session($this->getSessionKeyFilter());;
+        return $this->filter ?? session($this->getSessionKeyFilter());;
+    }
+
+    public function setFilter(array $filter): void
+    {
+        $this->filter = $filter;
     }
 
     public function getPerPageThis()
     {
-        return session($this->getSessionKeyPerPage()) ? session($this->getSessionKeyPerPage())['per_page'] : $this->perPage[0];
+        return session($this->getSessionKeyPerPage()) && isset(session($this->getSessionKeyPerPage())['per_page'])
+            ? session($this->getSessionKeyPerPage())['per_page']
+            : $this->perPage[0];
     }
 
     public function getNameDefinition() : string
     {
-        return mb_strtolower(class_basename($this));
+        return Str::snake(class_basename($this));
+    }
+
+    public function getFullPathDefinition() : string
+    {
+        return get_class($this);
     }
 
     public function getSessionKeyOrder() : string
@@ -97,9 +155,9 @@ class Resource
 
     public function getUrlAction() : string
     {
-        $page = $this->getNameDefinition();
+        $arraySlugs = explode('/', request()->url());
 
-        return '/admin/actions/' . $page;
+        return '/admin/actions/' . last($arraySlugs);
     }
 
     public function getAllFields() : array
@@ -109,6 +167,11 @@ class Resource
 
         $fieldsResults = [];
         foreach ($fields as $field) {
+
+            if ($field->isHide()) {
+                continue;
+            }
+
             $fieldsResults[$field->getNameField()] = $field;
 
             if ($field->getHasOne()) {
@@ -123,31 +186,19 @@ class Resource
         return $fieldsResults;
     }
 
-    public function remove(int $id) : array
+    public function remove($id) : array
     {
         $this->model()->destroy($id);
+        $this->clearCache();
 
-        return [
-            'status' => 'success'
-        ];
-    }
-
-    public function clone(int $id) : array
-    {
-        $model = $this->model()->find($id);
-        $newModel = $model->replicate();
-        $newModel->push();
-
-        return [
-            'status' => 'success',
-        ];
+        return $this->returnSuccess();
     }
 
     public function changeOrder($requestOrder, $params) : array
     {
         parse_str($requestOrder, $order);
         $pageThisCount = $params ?: 1;
-        $perPage = 20;
+        $perPage = $this->getPerPageThis();
 
         $lowest = ($pageThisCount * $perPage) - $perPage;
 
@@ -159,9 +210,9 @@ class Resource
             ]);
         }
 
-        return [
-            'status' => 'success'
-        ];
+        $this->clearCache();
+
+        return $this->returnSuccess();
     }
 
     public function showAddForm()
@@ -170,7 +221,7 @@ class Resource
         $fields = $this->fields();
 
         return [
-            view('admin::new.form.create', compact('definition', 'fields'))->render()
+            view('admin::form.create', compact('definition', 'fields'))->render()
         ];
     }
 
@@ -195,7 +246,7 @@ class Resource
         }
 
         return [
-            'html' => view('admin::new.form.edit', compact('definition', 'fields'))->render(),
+            'html' => view('admin::form.edit', compact('definition', 'fields'))->render(),
             'status' => true
         ];
     }
@@ -205,28 +256,29 @@ class Resource
         $record = $this->model();
         $recordNew = $this->saveActive($record, $request);
 
-        return [
-            'id' => $recordNew->id,
-            'html' => $this->getSingleRow($recordNew)
-        ];
+        return $this->resultJsonSave($recordNew);
     }
 
     public function saveEditForm($request) : array
     {
         $recordNew = $this->updateForm($request);
 
+        return $this->resultJsonSave($recordNew);
+    }
+
+    private function resultJsonSave($recordNew) {
         return [
             'id' => $recordNew->id,
-            'html' => $this->getSingleRow($recordNew)
+            'html' => $this->getSingleRow($recordNew),
+            'isTree' => is_subclass_of($recordNew, 'Vis\Builder\Tree')
         ];
     }
 
     protected function updateForm($request)
     {
         $record = $this->model()->find($request['id']);
-        $recordNew = $this->saveActive($record, $request);
 
-        return $recordNew;
+        return $this->saveActive($record, $request);
     }
 
     private function getRules($fields) : array
@@ -245,13 +297,17 @@ class Resource
     {
         $fields = $this->getAllFields();
         Validator::make($request, $this->getRules($fields))->validate();
-
-        foreach ($fields as $field) {
+        $requestFields = array_keys($request);
+        foreach ($fields as $k => $field) {
+            if (! in_array($k, $requestFields)) {
+                continue;
+            }
             $nameField = $field->getNameField();
             if ($nameField != 'id') {
 
                 if ($field->getLanguage() && !$field->getMorphOne() && !$field->getHasOne()) {
                     $this->saveLanguage($field, $record, $request);
+                    continue;
                 }
 
                 if ($field->getHasOne()) {
@@ -260,7 +316,7 @@ class Resource
                 }
 
                 if ($field->getMorphOne()) {
-                    $this->updateMorphOne($field, $request[$nameField]);
+                    $this->updateMorphOne($field, $request);
                     continue;
                 }
 
@@ -269,7 +325,11 @@ class Resource
                     continue;
                 }
 
-                if ($field instanceof Definition) {
+                if ($field instanceof Definition || $field instanceof Virtual) {
+                    continue;
+                }
+
+                if (isset($request[$nameField]) && $request[$nameField] == '******' && $field instanceof Password) {
                     continue;
                 }
 
@@ -277,25 +337,56 @@ class Resource
             }
         }
 
+        if (isset($request['foreign_attributes'])) {
+            $foreignAttributes = json_decode($request['foreign_attributes']);
+
+            if ($foreignAttributes->type_relation == 'morphMany') {
+                $record->{$foreignAttributes->morph_type} = $foreignAttributes->model_base;
+            }
+        }
+
         $record->save();
 
         if (count($this->updateManyToManyList)) {
             foreach ($this->updateManyToManyList as $item) {
-                if ($item['collectionsIds']) {
-                    $item['field']->save($item['collectionsIds'], $record);
-                }
+                $item['field']->save($item['collectionsIds'], $record);
             }
         }
 
         if (count($this->updateHasOneList)) {
-            foreach ($this->updateHasOneList as $item) {
 
-                $relationHasOne = $item['field']->getHasOne();
-                $data = [
-                    $item['field']->getNameField() => $item['value']
-                ];
+            foreach ($this->updateHasOneList as $relationHasOne => $items) {
 
-                $record->$relationHasOne ? $record->$relationHasOne()->update($data) : $record->$relationHasOne()->create($data);
+                unset($data);
+
+                foreach ($items as $item) {
+                    $keyField = $item['field']->getNameFieldInBd();
+
+                    if ($item['field']->getLanguage()) {
+
+                        $fieldLanguage = $item['field']->getNameField();
+
+                        foreach ($item['field']->getLanguage() as $language) {
+                            $translateArray[$fieldLanguage][$language->language] =
+                                $request[$fieldLanguage][$language->language] ? :
+                                    $this->getTranslate(
+                                        $item['field'],
+                                        $language->language,
+                                        $request[$fieldLanguage][config('app.locale')]
+                                    );
+                        }
+
+                        $data[$relationHasOne][$keyField] = json_encode($translateArray[$fieldLanguage], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+                    } else {
+                        $data[$relationHasOne][$keyField] = $item['value'];
+                    }
+                }
+
+
+                $record->$relationHasOne ?
+                    $record->$relationHasOne()->update($data[$relationHasOne]) :
+                    $record->$relationHasOne()->create($data[$relationHasOne]);
             }
         }
 
@@ -303,26 +394,39 @@ class Resource
 
             $data = [];
 
-            foreach ($this->updateMorphOneList as $item) {
+            foreach ($this->updateMorphOneList as $relationMorphOne => $items) {
 
-                $relationMorphOne = $item['field']->getMorphOne();
+                unset($data);
 
-                if ($item['field']->getLanguage()) {
-                    foreach ($item['field']->getLanguage() as $language) {
-                        $data[$item['field']->getNameField().$language['postfix']] = $request[$item['field']->getNameField().$language['postfix']];
+                foreach ($items as $item) {
+
+                    if ($item['field']->getLanguage()) {
+                        foreach ($item['field']->getLanguage() as $language) {
+
+                            $fieldLanguage = $item['field']->getNameField();
+
+                            $translateArray[$language->language] = $request[$fieldLanguage][$language->language] ? :
+                                $this->getTranslate(
+                                    $item['field'],
+                                    $language->language,
+                                    $request[$item['field']->getNameField()][config('app.locale')]
+                                );
+                        }
+
+                        $data[$item['field']->getNameField()] = json_encode($translateArray, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+                    } else {
+                        $data[$item['field']->getNameField()] = $item['value'];
                     }
-
-                } else {
-                    $data = [
-                        $item['field']->getNameField() => $item['value']
-                    ];
                 }
-            }
 
-            $record->$relationMorphOne ? $record->$relationMorphOne()->update($data) : $record->$relationMorphOne()->create($data);
+                $record->$relationMorphOne && $record->$relationMorphOne->id
+                    ? $record->$relationMorphOne()->update($data)
+                    : $record->$relationMorphOne()->create($data);
+            }
         }
 
-        Cache::tags($this->getNameDefinition())->flush();
+        $this->clearCache();
 
         return $record;
     }
@@ -331,21 +435,23 @@ class Resource
     {
         $nameField = $field->getNameField();
 
-        foreach ($field->getLanguage() as $slugLang => $langPrefix) {
-            $langField = $nameField . $langPrefix['postfix'];
+        foreach ($field->getLanguage() as $langPrefix) {
 
-            if (isset($request[$langField]) && $request[$langField]) {
-                $translate = $request[$langField];
-            } else {
-                $translate = $this->getTranslate($field, $slugLang, $request[$nameField]);
-            }
+            $translate = $request[$nameField][$langPrefix->language] ?:
+                $this->getTranslate($field, $langPrefix->language, $request[$nameField][config('app.locale')]);
 
-            $record->$langField = $translate;
+            $translateArray[$langPrefix->language] = $translate;
         }
+
+        $record->$nameField = json_encode($translateArray, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
     private function getTranslate($field, $slugLang, $phrase)
     {
+        if (!$field->checkAutoTranslate() || !$this->autoTranslate) {
+            return '';
+        }
+
         try {
             $langDef = $field->getLanguageDefault();
 
@@ -353,13 +459,16 @@ class Resource
                 return '';
             }
 
-            $translator = new \Yandex\Translate\Translator(config('builder.translations.cms.api_yandex_key'));
-            $translation = $translator->translate($phrase, $langDef . '-' . $slugLang);
+            $result = (new GoogleTranslateForFree())->translate($langDef, $slugLang, $phrase, 2);
 
-            if (isset($translation->getResult()[0])) {
-                return $translation->getResult()[0];
-            }
-        } catch (\Yandex\Translate\Exception $e) {}
+            $result = str_replace('/ ','/', $result);
+            $result = str_replace(' /','/', $result);
+
+            return $result ?: $phrase;
+
+        } catch (\Exception $e) {
+            return $phrase;
+        }
     }
 
     protected function updateManyToMany($field, $collectionsIds)
@@ -372,17 +481,17 @@ class Resource
 
     protected function updateHasOne($field, $value)
     {
-        $this->updateHasOneList[] = [
+        $this->updateHasOneList[$field->getHasOne()][] = [
             'field' => $field,
             'value' => $value
         ];
     }
 
-    protected function updateMorphOne($field, $value)
+    protected function updateMorphOne($field, $request)
     {
-        $this->updateMorphOneList[] = [
+        $this->updateMorphOneList[$field->getMorphOne()][] = [
             'field' => $field,
-            'value' => $value
+            'value' => $field->prepareSave($request)
         ];
     }
 
@@ -393,12 +502,13 @@ class Resource
         $definition = $this;
 
         $recordNew->fields = clone $head;
+
         $head->map(function ($item2, $key) use ($recordNew, $definition) {
             $item2->setValue($recordNew);
             $recordNew->fields[$key]->value = $item2->getValueForList($definition);
         });
 
-        return view('admin::new.list.single_row',
+        return view('admin::list.single_row',
             [
                 'list' => $list,
                 'record' => $recordNew
@@ -427,6 +537,86 @@ class Resource
         return $list;
     }
 
+    /*
+    public function getListingForExel()
+    {
+        $this->checkPermissions();
+
+        $head = $this->head();
+        $list = $this->getCollection($getAllRecords = true);
+
+        $definition = $this;
+
+        $list->map(function ($item, $key) use ($head, $definition) {
+            $item->fields = clone $head;
+            $item->fields->map(function ($item2, $key) use ($item, $definition) {
+                $item->fields[$key] = clone $item2;
+                $item2->setValue($item);
+
+                $item->fields[$key]->value = $item2->getValueForExel($definition);
+            });
+        });
+
+        return $list;
+    }*/
+
+    public function getListingForExel()
+    {
+        $this->checkPermissions();
+
+        $head = $this->headForExcel();
+        $list = $this->getCollection(getAllRecords: true);
+
+        $definition = $this;
+
+        $list->map(function ($item, $key) use ($head, $definition) {
+            $item->fields = clone $head;
+            $item->fields->map(function ($item2, $key) use ($item, $definition) {
+                $item->fields[$key] = clone $item2;
+                $item2->setValue($item);
+                $value = $item2->getValueForExel($definition) ?? $item2->getValueForList($definition);
+                $value = $this->stripHtmlTags($value);
+                $item->fields[$key]->value = $value;
+            });
+        });
+
+        return $list;
+    }
+
+    public function stripHtmlTags($value)
+    {
+        if (!is_string($value)) {
+            return $value;
+        }
+        // Замінюємо блокові теги на пробіл
+        $value = preg_replace('/<\/?(div|p|br|li|ul|ol|tr|td|th|h[1-6])[^>]*>/i', ' ', $value);
+        // Видаляємо всі інші HTML-теги
+        $value = strip_tags($value);
+        // Прибираємо зайві пробіли
+        return trim(preg_replace('/\s+/', ' ', $value));
+    }
+
+    public function headForExcel(bool $showAll = false)
+    {
+        $fields = $this->getAllFields();
+        if ($showAll) {
+            return $fields;
+        }
+        return collect($fields)->reject(function ($name) {
+            return $this->checkIsSelected($name) !== true;
+        });
+    }
+
+    public function checkIsSelected(Field $field): bool
+    {
+        if (!method_exists($field, 'getNameFieldInBd')) {
+            throw new \InvalidArgumentException("Переданный объект не имеет метода getNameFieldInBd");
+        }
+
+        $fieldInRequest = request()->input('b')[$field->getNameFieldInBd()] ?? 'off';
+        return $fieldInRequest === 'on';
+    }
+
     protected function checkPermissions()
     {
         if (!app('user')->hasAccess([$this->getNameDefinition(). '.view'])) {
@@ -434,32 +624,141 @@ class Resource
         }
     }
 
-    protected function getCollection()
+    public function getCollection($getAllRecords = false)
+    {
+        $orderBy = $this->getOrderBy();
+        $perPage = $this->getPerPageThis();
+
+        $collection = $this->prepareQuery();
+
+        if ($getAllRecords) {
+            return $collection->orderByRaw($orderBy)->get();
+        }
+
+        return $collection->orderByRaw($orderBy)->paginate($perPage);
+    }
+
+    public function countRecords(): int
+    {
+        return $this->prepareQuery()->count();
+    }
+
+    public function prepareQuery()
     {
         $collection = $this->model()->with($this->relations);
         $filter = $this->getFilter();
         $orderBy = $this->getOrderBy();
         $perPage = $this->getPerPageThis();
+        $collection = $this->getFilterScope($collection);
 
         if (isset($filter['filter']) && is_array($filter['filter'])) {
+
+            $allFields = $this->getAllFields();
+
             foreach ($filter['filter'] as $field => $value) {
                 if (is_null($value) || $value == '') {
                     continue;
                 }
 
-                if (is_array($value)) {
-                    if ($value['from'] && $value['to']) {
-                        $collection = $collection->whereBetween($field, [$value['from'], $value['to']]);
+                if (method_exists($this, 'additionalFilterScopes')) {
+                    //Перевіряємо, чи є скоуп для поля у фільтрах скоупах
+                    $scopes = $this->additionalFilterScopes($collection, $value);
+                    if (isset($scopes[$field]) && $scopes[$field] instanceof \Closure) {
+                        $collection = $scopes[$field]($collection, $value);
+                        continue;
                     }
-
-                    continue;
                 }
 
-                $collection = $collection->where($field, '=', $value);
+                if ($hasOneRelation = $this->getRelationsHasOne($allFields, $field)) {
+
+                    $collection = $collection->whereHas($hasOneRelation, function($query) use ($field, $value, $allFields) {
+
+                        $fieldName = $this->getFieldName($allFields, $field);
+
+                        if ($this->isTextField($allFields, $field)) {
+
+                         //   $value = mb_convert_case($value, MB_CASE_TITLE, 'UTF-8');
+
+                            $query->where($fieldName, '=', $value)
+                                ->orWhereRaw('LOWER(`'.$fieldName.'`) LIKE ? ',['%'.trim(mb_strtolower($value)).'%']);
+                        } else {
+                            $query->where($fieldName, '=', $value);
+                        }
+                    });
+
+                } else {
+                    if (is_array($value)) {
+                        if ($value['from'] || $value['to']) {
+
+                            if ($value['from']) {
+                                $collection = $collection->where($field, '>=', $value['from']);
+                            }
+
+                            if ($value['to']) {
+                                $collection = $collection->where($field, '<=', $value['to'] . ' 23:59:59');
+                            }
+                        }
+
+                        continue;
+                    }
+
+                    $collection = $collection->where(function ($query) use ($field, $value, $allFields) {
+                        if ($this->isTextField($allFields, $field)) {
+                          //  $value = mb_convert_case($value, MB_CASE_TITLE, 'UTF-8');
+
+                            $query->where($field, '=', $value)
+                                ->orWhereRaw('LOWER(`'.$field.'`) LIKE ? ',['%'.trim(mb_strtolower($value)).'%']);
+                        } else {
+                            $query->where($field, '=', $value);
+                        }
+                    });
+                }
             }
         }
 
-        return $collection->orderByRaw($orderBy)->paginate($perPage);
+        return $collection;
+    }
+
+    protected function getRelationsHasOne($allFields, $field)
+    {
+        if (Arr::exists($allFields, $field)) {
+            return $allFields[$field]->getHasOne();
+        }
+
+        return false;
+    }
+
+    protected function getFieldName($allFields, $field)
+    {
+        if (Arr::exists($allFields, $field)) {
+            return $allFields[$field]->getNameFieldInBd();
+        }
+
+        return false;
+    }
+
+    public function getFilterScope($collection)
+    {
+        if (!$this->filterScope) {
+            return $collection;
+        }
+
+        return $collection->{$this->filterScope}();
+    }
+
+    public function filterScope($scope)
+    {
+        $this->filterScope = $scope;
+    }
+
+    public function isTextField($allFields, $field)
+    {
+        return Arr::exists($allFields, $field) &&
+            (get_class($allFields[$field]) == 'Vis\\Builder\\Fields\\Text' ||
+                get_class($allFields[$field]) == 'Vis\\Builder\\Fields\\Textarea' ||
+                get_class($allFields[$field]) == 'Vis\\Builder\\Fields\\Froala'
+            )
+            ;
     }
 
     public function head()
@@ -469,5 +768,56 @@ class Resource
         return collect($fields)->reject(function ($name) {
             return $name->isOnlyForm() == true;
         });
+    }
+
+    public function getList()
+    {
+        $list = new Listing($this);
+        $listingRecords = $list->body();
+
+        return view('admin::list.table', compact('list', 'listingRecords'));
+    }
+
+    /**
+     * Дополнительные фильтры для таблицы
+     *
+     * @return array - Возвращает массив полей для дополнительных фильтров
+     */
+    public function getAdditionalFilterFields(): array
+    {
+        // Пример дополнительных полей фильтрации
+        /*return [
+            Text::make('Код виробника', 'mpn')->filter()->sortable()->className('col-md-6'),
+            Text::make('Постачальник', 'supplier')->filter()->sortable()->className('col-md-6'),
+        ];*/
+
+        return [];
+    }
+
+    /**
+     * Cкоупы для дополнительных фильтров
+     *
+     * @param $q - Query Builder
+     * @param $value - Значение фильтра
+     * @return array - Возвращает массив колбеков скоупов для фильтрации
+     */
+    public function additionalFilterScopes($q, $value): array
+    {
+        // Пример скоупа для фильтрации по коду производителя
+        /* return [
+            'mpn' => fn() => $q->where('mpn', $value),
+            'problem_section' => function ($q, $value) {
+                return $q->whereJsonContains('problem_section', $value);
+            },
+        ]; */
+
+        return [];
+    }
+
+    private function returnSuccess()
+    {
+        return [
+            'status' => 'success'
+        ];
     }
 }

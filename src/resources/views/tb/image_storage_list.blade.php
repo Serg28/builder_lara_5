@@ -2,13 +2,13 @@
     <div class="row filter_gallary_images" style="padding-top: 10px">
         <section  class="col col-4">
             <label class="input">
-                <input type="text" value="{{request('q')}}" name="q" placeholder="Введите название картинки">
+                <input type="text" value="{{request('q')}}" name="q" placeholder="{{__cms('Введите название картинки')}}">
             </label>
         </section>
         <section class="col col-4">
             <label class="select">
                 <select name="id_gallery" onchange="TableBuilder.changeGalleryAndTags($(this))">
-                    <option value="">Выбрать галерею</option>
+                    <option value="">{{__cms('Выбрать галерею')}}</option>
                      @foreach($galleries as $gallery)
                         <option value="{{$gallery->id}}" {{request('gallary') == $gallery->id ? 'selected' : ''}}>{{$gallery->title}}</option>
                      @endforeach
@@ -20,7 +20,7 @@
         <section class="col col-4">
             <label class="select">
                 <select name="id_tag" onchange="TableBuilder.changeGalleryAndTags($(this))">
-                    <option value="">Выбрать тег</option>
+                    <option value="">{{__cms('Выбрать тег')}}</option>
                     @foreach($tags as $tag)
                         <option value="{{$tag->id}}" {{request('tag') == $tag->id ? 'selected' : ''}}>{{$tag->title}}</option>
                     @endforeach
@@ -29,7 +29,7 @@
             </label>
         </section>
         <input type="hidden" value="{{request('ident')}}" name="ident">
-        <input type="hidden" value="{{request('baseName')}}" name="baseName">
+        <input type="hidden" value="{{$definition->getFullPathDefinition()}}" name="path_model">
 
     </div>
 </div>
@@ -45,10 +45,18 @@
 
             ?>
 
-            <div class="one_img_uploaded is_wrapper" onclick="TableBuilder.selectImgInStorage($(this))">
+            <div class="one_img_uploaded is_wrapper <?=strpos($img->file_source, '.svg') ? 'transparent-image' : '' ?>" onclick="TableBuilder.selectImgInStorage($(this))" style="position:relative">
+                <button class="btn btn-default btn-sm tb-btn-image-delete"
+                        type="button"
+                        onclick="deleteImage({{$img->id}},'picture', 'one_file', $(this), 'picture', '')"
+                        style="position: absolute; top:2px;right: 2px;left: auto"
+                >
+                    <i class="fa fa-times"></i>
+                </button>
+
                 <div class="one_img_uploaded_content">
                     <img src="{{glide($img->file_folder . $img->file_source, ['w'=>100, 'h' => 100])}}"
-                         data-path = '{{trim($img->file_folder . $img->file_source, '/')}}'
+                         data-path = '/{{trim($img->file_folder . $img->file_source, '/')}}'
                       >
                 </div>
                 <div class="one_img_uploaded_label">
@@ -62,7 +70,7 @@
         <div style="text-align: center; padding: 50px">Нет изображений</div>
     @endforelse
     <div style="text-align: center" class="paginator_pictures">
-        {{ $list->appends(request()->all())->links() }}
+        {{ $list->appends(request()->all())->links('admin::list.pagination-bootstrap-4') }}
     </div>
 
 
@@ -94,6 +102,7 @@
     </style>
 
     <script>
+
         $(".paginator_pictures a").click(function(e) {
             var href = $(this).attr('href');
             e.preventDefault();
@@ -103,6 +112,7 @@
                     section.html(response.data);
             });
         });
+
         $('[name=q]').keyup(function (e) {
             var code = (e.keyCode ? e.keyCode : e.which);
 

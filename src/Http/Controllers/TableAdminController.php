@@ -2,11 +2,9 @@
 
 namespace Vis\Builder;
 
-use Symfony\Component\ErrorHandler\Error\ClassNotFoundError;
 use Vis\Builder\Services\Actions;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Str;
-use Vis\Builder\ControllersNew\{ListController, TreeController};
 
 /**
  * Class TableAdminController.
@@ -16,20 +14,6 @@ class TableAdminController extends Controller
     /**
      * @return mixed
      */
-    public function showTreeNew()
-    {
-        $modelDefinition = "App\\Cms\\Tree\\" . Str::title('tree');
-
-        return (new TreeController($modelDefinition))->list();
-    }
-
-    public function handleTreeNew()
-    {
-        $modelDefinition = "App\\Cms\\Tree\\" . Str::title('tree');
-
-        return (new TreeController($modelDefinition))->handle();
-    }
-
     /**
      * @param string $page
      *
@@ -39,13 +23,12 @@ class TableAdminController extends Controller
     {
         $modelDefinition = $this->getModelDefinition($page);
 
-        if (class_exists($modelDefinition)) {
-            $data = (new ListController(new $modelDefinition()))->list();
+        $this->checkExistsClass($modelDefinition);
 
-            return view('admin::new.table', compact('data'));
-        }
+        $model = new $modelDefinition();
+        $data = $model->getList();
 
-        throw new \Exception('Not found class '. $modelDefinition);
+        return view($model->getTableView(), compact('data'));
     }
 
     /**
@@ -57,11 +40,9 @@ class TableAdminController extends Controller
     {
         $modelDefinition = $this->getModelDefinition($page);
 
-        if (class_exists($modelDefinition)) {
-            return (new ListController(new $modelDefinition()))->list();
-        }
+        $this->checkExistsClass($modelDefinition);
 
-        throw new \Exception('Not found class '. $modelDefinition);
+        return (new $modelDefinition())->getList();
     }
 
     /**
@@ -76,18 +57,41 @@ class TableAdminController extends Controller
         return (new Actions(new $modelDefinition()))->router(request('query_type'));
     }
 
+    public function fastEdit($page, $id)
+    {
+        $modelDefinition = $this->getModelDefinition($page);
+
+        request()->merge(['ident' => request('name')]);
+
+        return (new Actions(new $modelDefinition()))->router('do_fast_change_field');
+    }
+
     private function getModelDefinition($page)
     {
         if (request('foreign_attributes')) {
             $arrayAttributes = json_decode(request('foreign_attributes'), 'true');
 
             return $arrayAttributes['path_definition'];
+        }
 
-            return 'App\\Cms\\Definitions\\HasMany\\TestDefinition2';
+        if (request('paramsJson')) {
+            $arrayAttributes = json_decode(request('paramsJson'), 'true');
+
+            return $arrayAttributes['model_parent'];
+        }
+
+        if (request('model_definitions')) {
+            return request('model_definitions');
         }
 
         return "App\\Cms\\Definitions\\" . ucfirst(Str::camel($page));
     }
 
+    private function checkExistsClass($modelDefinition)
+    {
+        if (!class_exists($modelDefinition)) {
+            throw new \Exception('Not found class '. $modelDefinition);
+        }
+    }
 
 }

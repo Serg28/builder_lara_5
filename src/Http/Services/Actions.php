@@ -4,12 +4,14 @@ namespace Vis\Builder\Services;
 
 use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
+use Vis\Builder\ControllersNew\TreeController;
 
 class Actions
 {
     protected $definition;
     protected $actionsList = [];
     protected $revision;
+    protected $isHideActions = false;
 
     public function __construct($definition = null)
     {
@@ -24,7 +26,7 @@ class Actions
 
     public function fetch($type, $record = null)
     {
-        return view("admin::new.list.actions.{$type}", compact('record'));
+        return view("admin::list.actions.{$type}", compact('record'));
     }
 
     public function list($record)
@@ -32,7 +34,7 @@ class Actions
         $collectionActions = $this->definition->actions()->getActionsAccess();
         $collectionActions = Arr::except($collectionActions, 'insert');
 
-        return view('admin::new.list.actions.all', [
+        return view('admin::list.actions.all', [
             'record' => $record,
             'action' => $this,
             'collectionActions' => $collectionActions
@@ -44,16 +46,28 @@ class Actions
         return $this->actionsList;
     }
 
+    public function hideActions()
+    {
+        $this->isHideActions = true;
+
+        return $this;
+    }
+
+    public function isHideAction()
+    {
+        return $this->isHideActions;
+    }
+
     public function insert()
     {
-        $this->actionsList['insert'] = 'insert';
+        $this->checkAccess('insert');
 
         return $this;
     }
 
     public function update()
     {
-        $this->actionsList['update'] = 'update';
+        $this->checkAccess('update');
 
         return $this;
     }
@@ -67,23 +81,30 @@ class Actions
 
     public function delete()
     {
-        $this->actionsList['delete'] = 'delete';
+        $this->checkAccess('delete');
 
         return $this;
     }
 
     public function clone()
     {
-        $this->actionsList['clone'] = 'clone';
+        $this->checkAccess('clone');
 
         return $this;
     }
 
     public function revisions()
     {
-        $this->actionsList['revisions'] = 'revisions';
+        $this->checkAccess('revisions');
 
         return $this;
+    }
+
+    private function checkAccess($action)
+    {
+        if (app('user')->hasAccessActionsForCms($action)) {
+            $this->actionsList[$action] = $action;
+        }
     }
 
     public function router($action)
@@ -148,7 +169,7 @@ class Actions
 
     private function returnRevisions($request)
     {
-        return $this->revision->doReturn($request['id'], $this->definition);
+        return $this->revision->doReturn($request['id']);
     }
 
     private function setPerPage($request)
@@ -175,11 +196,6 @@ class Actions
         return $this->getThisField()->search($this->definition);
     }
 
-    private function uploadPhoto($request)
-    {
-        return $this->getThisField()->upload($this->definition);
-    }
-
     private function uploadFile($request)
     {
         return $this->getThisField()->upload($this->definition);
@@ -190,14 +206,27 @@ class Actions
         return $this->definition->getAllFields()[request('ident')];
     }
 
-    private function selectWithUploadedImages($request)
-    {
-        return $this->getThisField()->selectWithUploadedImages($this->definition);
-    }
-
     private function selectWithUploaded($request)
     {
         return $this->getThisField()->selectWithUploadedFiles($this->definition);
+    }
+
+    private function doChangePosition($request)
+    {
+       return (new TreeController($this->definition))->doChangePosition();
+    }
+
+    private function doFastChangeField($request)
+    {
+        return $this->getThisField()->fastSave($this->definition, $request);
+    }
+
+    public function fastSave()
+    {
+        $record = $this->definition->model()->find(request()->get('id'));
+        $record->{request()->get('name')} = request()->get('value');
+        $record->save();
+
     }
 
     private function search($request)
@@ -207,6 +236,13 @@ class Actions
         return [
             'status' => 'success',
         ];
+    }
+
+    private function cloneForeignRow($request)
+    {
+        $this->cloneRecord($request);
+
+        return $this->getHtmlForeignDefinition($request);
     }
 
     public function getHtmlForeignDefinition($request)
@@ -225,4 +261,14 @@ class Actions
         return $field->remove($this->definition, $parseJsonData);
     }
 
+    public function doDeleteNode($request)
+    {
+        $this->definition->model()->destroy($request['id']);
+
+        $this->definition->clearCache();
+
+        return [
+            'status' => 'success'
+        ];
+    }
 }

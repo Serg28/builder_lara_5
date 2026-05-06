@@ -17,7 +17,7 @@ trait ImagesTrait
     {
         $img_res = $this->getImgPath($width, $height, $options);
 
-        return  '<img src = "'.$img_res.'" title = "'.e($this->title).'" alt = "'.e($this->title).'">';
+        return  '<img src = "'.$img_res.'" title = "'.e($this->t('title')).'" alt = "'.e($this->t('title')).'">';
     }
 
     // end getImg
@@ -45,7 +45,7 @@ trait ImagesTrait
         }
 
         if (! $picture) {
-            $picture = Setting::get('no-foto');
+            $picture = setting('no-foto');
         }
 
         $size = [];
@@ -129,9 +129,9 @@ trait ImagesTrait
         $imagesRes = [];
         foreach ($images as $imgOne) {
             if ($paramImg) {
-                $imagesRes['/'.$imgOne] = glide($imgOne, $paramImg);
+                $imagesRes[$imgOne] = glide($imgOne, $paramImg);
             } else {
-                $imagesRes[] = '/'.$imgOne;
+                $imagesRes[] = $imgOne;
             }
         }
 

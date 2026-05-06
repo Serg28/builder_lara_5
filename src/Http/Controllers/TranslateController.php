@@ -1,130 +1,173 @@
 <?php
 
-namespace Vis\TranslationsCMS;
+namespace Vis\Builder\Http\Controllers;
 
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Response;
-use Illuminate\Support\Facades\Validator;
+use Vis\Builder\Http\Requests\Translate;
+use Vis\Builder\Models\Translations;
+use Vis\Builder\Models\TranslationsPhrases;
 
-/**
- * Class TranslateController.
- */
 class TranslateController extends Controller
 {
-    /**
-     * @return mixed
-     */
-    public function fetchIndex()
+    private $countRecordsOnPage = 20;
+
+    public function index()
     {
-        $search = request('search_q');
-        $countShow = request('count_show') ? request('count_show') : '20';
-
-        $allpage = Trans::orderBy('id', 'desc');
-
-        if ($search) {
-            $allpage = $allpage->where('phrase', 'LIKE', '%'.$search.'%');
+        if (request('search_q') && mb_strlen(request('search_q')) > 1) {
+            return $this->search();
         }
 
-        $allpage = $allpage->paginate($countShow);
+        $allPhrases = TranslationsPhrases::orderBy('id', 'desc')->paginate($this->countRecordsOnPage);
 
-        $breadcrumb[__cms('Переводы CMS')] = '';
+        $view = Request::ajax() ? 'admin::translations.part.table_center' : 'admin::translations.trans';
 
-        $view = Request::ajax() ? 'admin::translation_cms.part.translate_cms_center' : 'admin::translation_cms.trans';
-
-        $langs = config('builder.translations.cms.languages');
-
-        return view($view)
-            ->with('breadcrumb', $breadcrumb)
-            ->with('data', $allpage)
-            ->with('langs', $langs)
-            ->with('search_q', $search)
-            ->with('count_show', $countShow);
+        return view($view, compact('allPhrases'));
     }
 
     /**
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * search in list phrase.
+     *
+     * @return Illuminate\Support\Facades\View
      */
-    public function fetchCreate()
+    public function search()
     {
-        $langs = config('builder.translations.cms.languages');
+        $querySearch = trim(request('search_q'));
 
-        return view('admin::translation_cms.part.form_trans')->with('langs', $langs);
+        $allPhrases = TranslationsPhrases::leftJoin('translations', 'translations.id_translations_phrase', '=', 'translations_phrases.id')
+            ->select('translations_phrases.*')
+            ->where(function ($query) use ($querySearch) {
+                $query->where('phrase', 'like', '%'.$querySearch.'%')
+                    ->orWhere('translations.translate', 'like', '%'.$querySearch.'%');
+            })
+            ->groupBy('translations_phrases.id')
+            ->orderBy('translations_phrases.id', 'desc')->paginate($this->countRecordsOnPage);
+
+        return view('admin::translations.part.result_search', compact('allPhrases'));
     }
 
     /**
-     * @return \Illuminate\Http\JsonResponse
+     * get popup for create new phrase.
+     *
+     * @return Illuminate\Support\Facades\View
      */
-    public function doSaveTranslate()
+    public function shopPopupForCreate()
     {
-        parse_str(request('data'), $data);
+        return view('admin::translations.part.form_trans');
+    }
 
-        $validator = Validator::make($data, Trans::$rules);
-        if ($validator->fails()) {
-            return Response::json(
-                [
-                    'status'          => 'error',
-                    'errors_messages' => $validator->messages(),
-                ]
-            );
+    /**
+     * create new translation.
+     *
+     * @return json Response
+     */
+    public function saveTranslate(Translate $request)
+    {
+        $model = TranslationsPhrases::create([
+            'phrase' => strip_tags(str_replace('"', '', trim($request->get('phrase'))))
+        ]);
+
+        foreach (request()->get('translation') as $slugTranslate => $translate) {
+                Translations::create([
+                    'id_translations_phrase' => $model->id,
+                    'lang' => $slugTranslate,
+                    'translate' => trim($translate),
+                ]);
         }
 
-        $model = new Trans();
-        $model->phrase = trim($data['phrase']);
-        $model->save();
-
-        $langs = array_keys(config('builder.translations.cms.languages'));
-
-        foreach ($data as $k => $el) {
-            if (in_array($k, $langs) && $el && $model->id) {
-                $model_trans = new  Translate();
-                $model_trans->translate = trim($el);
-                $model_trans->lang = $k;
-                $model_trans->translations_phrases_cms_id = $model->id;
-                $model_trans->save();
-            }
-        }
-
-        Trans::reCacheTrans();
+        TranslationsPhrases::reCacheTrans();
 
         return Response::json(
             [
-                'status'      => 'ok',
-                'ok_messages' => __cms('Фраза успешно добавлена'),
+                'status'      => 'success',
+                'message' => __cms('Фраза успешно добавлена'),
             ]
         );
     }
 
     /**
-     * @return \Illuminate\Http\JsonResponse
+     * delete phrase.
+     *
+     * @return json Response
      */
-    public function doDelelePhrase()
+    public function remove()
     {
-        Trans::find(request('id'))->delete();
+        TranslationsPhrases::find(request('id'))->delete();
 
-        Trans::reCacheTrans();
+        TranslationsPhrases::reCacheTrans();
 
         return Response::json(['status' => 'ok']);
     }
 
     /**
-     * @return false|string
+     * save phrase.
+     *
+     * @return void
      */
-    public function doTranslate(Translate $trans)
-    {
-       return $trans->generateTranslate(request('lang'), request('phrase'));
-    }
-
-    public function doSavePhrase()
+    public function savePhrase()
     {
         $lang = request('name');
         $phrase = request('value');
         $id = request('pk');
+
         if ($id && $phrase && $lang) {
-            $phrase_change = Translate::where('translations_phrases_cms_id', $id)->where('lang', $lang)->first();
-            $phrase_change->translate = $phrase;
-            $phrase_change->save();
+
+            $phraseChange = Translations::where('id_translations_phrase', $id)->where('lang', $lang)->first();
+
+            if ($phraseChange) {
+                $phraseChange->translate = $phrase;
+                $phraseChange->save();
+            } else {
+                Translations::create(
+                    [
+                        'id_translations_phrase' => $id,
+                        'lang'                   => $lang,
+                        'translate'              => $phrase,
+                    ]
+                );
+            }
         }
-        Trans::reCacheTrans();
+
+        TranslationsPhrases::reCacheTrans();
+    }
+
+    public function getJs($lang, $withoutHeader = false)
+    {
+        $data = TranslationsPhrases::fillCacheTrans();
+
+        $translates = [];
+        foreach ($data as $phrase => $translate) {
+            $key = trim(str_replace(["\r\n", "\r", "\n"], '', $phrase));
+            $value = trim(isset($translate[$lang]) ? str_replace(["\r\n", "\r", "\n"], '', $translate[$lang]) : '');
+            $translates[$key] = $value;
+        }
+
+        if ($withoutHeader) {
+            return view('admin::translations.js', compact('data', 'lang', 'translates'))->render();
+        }
+
+        return response()
+            ->view('admin::translations.js', compact('data', 'lang', 'translates'), 200)
+            ->header('Content-Type', 'text/javascript');
+    }
+
+    public function doTranslatePhraseInJs()
+    {
+        return __t(request('phrase'));
+    }
+
+    public function createdJsFile()
+    {
+        if (!is_dir(public_path('/js'))) {
+            mkdir(public_path('/js'), 0755, true);
+        }
+
+        foreach (languagesOfSite() as $lang) {
+
+            $content = $this->getJs($lang, true);
+
+            file_put_contents(public_path('/js/translation_' . $lang . '.js'), $content);
+        }
     }
 }
