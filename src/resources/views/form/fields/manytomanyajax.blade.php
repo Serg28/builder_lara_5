@@ -67,21 +67,17 @@ $selected = $field->getOptionsSelected($definition);
         @if ($selected)
             $select2{{$field->getNameField()}}.select2("data", {!! $selected !!});
         @endif
-    });
 
-    $('.select2-choices').sortable(
-        {
+        $('#s2id_{{$field->getNameField()}} .select2-choices').sortable({
             items: "> li.select2-search-choice",
             update: function (event, ui) {
-
-                var ids = $(this).parent().find('.item_id');
                 var arrIds = [];
-                ids.each(function(i, elem) {
+                $(this).find('.item_id').each(function() {
                     arrIds.push($(this).attr('data-id'));
                 });
 
                 $('[name={{$field->getNameField()}}]').val(arrIds.join(','));
             }
-        }
-    );
+        });
+    });
 </script>
