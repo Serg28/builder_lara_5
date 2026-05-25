@@ -450,6 +450,32 @@ ManyToManyAjax::make('Категории', 'categories')
     ->comment('AJAX-связь многие-ко-многим');
 ```
 
+**Сортировка (drag-n-drop):**
+```php
+ManyToManyOptionsAjax::make('Вибрані опції')
+    ->options((new Options('characteristicOptions'))->isJson())
+    ->sortable('priority'),
+```
+
+**Как работает `->sortable()`:**
+- `save()` — вместо `syncWithoutDetaching()` использует `sync()` с массивом `[$id => ['priority' => $index]]`, где `$index` — позиция элемента после drag-n-drop в select2.
+- `getOptionsSelected()` — добавляет `orderBy('{pivot}.{sortableField}')` при формировании данных для select2.
+- Если `sortable()` не вызван — поведение полностью эквивалентно оригиналу.
+
+**Вимоги до БД:**
+В pivot-таблице связи должна быть колонка `priority` (или другая, переданная в `sortable()`).
+
+**Вимоги до модели:**
+У relation'а должны быть указаны `withPivot('priority')` и `orderByPivot('priority')`:
+```php
+public function characteristicOptions(): BelongsToMany
+{
+    return $this->belongsToMany(CharacteristicOption::class, 'characteristic_option_product_pattern')
+        ->withPivot('priority')
+        ->orderByPivot('priority');
+}
+```
+
 ### ManyToManyMultiSelect (Мультиселект многие-ко-многим)
 ```php
 ManyToManyMultiSelect::make('Роли', 'roles')
