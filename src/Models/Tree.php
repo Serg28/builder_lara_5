@@ -185,7 +185,7 @@ class Tree extends Model
         $tags = $this->getCacheTags();
 
         if ($tags && $this->fileDefinition) {
-            return Cache::tags($tags)->rememberForever($this->fileDefinition.'_'.$this->id, function () {
+            return Cache::tags($tags)->rememberLocked($this->fileDefinition.'_'.$this->id, null, function () {
                 return $this->getGeneratedUrlInCache();
             });
         }

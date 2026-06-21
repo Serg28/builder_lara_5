@@ -12,6 +12,7 @@ use Vis\Builder\Http\ViewComposers\LayoutDefault;
 use Vis\Builder\Http\ViewComposers\Navigation;
 use Vis\Builder\Http\ViewComposers\NavigationBadge;
 use Vis\Builder\Models\TranslationsPhrases;
+use Vis\Builder\Services\SingleFlightCache;
 use Cartalyst\Sentinel\Laravel\Facades\Sentinel;
 
 /**
@@ -140,6 +141,8 @@ class BuilderServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        SingleFlightCache::registerMacros();
+
         $this->app[\Illuminate\Contracts\Http\Kernel::class]->pushMiddleware(LocalizationMiddlewareRedirect::class);
 
         if (method_exists(\Illuminate\Routing\Router::class, 'aliasMiddleware')) {

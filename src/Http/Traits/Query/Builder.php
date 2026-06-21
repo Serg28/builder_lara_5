@@ -80,11 +80,12 @@ class Builder extends \Illuminate\Database\Query\Builder
         // If the "minutes" value is less than zero, we will use that as the indicator
         // that the value should be remembered indefinitely and if we have minutes
         // we will use the typical remember function here.
+        // single-flight проти cache stampede (один воркер будує, решта чекають результат)
         if ($minutes < 0) {
-            return $cache->rememberForever($key, $callback);
+            return $cache->rememberLocked($key, null, $callback); // null TTL = forever
         }
 
-        return $cache->remember($key, $minutes, $callback);
+        return $cache->rememberLocked($key, $minutes, $callback);
     }
 
     /**

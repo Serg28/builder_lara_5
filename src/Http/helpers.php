@@ -14,7 +14,7 @@ if (! function_exists('defaultLanguage')) {
     {
         return once(function () {
             try {
-                return Cache::tags('language')->rememberForever('default_language', function () {
+                return Cache::tags('language')->rememberLocked('default_language', null, function () {
                     return optional(Language::getDefaultLanguage())->language ?: config('app.locale');
                 });
             } catch (\Exception $e) {
@@ -66,7 +66,7 @@ if (! function_exists('setting')) {
             $value = $loadedConfigs[$key];
         } else {
             try {
-                $value = Cache::tags(['settings'])->remember($key, 3600, function() use ($slug) {
+                $value = Cache::tags(['settings'])->rememberLocked($key, 3600, function () use ($slug) {
                     return (new Settings())->model()->getValue($slug);
                 });
                 $loadedConfigs[$key] = $value;
@@ -143,7 +143,7 @@ if (!function_exists('glide')) {
         }
 
         // Проверяем, есть ли данные в кеше
-        return cache()->tags(['glide'])->rememberForever($cacheKey, function () use ($source, $options) {
+        return cache()->tags(['glide'])->rememberLocked($cacheKey, null, function () use ($source, $options) {
             if (
                 env('IMG_PLACEHOLDER', true)
                 && (env('APP_ENV') === 'local' || env('APP_ENV') === 'testing')
