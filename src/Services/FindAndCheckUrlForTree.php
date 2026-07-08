@@ -7,8 +7,9 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Request;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
+use Vis\Builder\Interfaces\TreeResolverInterface;
 
-class FindAndCheckUrlForTree
+class FindAndCheckUrlForTree implements TreeResolverInterface
 {
     private $model;
 

@@ -1,22 +1,25 @@
 <?php
 
-$urlPath = Request::path();
-$arrSegments = explode('/', $urlPath);
+$rawPath = Request::path();
+$rawFirstSegment = explode('/', $rawPath)[0];
 
-if ($arrSegments[0] != 'admin' && !str_contains($urlPath, 'livewire') && $arrSegments[0] != 'api') {
+if ($rawFirstSegment != 'admin' && !str_contains($rawPath, 'livewire') && $rawFirstSegment != 'api') {
     try {
-        $controllerMethodArray = (new \Vis\Builder\Services\FindAndCheckUrlForTree())->getRoute($arrSegments);
+        $urlPath = Request::path();
+        $arrSegments = explode('/', $urlPath);
+
+        $controllerMethodArray = app(\Vis\Builder\Interfaces\TreeResolverInterface::class)->getRoute($arrSegments);
 
         if ($controllerMethodArray) {
             Route::group(
                 ['middleware' => ['web']],
-                function () use ($controllerMethodArray) {
+                static function () use ($controllerMethodArray) {
                     Route::group(
                         ['prefix' => LaravelLocalization::setLocale()],
-                        function () use ($controllerMethodArray) {
+                        static function () use ($controllerMethodArray) {
                             Route::get(
                                 $controllerMethodArray['node']->getUrlNoLocation(),
-                                function () use ($controllerMethodArray) {
+                                static function () use ($controllerMethodArray) {
                                     return $controllerMethodArray['controller']
                                         ->callAction('init', [$controllerMethodArray['node'], $controllerMethodArray['method']]);
                                 }

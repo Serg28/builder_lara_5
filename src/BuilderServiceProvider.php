@@ -158,6 +158,11 @@ class BuilderServiceProvider extends ServiceProvider
             \Vis\Builder\Services\Documentation\FuzzyFileSearch::class
         );
 
+        $this->app->bind(
+            \Vis\Builder\Interfaces\TreeResolverInterface::class,
+            \Vis\Builder\Services\FindAndCheckUrlForTree::class
+        );
+
         $this->app->singleton(
             \Vis\Builder\Services\Translate::class,
             function () {
