@@ -55,7 +55,8 @@ var Cropper = {
             function (data) {
                 if (data.status == "success") {
                     Cropper.imgThis.attr("src", data.pictureSmall);
-                    $("[name=" + Cropper.imgThis.attr('data-tbident') + "]").val(data.picture);
+                    var tbident = Cropper.imgThis.attr('data-tbident');
+                    $("[name='" + tbident + "'], [data-id-picture='" + tbident + "']").val(data.picture);
                     Cropper.imgThis.attr('data_src_original', data.picture);
                     if (TableBuilder.tableEditorImg != null) {
                         TableBuilder.tableEditorImg.attr('src', data.picture);
