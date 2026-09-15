@@ -10,6 +10,7 @@ class Img
     private $nameFile;
     private $picturePath;
     private $pathFolder;
+    private $sourcePath;
     private $width = null;
     private $height = null;
     private $quality = 90;
@@ -82,9 +83,6 @@ class Img
             return;
         }
 
-        // Уникальный ключ кеша на основе пути и параметров
-        $cacheKey = 'glide_' . md5($source . json_encode($options));
-
         $this->setOptions($options);
         $source = '/' . ltrim($source, '/');
         $sourceArray = pathinfo($source);
@@ -92,6 +90,8 @@ class Img
         if (!$this->checkFileCorrect($sourceArray)) {
             return false;
         }
+
+        $this->sourcePath = public_path($source);
 
         $filename = $sourceArray['filename'];
         $extension = $sourceArray['extension'];
@@ -142,9 +142,6 @@ class Img
             $img->save($pathSmallImg, $this->quality);
 
             OptmizationImg::run($this->picturePath);
-
-            // Сохранение пути в кеш
-            cache()->tags(['glide'])->forever($cacheKey, $this->picturePath);
 
             return $this->picturePath;
         } catch (\Exception $e) {
@@ -199,10 +196,18 @@ class Img
 
     protected function checkExistPicture()
     {
-        //return file_exists(public_path($this->picturePath));
         $filePath = public_path($this->picturePath);
 
-        return file_exists($filePath) && filesize($filePath) > 0;
+        if (!file_exists($filePath) || filesize($filePath) <= 0) {
+            return false;
+        }
+
+        // Исходник новее нарезки — переаплоад с тем же именем, нарезку нужно перестроить.
+        if ($this->sourcePath && file_exists($this->sourcePath) && filemtime($this->sourcePath) > filemtime($filePath)) {
+            return false;
+        }
+
+        return true;
     }
     
     // Function to check if the browser supports WebP
