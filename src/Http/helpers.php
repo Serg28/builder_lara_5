@@ -177,9 +177,10 @@ if (!function_exists('glide')) {
 
             $path = (new Vis\Builder\Img())->get($source, $options);
 
-            // Кешируем только реально записанный файл — иначе путь зависал бы в кеше навсегда, до ручного flush тега glide.
+            // Кешируем только реально записанный файл — иначе путь зависал бы в кеше до ручного flush тега glide.
             if ($path && file_exists(public_path($path)) && filesize(public_path($path)) > 0) {
-                $tag->forever($cacheKey, $path);
+                // TTL, не forever — пакет используют разные проекты, не у всех есть job, флашащий тег glide.
+                $tag->put($cacheKey, $path, now()->addDays(30));
 
                 return $path;
             }

@@ -10,6 +10,7 @@ class Img
     private $nameFile;
     private $picturePath;
     private $pathFolder;
+    private $sourcePath;
     private $width = null;
     private $height = null;
     private $quality = 90;
@@ -89,6 +90,8 @@ class Img
         if (!$this->checkFileCorrect($sourceArray)) {
             return false;
         }
+
+        $this->sourcePath = public_path($source);
 
         $filename = $sourceArray['filename'];
         $extension = $sourceArray['extension'];
@@ -193,10 +196,13 @@ class Img
 
     protected function checkExistPicture()
     {
-        //return file_exists(public_path($this->picturePath));
         $filePath = public_path($this->picturePath);
 
-        return file_exists($filePath) && filesize($filePath) > 0;
+        if (!file_exists($filePath) || filesize($filePath) <= 0) {
+            return false;
+        }
+
+        return !($this->sourcePath && file_exists($this->sourcePath) && filemtime($this->sourcePath) > filemtime($filePath));
     }
     
     // Function to check if the browser supports WebP
