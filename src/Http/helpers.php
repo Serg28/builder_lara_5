@@ -142,8 +142,6 @@ if (! function_exists('print_arr')) {
     }
 }
 
-<?php
-
 if (!function_exists('glide')) {
     function glide(mixed $source, array $options = []): string
     {
