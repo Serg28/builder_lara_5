@@ -321,8 +321,10 @@ trait HasFileCache
      */
     protected static function availableLangs(): array
     {
-        $langs = languagesOfSite();
-        return $langs instanceof \Illuminate\Support\Collection ? $langs->all() : (array)$langs;
+        return once(function () {
+            $langs = languagesOfSite();
+            return $langs instanceof \Illuminate\Support\Collection ? $langs->all() : (array)$langs;
+        });
     }
 
     /**
