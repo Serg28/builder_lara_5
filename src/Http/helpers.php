@@ -142,12 +142,14 @@ if (! function_exists('print_arr')) {
     }
 }
 
+<?php
+
 if (!function_exists('glide')) {
-    function glide($source, array $options = [])
+    function glide(mixed $source, array $options = []): string
     {
-        // Для надёжной инвалидации кеша при FTP-загрузке используем пару mtime + filesize.
-        // Оба берутся из inode (stat) без чтения содержимого файла — работает ~0.001ms.
-        // FTP может сохранять оригинальный timestamp, но размер файла почти всегда меняется.
+        $noImagePath = '/packages/linecore/builder/img/no_image.png';
+
+        // Пара mtime+filesize для інвалідації кешу при FTP-завантаженні (timestamp FTP може зберегти старим, розмір — майже завжди зміниться).
         $fileKey = null;
         if (is_string($source) && file_exists(public_path($source))) {
             $filePath = public_path($source);
@@ -157,63 +159,62 @@ if (!function_exists('glide')) {
         $cacheKey = 'glide_' . md5($source . json_encode($options) . '_' . $fileKey);
         $tag = cache()->tags(['glide']);
 
-        // Лок здесь не берём — иначе лишний Redis-раунд-трип на каждый кэш-хит под ботами.
-        $cached = $tag->get($cacheKey);
-        if (is_string($cached) && file_exists(public_path($cached))) {
-            return $cached;
-        }
-        // false — закешированная ранее неудача генерации, не пробуем заново на каждый запрос.
-        if ($cached === false) {
-            return '/packages/linecore/builder/img/no_image.png';
+        // Дістає готовий шлях з кешу, або no_image, якщо раніше закешовано невдачу.
+        $resolveFromCache = function () use ($tag, $cacheKey, $noImagePath): ?string {
+            $cached = $tag->get($cacheKey);
+            if (is_string($cached) && file_exists(public_path($cached))) {
+                return $cached;
+            }
+            // false — закешована раніше невдача генерації, не пробуємо знову на кожен запит.
+            if ($cached === false) {
+                return $noImagePath;
+            }
+
+            return null;
+        };
+
+        // Лок тут не беремо — інакше зайвий Redis-раунд-тріп на кожен кеш-хіт під ботами.
+        if ($fromCache = $resolveFromCache()) {
+            return $fromCache;
         }
 
         if (
             env('IMG_PLACEHOLDER', true)
-            && (config('app.env') === 'local' || config('app.env') === 'testing')
+            && in_array(config('app.env'), ['local', 'testing'], true)
         ) {
             $width = $options['w'] ?? 100;
             $height = $options['h'] ?? 100;
             return "//placehold.co/{$width}x{$height}";
         }
 
-        // Лок только на этом (редком) пути — иначе шторм одинаковых запросов нарежет файл параллельно много раз.
+        // Лок тільки на цьому (рідкісному) шляху — інакше шторм однакових запитів нарізає файл паралельно багато разів.
         $lock = Cache::lock('glide_lock:' . $cacheKey, 10);
 
         try {
             $lock->block(7);
 
-            // Пока ждали лок, другой воркер мог уже успеть нарезать файл или закешировать неудачу.
-            $cached = $tag->get($cacheKey);
-            if (is_string($cached) && file_exists(public_path($cached))) {
-                return $cached;
-            }
-            if ($cached === false) {
-                return '/packages/vis/builder/img/no_image.png';
+            // Поки чекали на лок, інший воркер міг уже встигнути нарізати файл або закешувати невдачу.
+            if ($fromCache = $resolveFromCache()) {
+                return $fromCache;
             }
 
             $path = (new Vis\Builder\Img())->get($source, $options);
 
-            // Кешируем только реально записанный файл — иначе путь зависал бы в кеше до ручного flush тега glide.
+            // Кешуємо тільки реально записаний файл — інакше шлях завис би в кеші до ручного flush тега glide.
             if ($path && file_exists(public_path($path)) && filesize(public_path($path)) > 0) {
-                // TTL, не forever — пакет используют разные проекты, не у всех есть job, флашащий тег glide.
+                // TTL, не forever — пакет використовують різні проєкти, не в усіх є job, що флашить тег glide.
                 $tag->put($cacheKey, $path, now()->addDays(30));
 
                 return $path;
             }
 
-            // Короткий TTL вместо forever — чтобы шторм ботов по битому пути не долбил Image::make() на каждый запрос, но само восстановилось.
+            // Короткий TTL замість forever — щоб шторм ботів по битому шляху не довбив генерацію зображення на кожен запит, але саме відновилось.
             $tag->put($cacheKey, false, now()->addMinutes(5));
 
-            return '/packages/vis/builder/img/no_image.png';
+            return $noImagePath;
         } catch (\Illuminate\Contracts\Cache\LockTimeoutException) {
-            // Не дождались лока — не плодим ещё одну генерацию, отдаём что есть.
-            $cached = $tag->get($cacheKey);
-
-            if (is_string($cached) && file_exists(public_path($cached))) {
-                return $cached;
-            }
-
-            return '/packages/vis/builder/img/no_image.png';
+            // Не дочекались лока — не плодимо ще одну генерацію, віддаємо що є.
+            return $resolveFromCache() ?? $noImagePath;
         } finally {
             optional($lock)->release();
         }
