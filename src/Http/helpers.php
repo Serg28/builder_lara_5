@@ -164,7 +164,7 @@ if (!function_exists('glide')) {
         }
         // false — закешированная ранее неудача генерации, не пробуем заново на каждый запрос.
         if ($cached === false) {
-            return '/packages/vis/builder/img/no_image.png';
+            return '/packages/linecore/builder/img/no_image.png';
         }
 
         if (
