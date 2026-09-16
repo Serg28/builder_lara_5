@@ -422,9 +422,11 @@ trait HasFileCache
      */
     protected static function availableLangs(): array
     {
-        $langs = languagesOfSite();
+        return once(function () {
+            $langs = languagesOfSite();
 
-        return $langs instanceof Collection ? $langs->all() : (array) $langs;
+            return $langs instanceof Collection ? $langs->all() : (array) $langs;
+        });
     }
 
     /**
