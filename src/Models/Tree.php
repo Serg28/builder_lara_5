@@ -134,8 +134,10 @@ class Tree extends Model
                 $slug = $slug.'_'.time();
             }
 
-            $this->slug = $slug;
-            $this->save();
+            if ($slug !== $this->slug) {
+                $this->slug = $slug;
+                $this->save();
+            }
         }
     }
 
