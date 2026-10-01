@@ -100,15 +100,29 @@ class TreeController
             ], 422);
         }
 
+        // Sibling must exist and belong to the target parent, otherwise fall back to appending.
+        $sibling = null;
+        $after = true;
+        foreach ([[$idLeftSibling, true], [$idRightSibling, false]] as [$siblingId, $isAfter]) {
+            if (! $siblingId || $siblingId == $item->id) {
+                continue;
+            }
+
+            $candidate = $this->model::find($siblingId);
+
+            if ($candidate && $candidate->parent_id == $idParent) {
+                $sibling = $candidate;
+                $after = $isAfter;
+                break;
+            }
+        }
+
         // One move = one save. Previously the node was first appended to the end of the parent
         // and then moved again, i.e. two saves (two rounds of model events / cache rebuilds).
-        DB::transaction(function () use ($item, $root, $idParent, $idLeftSibling, $idRightSibling) {
-            $sameParent = $item->parent_id == $idParent;
-
-            if ($sameParent && $idLeftSibling) {
-                $item->insertAfterNode($this->model::find($idLeftSibling));
-            } elseif ($sameParent && $idRightSibling) {
-                $item->insertBeforeNode($this->model::find($idRightSibling));
+        // insertAfterNode/insertBeforeNode also re-parent the node when the sibling has another parent.
+        DB::transaction(function () use ($item, $root, $sibling, $after) {
+            if ($sibling) {
+                $after ? $item->insertAfterNode($sibling) : $item->insertBeforeNode($sibling);
             } else {
                 $item->makeChildOf($root);
             }
