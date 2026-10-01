@@ -2,6 +2,7 @@
 
 namespace Vis\Builder\ControllersNew;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Vis\Builder\Services\Revisions;
 use Vis\Builder\Libs\GoogleTranslateForFree;
@@ -92,18 +93,26 @@ class TreeController
         $item = $this->model::find($id);
         $root = $this->model::find($idParent);
 
-        $prevParentID = $item->parent_id;
-        $item->makeChildOf($root);
-
-        $item->save();
-
-        if ($prevParentID == $idParent) {
-            if ($idLeftSibling) {
-                $item->insertAfterNode($this->model::find($idLeftSibling));
-            } elseif ($idRightSibling) {
-                $item->insertBeforeNode($this->model::find($idRightSibling));
-            }
+        if (! $item || ! $root || $item->is($root) || $root->isDescendantOf($item)) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Неможливо перемістити елемент у самого себе або в свій дочірній елемент',
+            ], 422);
         }
+
+        // One move = one save. Previously the node was first appended to the end of the parent
+        // and then moved again, i.e. two saves (two rounds of model events / cache rebuilds).
+        DB::transaction(function () use ($item, $root, $idParent, $idLeftSibling, $idRightSibling) {
+            $sameParent = $item->parent_id == $idParent;
+
+            if ($sameParent && $idLeftSibling) {
+                $item->insertAfterNode($this->model::find($idLeftSibling));
+            } elseif ($sameParent && $idRightSibling) {
+                $item->insertBeforeNode($this->model::find($idRightSibling));
+            } else {
+                $item->makeChildOf($root);
+            }
+        });
 
         $item = $this->model::find($item->id);
         $item->checkUnicUrl();
