@@ -1,6 +1,6 @@
 {
     "name": "vis/builder_lara_5",
-    "description": "Builder cms",
+    "description": "Builder cms - Laravel 11 & 12 Support",
     "license": "proprietary",
     "authors": [
         {
@@ -8,25 +8,37 @@
             "email": "artur@vis-design.com"
         }
     ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://git.linecore.com/linecore-laravel/packages/imagecache.git"
+        }
+    ],
     "require": {
-        "cartalyst/sentinel": "^3.0",
-        "mcamara/laravel-localization": "1.4.*",
-        "baum/baum": "v2.x-dev",
-        "venturecraft/revisionable": "1.*",
-        "yandex/translate-api": "1.5.x",
-        "intervention/image": "2.*",
-        "intervention/imagecache": "2.*",
-        "predis/predis" : "v1.1.1",
-        "maatwebsite/excel": "3.*",
-        "barryvdh/laravel-debugbar": "^3.2"
+        "php": "^8.2",
+        "laravel/framework": "^11.0|^12.0",
+        "mcamara/laravel-localization": "dev-master",
+        "kalnoy/nestedset": "^6.0|^7.0",
+        "venturecraft/revisionable": "^1.0",
+        "intervention/image": "^3.0",
+        "intervention/image-laravel": "^1.0",
+        "intervention/imagecache": "^3.0",
+        "predis/predis": "^2.0",
+        "maatwebsite/excel": "^3.1",
+        "barryvdh/laravel-debugbar": "^3.13",
+        "bkwld/cloner": "^3.10",
+        "cartalyst/sentinel": "^8.0|^9.0",
+        "spatie/once": "^3.1"
     },
     "autoload": {
         "classmap": [
             "src/Models",
+            "src/Events",
             "src/libs",
             "src/Http/Controllers",
             "src/Http/ControllersNew",
             "src/Http/Services",
+            "src/Http/Interfaces",
             "src/Http/Definitions",
             "src/Http/Fields",
             "src/Http/Traits",

@@ -5,7 +5,7 @@
  */
 
 $.extend($.ui.multiselect.locale, {
-	addAll:'Добавить все',
-	removeAll:'Удалить все',
-	itemsCount:'элементов выбрано'
+	addAll:phrase['Добавить все'],
+	removeAll:phrase['Удалить все'],
+	itemsCount:phrase['элементов выбрано']
 });

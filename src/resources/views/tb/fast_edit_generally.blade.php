@@ -3,5 +3,5 @@
       data-pk="{{ $row['id'] }}"
       data-url="/admin/handle/{{$def['db']['table']}}/fast-edit"
       data-name="{{ $ident }}"
-      data-title="Введите: {{ $field->getAttribute('caption')}}"
+      data-title="{{__cms('Введите')}}: {{ $field->getAttribute('caption')}}"
 >{!! strip_tags($field->getListValue($row), "<a><span><img>") !!}</span>

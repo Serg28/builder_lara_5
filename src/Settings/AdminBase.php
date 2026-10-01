@@ -16,7 +16,7 @@ abstract class AdminBase
             return [];
         }
 
-        return explode(',', setting('ip'));
+        return array_map('trim', explode(',', setting('ip')));
     }
 
     public function getCaption()
@@ -59,4 +59,14 @@ abstract class AdminBase
     }
 
     abstract public function menu();
+
+    public function showNotifications(): bool
+    {
+        return false;
+    }
+
+    public function refreshNotificationsTime(): int
+    {
+        return 60;
+    }
 }

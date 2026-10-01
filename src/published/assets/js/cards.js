@@ -1,103 +1,80 @@
-"use strict";
-
 var Cards =
+{
+    myLineChart : {},
+
+    init: function()
     {
-        init: function()
-        {
-            Cards.rangeChange();
+        $(".datepicker_trend").datepicker({
+            changeMonth: true,
+            numberOfMonths: 1,
+            prevText: '<i class="fa fa-chevron-left"></i>',
+            nextText: '<i class="fa fa-chevron-right"></i>',
+            dateFormat: "yy-mm-dd",
+            //showButtonPanel: true,
+            regional: ["ru"],
+            onClose: function (selectedDate) {}
+        });
 
-            $(".datepicker_trend").datepicker({
-                changeMonth: true,
-                numberOfMonths: 1,
-                prevText: '<i class="fa fa-chevron-left"></i>',
-                nextText: '<i class="fa fa-chevron-right"></i>',
-                dateFormat: "yy-mm-dd",
-                //showButtonPanel: true,
-                regional: ["ru"],
-                onClose: function (selectedDate) {}
+        $('.datepicker_trend').change(function () {
+            var contentTrend = $(this).parents('article');
+            Cards.updateData(contentTrend);
+        });
+
+        $('.trends').each(function( index ) {
+            var contentTrend = $(this).parents('article');
+
+            var ctx = contentTrend.find('canvas');
+
+            var idChart = contentTrend.attr('id');
+
+            Cards.myLineChart[idChart] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Count',
+                        data: [],
+                        backgroundColor: 'rgb(255, 99, 132)',
+                        borderColor: 'rgb(255, 99, 132)',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false,
+                        }
+                    }
+                }
             });
 
-            $('.datepicker_trend').change(function () {
-                var contentTrend = $(this).parents('article');
-                Cards.loadChart(contentTrend);
-            });
+            Cards.updateData(contentTrend);
+        });
 
+    },
+    updateData : function (contentTrend) {
 
-            $('.trends').each(function( index ) {
-                var contentTrend = $(this).parents('article');
-                Cards.loadChart(contentTrend);
-            });
-        },
+        var idChart = contentTrend.attr('id');
 
-        rangeChange : function () {
-            $('[name=range]').change(function () {
-
-                var data = {
-                    'model': $(this).attr('data-model'),
-                    'range' :  $(this).val(),
-                };
-
-                var cardId = $('#' + $(this).attr('data-card-id'));
-
-                var $posting = jQuery.post('/admin/change-range-card', data);
-
-                $posting.done(function (response) {
-                    cardId.find('.value_current').html(response.current);
-                    cardId.find('.value_difference').html(response.difference);
-                });
-            });
-        },
-
-        loadChart : function (contentTrend)
-        {
-            var data = {
+        $.ajax({
+            url: '/admin/change-range-trend',
+            method: 'POST',
+            data: {
                 'from' : contentTrend.find('[name=trend_from]').val(),
                 'to' : contentTrend.find('[name=trend_to]').val(),
-                'model' : contentTrend.find('[name=trend_model]').val(),
+                'model' : contentTrend.find('[name=trend_model]').val()
+            },
+            dataType: 'json',
+            success: function (d) {
+
+                // assign programmatically the datasets again, otherwise data changes won't show
+                Cards.myLineChart[idChart].data.labels = d.labels;
+                Cards.myLineChart[idChart].data.datasets[0].data = d.values;
+
+                Cards.myLineChart[idChart].update();
             }
-
-            var $posting = jQuery.post('/admin/change-range-trend', data);
-
-            $posting.done(function (response) {
-
-                var data = {
-                    "xScale": "time",
-                    "yScale": "linear",
-                    "main": [{
-                        className: ".stats",
-                        "data": response
-                    }]
-                };
-
-                var opts = {
-                    paddingLeft: 25,
-                    paddingTop: 10,
-                    paddingRight: 15,
-                    axisPaddingLeft: 25,
-                    //tickHintX: 4, // How many ticks to show horizontally
-                    tickHintY: 6,
-                    dataFormatX: function (x) {
-                        return Date.create(x);
-                    },
-
-                    tickFormatX: function (x) {
-                        return x.format('{dd}/{MM}');
-                    },
-
-                    "mouseover": function (d, i) {
-
-                    },
-
-                    "mouseout": function (x) {
-
-                    }
-                };
-
-                var chartTrend = contentTrend.find('.trends').attr('id');
-
-                new xChart('line-dotted', data, '#' + chartTrend, opts);
-            });
-        }
-
+        });
+    }
 };
 Cards.init();
