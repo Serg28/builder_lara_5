@@ -1,12 +1,13 @@
 <section class="{{$field->getClassName()}}">
     @php
         $id = $field->getAllData()?->id ?? 0;
+        $inputId = 'json_array_input_' . preg_replace('/[^A-Za-z0-9_-]/', '_', $field->getNameField()) . '_' . $id;
         $valueArray = json_decode($field->getValue() ?? '[]', true) ?? [];
         // $isAssociative is calculated in PHP (Json field) considering defaultDataColumns() setting.
         // Do not override it here.
     @endphp
     <label class="label" for="{{ $field->getNameField()}}">{{$field->getName()}}</label>
-    <input type="hidden" name="{{ $field->getNameField() }}" id="json_array_input_{{ $id }}" value="{{ $field->getValue() }}">
+    <input type="hidden" name="{{ $field->getNameField() }}" id="{{ $inputId }}" value="{{ $field->getValue() }}">
     <div style="position: relative">
         <div class="div_input">
             <div class="input_content">
@@ -40,7 +41,7 @@
     $(document).ready(function () {
         const wrapper = $('#form_{{ $field->getNameField() }}-{{$id}}');
         const addButton = wrapper.find('[data-add-btn-{{$id}}]');
-        const jsonInput = $('#json_array_input_{{ $id }}');
+        const jsonInput = $('#{{ $inputId }}');
         const isAssociative = {{ $isAssociative ? 'true' : 'false' }};
 
         const groupTemplate = isAssociative ? `
