@@ -34,14 +34,14 @@
               data-pk="{{$el->id}}}"
               data-url="/admin/handle/settings/fast-edit"
               data-name="value"
-              data-title="Введите:"
+              data-title="{{__cms('Введите')}}:"
         >{{$el->value}}</span>
         <div class="fast-edit-buttons">
             <div class="input_field">
                 <div class="div_input">
                     <div class="input_content">
                         <label class="input">
-                            <input class="dblclick-edit-input form-control input-sm unselectable settings_fast_edit_input" value="{{$el->value}}" name="title_{{$el->id}}" type="text" placeholder="Введите значение" >
+                            <input class="dblclick-edit-input form-control input-sm unselectable settings_fast_edit_input" value="{{$el->value}}" name="title_{{$el->id}}" type="text" placeholder="{{__cms('Введите значение')}}" >
                         </label>
                     </div>
                 </div>

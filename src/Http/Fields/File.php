@@ -9,6 +9,8 @@ class File extends Field
 {
     protected $accept;
     protected $path = '/storage/files/';
+    protected $isAutoTranslate = false;
+    protected $selectWithUploaded = true;
 
     public function getAccept()
     {
@@ -17,8 +19,15 @@ class File extends Field
 
     public function getValueForList($definition)
     {
-        if ($this->getValue()) {
-            return "<a href='{$this->getValue()}' target='_blank'>" . __cms('Скачать') . "</a>";
+        $value = $this->getValue();
+
+        if ($this->getLanguage()) {
+            $language = $this->getLanguage()->first();
+            $value = $this->getValueLanguage($language->language);
+        }
+
+        if ($value) {
+            return "<a href='{$value}' target='_blank'>" . __cms('Скачать') . "</a>";
         }
     }
 
@@ -29,9 +38,32 @@ class File extends Field
         return $this;
     }
 
+    public function noFileSelection()
+    {
+        $this->selectWithUploaded = false;
+
+        return $this;
+    }
+
+    public function checkSelectionFiles()
+    {
+        return $this->selectWithUploaded;
+    }
+
+    public function uploadPath(string $path)
+    {
+        $this->path = $path;
+
+        return $this;
+    }
+
     public function upload()
     {
         $file = request()->file('file');
+
+        if (!file_exists(public_path($this->path))) {
+            mkdir(public_path($this->path), 0755, true);
+        }
 
         $extension = $file->getClientOriginalExtension();
         $nameFileArray = explode('.', $file->getClientOriginalName());
@@ -43,7 +75,7 @@ class File extends Field
             $fileName = $nameFile . '_' . time() . '.' . $extension;
         }
 
-        $file->move(ltrim($this->path, '/'), $fileName);
+        $file->move(public_path($this->path), $fileName);
 
         return [
             'status'     => true,
@@ -73,7 +105,7 @@ class File extends Field
 
         return [
             'status' => 'success',
-            'data'   => view('admin::new.form.fields.partials.files_list', compact('list'))->render(),
+            'data'   => view('admin::form.fields.partials.files_list', compact('list'))->render(),
         ];
     }
 }

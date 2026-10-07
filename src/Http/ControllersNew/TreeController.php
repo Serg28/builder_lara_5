@@ -2,21 +2,28 @@
 
 namespace Vis\Builder\ControllersNew;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Vis\Builder\Services\Revisions;
+use Vis\Builder\Libs\GoogleTranslateForFree;
 
 class TreeController
 {
     protected $definition;
     protected $model;
+    protected $revision;
 
     public function __construct($definition)
     {
-        $this->definition = new $definition;
+        $this->definition = $definition;
         $this->model = $this->definition->model();
+        $this->revision = new Revisions();
     }
 
     public function list()
     {
+        $this->checkPermissions();
+
         $treeName = 'tree';
 
         if (request('query_type')) {
@@ -28,22 +35,26 @@ class TreeController
         $current = $this->model::findOrFail(request('node', 1));
         $perPage = 20;
         $children = $current->children();
-        $children = $children->withCount('children')->paginate($perPage);
+
+        $children = $children->withCount('children')->defaultOrder()->paginate($perPage);
         $templates = $this->definition->getTemplates();
         $definition = $this->definition;
+        $list = new \Vis\Builder\Services\Listing($definition);
 
-        $content = view('admin::new.tree.content',
-            compact('current', 'treeName', 'children', 'controller', 'perPage', 'templates', 'definition'));
+        $content = view('admin::tree.content',
+            compact('current', 'treeName', 'children', 'perPage', 'templates', 'definition', 'list'));
 
         $view = request()->ajax() ? 'center' : 'table';
 
-        return view('admin::new.tree.' . $view,
-            compact( 'treeName', 'current', 'children', 'content', 'definition', 'templates'));
+        return view('admin::tree.' . $view,
+            compact( 'treeName', 'current', 'children', 'content', 'definition', 'templates', 'list'));
     }
 
     public function handle()
     {
-        if (in_array(request('query_type'), ['delete_foreign_row', 'get_html_foreign_definition'])) {
+
+        if (in_array(request('query_type'),
+            ['delete_foreign_row', 'get_html_foreign_definition', 'show_revisions', 'return_revisions'])) {
             $method = Str::camel(request('query_type'));
 
             return $this->$method(request()->except('query_type'));
@@ -65,12 +76,14 @@ class TreeController
     {
         $this->definition->model()->destroy($request['id']);
 
+        $this->definition->clearCache();
+
         return [
             'status' => 'success'
         ];
     }
 
-    public function doChangePosition($request)
+    public function doChangePosition()
     {
         $id = request('id');
         $idParent = request('parent_id', 1);
@@ -80,23 +93,45 @@ class TreeController
         $item = $this->model::find($id);
         $root = $this->model::find($idParent);
 
-        $prevParentID = $item->parent_id;
-        $item->makeChildOf($root);
+        if (! $item || ! $root || $item->is($root) || $root->isDescendantOf($item)) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Неможливо перемістити елемент у самого себе або в свій дочірній елемент',
+            ], 422);
+        }
 
-        $item->save();
+        // Sibling must exist and belong to the target parent, otherwise fall back to appending.
+        $sibling = null;
+        $after = true;
+        foreach ([[$idLeftSibling, true], [$idRightSibling, false]] as [$siblingId, $isAfter]) {
+            if (! $siblingId || $siblingId == $item->id) {
+                continue;
+            }
 
-        if ($prevParentID == $idParent) {
-            if ($idLeftSibling) {
-                $item->moveToRightOf($this->model::find($idLeftSibling));
-            } elseif ($idRightSibling) {
-                $item->moveToLeftOf($this->model::find($idRightSibling));
+            $candidate = $this->model::find($siblingId);
+
+            if ($candidate && $candidate->parent_id == $idParent) {
+                $sibling = $candidate;
+                $after = $isAfter;
+                break;
             }
         }
 
-        $root->clearCache();
+        // One move = one save. Previously the node was first appended to the end of the parent
+        // and then moved again, i.e. two saves (two rounds of model events / cache rebuilds).
+        // insertAfterNode/insertBeforeNode also re-parent the node when the sibling has another parent.
+        DB::transaction(function () use ($item, $root, $sibling, $after) {
+            if ($sibling) {
+                $after ? $item->insertAfterNode($sibling) : $item->insertBeforeNode($sibling);
+            } else {
+                $item->makeChildOf($root);
+            }
+        });
 
         $item = $this->model::find($item->id);
         $item->checkUnicUrl();
+
+        $this->definition->clearCache();
 
         return [
             'status'    => true,
@@ -110,6 +145,13 @@ class TreeController
         $model = $this->model::find($request['id']);
 
         return $this->definition->templates()[$model->template];
+    }
+
+    private function cloneRecordTree($request)
+    {
+        $definitionModel = $this->getDefinitionModel($request);
+
+        return (new $definitionModel())->cloneTree($request['id']);
     }
 
     private function getEditModalForm($request)
@@ -135,15 +177,25 @@ class TreeController
         $node = new $model();
 
         $node->parent_id = request('node', 1);
-        $node->title = request('title');
+
+        $languages = languagesOfSite();
+
+        foreach ($languages as $language) {
+            $translations[$language] =
+                (new GoogleTranslateForFree())->translate(
+                    defaultLanguage(),
+                    $language,
+                    request('title'),
+                    1);
+        }
+
+        $node->title = json_encode($translations);
         $node->template = request('template') ?: '';
         $node->slug = Str::slug(request('title'));
 
         $node->save();
-
         $node->checkUnicUrl();
-
-        $root->children()->count() == 1 ? $node->makeChildOf($root) : $node->makeFirstChildOf($root);
+        $node->prependToNode($root)->save();
 
         $root->clearCache();
 
@@ -154,8 +206,7 @@ class TreeController
 
     private function getHtmlForeignDefinition($request)
     {
-        $model = $this->getDefinitionModel($request);
-        $definition = new $model();
+        $definition = resolve($this->getDefinitionModel($request));
 
         $parseJsonData = (array) json_decode($request['paramsJson']);
         $field = $definition->getAllFields()[$parseJsonData['ident']];
@@ -165,12 +216,39 @@ class TreeController
 
     private function deleteForeignRow($request)
     {
-        $model = $this->getDefinitionModel($request);
-        $definition = new $model();
+        $definition = resolve($this->getDefinitionModel($request));
 
         $parseJsonData = (array) json_decode($request['paramsJson']);
         $field = $definition->getAllFields()[$parseJsonData['ident']];
 
         return $field->remove($definition, $parseJsonData);
+    }
+
+    private function showRevisions($request)
+    {
+        $definition = resolve($this->getDefinitionModel($request));
+
+        return $this->revision->show($request['id'], $definition);
+    }
+
+    private function returnRevisions($request)
+    {
+        return $this->revision->doReturn($request['id']);
+    }
+
+    private function doFastChangeField()
+    {
+        $tree = $this->model::find(request('pk'));
+        $tree->is_active = request('value');
+        $tree->save();
+
+        $tree->clearCache();
+    }
+
+    protected function checkPermissions()
+    {
+        if (!app('user')->hasAccess(['tree.view'])) {
+            abort(403);
+        }
     }
 }

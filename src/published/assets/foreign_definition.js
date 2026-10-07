@@ -86,7 +86,6 @@ var ForeignDefinition  = {
         TableBuilder.doClosePopup(attributesJson.table);
         $('.definition_' + attributesJson.name + " .loader_definition").show();
 
-        var url = "/admin/" + url + "/" + attributesJson.definition;
         var url = '/admin/actions/' + attributesJson.definition_parent;
 
         jQuery.ajax({
@@ -121,6 +120,40 @@ var ForeignDefinition  = {
                             $('.definition_' + attributesJson.name).parent().find('.btn-success').show();
                         }
                     }
+                }
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                var errorResult = jQuery.parseJSON(xhr.responseText);
+
+                TableBuilder.showErrorNotification(errorResult.message);
+            }
+        });
+
+    },
+
+    clone : function (idRecord, idUpdate, jsonParams, url = 'handle') {
+        jsonParams = jsonParams.replace(/\\/g,'\\\\');
+        var attributesJson = jQuery.parseJSON(jsonParams);
+
+        $('.definition_' + attributesJson.name + " .loader_definition").show();
+
+        if (url == 'handle') {
+            url = "/admin/" + url + "/" + attributesJson.definition;
+        }
+
+        jQuery.ajax({
+            type: "POST",
+            url: url,
+            data: {
+                'id' : idRecord,
+                'foreign_attributes' : jsonParams,
+                'paramsJson' : jsonParams,
+                'query_type' : 'clone_foreign_row'
+            },
+            dataType: 'json',
+            success: function (response) {
+                if (response.html) {
+                    $('.definition_' + attributesJson.name).html(response.html);
                 }
             },
             error: function (xhr, ajaxOptions, thrownError) {
@@ -222,16 +255,27 @@ var ForeignDefinition  = {
         $(".modal-dialog").draggable({ handle: ".modal-header" });
         TableBuilder.initFroalaEditor(table);
         TableBuilder.handleActionSelect();
+
+        $(".datepicker").datepicker({
+            changeMonth: true,
+            numberOfMonths: 1,
+            prevText: '<i class="fa fa-chevron-left"></i>',
+            nextText: '<i class="fa fa-chevron-right"></i>',
+            dateFormat: "yy-mm-dd",
+            //showButtonPanel: true,
+            regional: ["ru"],
+            onClose: function (selectedDate) {}
+        });
     },
 
-    changePosition : function (context, attributesJson) {
+    changePosition : function (context, attributesJson, pageThis) {
         var arrIds = new Array();
-      //  var table = context.find('table');
 
         var jsonIds = JSON.stringify(arrIds);
         var foreignAttributes = jQuery.parseJSON(attributesJson);
 
         var order = $('.definition_' + foreignAttributes.name + ' tbody').sortable("serialize");
+        var page = pageThis ? pageThis : 1;
 
         console.log(order);
         console.log('.definition_' + foreignAttributes.name + ' tbody');
@@ -242,7 +286,8 @@ var ForeignDefinition  = {
             data: {
                 'order' : order,
                 'query_type' : 'change_order',
-                'foreign_attributes' : attributesJson
+                'foreign_attributes' : attributesJson,
+                'params' : page
             },
             dataType: 'json',
             success: function (response) {

@@ -6,7 +6,7 @@
 <script>
 
     var $select2{{$name}} = $('.{{$name}}_foreign').select2({
-        placeholder: "{{ $search['placeholder'] ?? 'Поиск' }}",
+        placeholder: "{{ __cms($search['placeholder'] ?? 'Поиск') }}",
         minimumInputLength: {{ $search['minimum_length'] ?? '3' }},
         language: "ru",
         ajax: {
@@ -36,10 +36,10 @@
             return item.name;
         },
         formatNoMatches : function () {
-            return 'По результату поиска ничего не найдено';
+            return '{{__cms('По результату поиска ничего не найдено')}}';
         },
-        formatSearching: function () { return "Ищет..."; },
-        formatInputTooShort: function (input, min) { var n = min - input.length; return "Введите еще " + n + "   символ "; },
+        formatSearching: function () { return "{{__cms('Ищет')}}..."; },
+        formatInputTooShort: function (input, min) { var n = min - input.length; return "{{__cms('Введите еще')}} " + n + "   {{__cms('символ')}} "; },
 
         dropdownCssClass: "bigdrop", // apply css that makes the dropdown taller
         escapeMarkup: function (m) { return m; } // we do not want to escape markup since we are displaying html in results

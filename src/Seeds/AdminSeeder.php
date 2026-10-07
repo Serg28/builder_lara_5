@@ -60,32 +60,18 @@ class AdminSeeder extends Seeder
             'role_id' => '1',
         ]);
 
-        DB::table('settings')->insert([
-            'type'       => '0',
-            'title'      => 'Email администратора',
-            'slug'       => 'email-administratora',
-            'value'      => 'arturishe@ukr.net',
-            'group_type' => 'general',
-        ]);
-
         DB::table('tb_tree')->insert([
 
             'lft'                    => '1',
             'rgt'                    => '62',
             'depth'                  => '0',
-            'title'                  => 'Главная',
-            'description'            => '',
+            'title'                  => json_encode(['ua' => 'Головна']),
             'slug'                   => '/',
             'template'               => 'main',
             'is_active'              => '1',
-            'seo_title'              => '',
-            'seo_description'        => '',
-            'seo_keywords'           => '',
             'created_at'             => date('Y-m-d G:i:s'),
             'updated_at'             => date('Y-m-d G:i:s'),
             'picture'                => '',
-            'is_show_in_menu'        => 0,
-            'is_show_in_footer_menu' => 0,
             'additional_pictures'    => '',
         ]);
     }

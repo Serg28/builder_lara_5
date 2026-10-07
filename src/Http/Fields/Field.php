@@ -3,12 +3,14 @@
 namespace Vis\Builder\Fields;
 
 use Illuminate\Support\Str;
+use Vis\Builder\Models\Language;
 
 class Field
 {
     protected $name;
     protected $attribute;
     protected $onlyForm = false;
+    protected $fastEdit = false;
     public $value = '';
     protected $valueLanguage;
     protected $isSortable = false;
@@ -23,18 +25,47 @@ class Field
     protected $relationHasOne;
     protected $relationMorphOne;
     protected $classNameField;
+    protected $allData;
+    protected $locale;
+    protected $isReadonlyForEdit = false;
+    protected $isAutoTranslate = false;
+    protected $isHide = false;
+    protected $isSaveOnChange = false;
+    private $withTranslatedNullValue = true;
 
     public function __construct(string $name, $attribute = null)
     {
         $this->name = $name;
         $this->attribute = $attribute ?? str_replace(' ', '_', Str::lower($name));
+        $this->locale = adminLang() ?: config('app.locale');
+    }
+
+    function fixJson($value)
+    {
+        $value = preg_replace("/[\r\n]+/", "\\r\\n", $value);
+        $value = str_replace("\t", '\t', $value);
+        $value = json_encode(json_decode($value), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        return $value;
     }
 
     public function setValue($value)
     {
+        $this->allData = $value;
+
         if ($this->getHasOne()) {
             $relation = $value->{$this->getHasOne()};
-            $this->value = $relation ? $relation->{$this->getNameField()} : $relation;
+
+            if ($this->getLanguage()) {
+                if ($relation) {
+                    //$this->valueLanguage = json_decode($relation->{$this->attribute});
+                    $this->valueLanguage = json_decode($this->fixJson($relation->{$this->attribute}));
+                    $this->value = $relation ? $relation->{$this->attribute} : '';
+                }
+
+                return;
+            }
+
+            $this->value = $relation ? $relation->{$this->attribute} : '';
 
             return;
         }
@@ -43,10 +74,9 @@ class Field
             $relation = $value->{$this->getMorphOne()};
 
             if ($this->getLanguage()) {
-                foreach ($this->getLanguage() as $lang) {
-                    if ($relation) {
-                        $this->valueLanguage[$lang['postfix']] = $relation->{$this->attribute.$lang['postfix']};
-                    }
+                if ($relation) {
+                    //$this->valueLanguage = json_decode($relation->{$this->attribute});
+                    $this->valueLanguage = json_decode($this->fixJson($relation->{$this->attribute}));
                 }
 
                 return;
@@ -57,18 +87,26 @@ class Field
             return;
         }
 
-        if ($this->getLanguage()) {
-            foreach ($this->getLanguage() as $lang) {
-                $this->valueLanguage[$lang['postfix']] = $value[$this->attribute.$lang['postfix']];
-            }
+        if ($this->getLanguage() && isset($value[$this->attribute]) && $value[$this->attribute]) {
+            //$this->valueLanguage = json_decode($value[$this->attribute]);
+            $this->valueLanguage = json_decode($this->fixJson($value[$this->attribute]));
         }
 
-        $this->value = $value[$this->attribute];
+        $this->value = $value[$this->attribute] ?? '';
+    }
+
+    public function getAllData()
+    {
+        return $this->allData;
     }
 
     public function className($class)
     {
-        $this->classNameField = $class;
+        if (is_null($this->classNameField)) {
+            $this->classNameField = $class;
+        } else {
+            $this->classNameField .= " $class";
+        }
 
         return $this;
     }
@@ -78,9 +116,19 @@ class Field
         return $this->classNameField ? 'section_field '. $this->classNameField : '';
     }
 
+    public function getId()
+    {
+        return isset($this->allData->id) ? $this->allData->id : '';
+    }
+
     public function getValue()
     {
         return $this->value ? $this->value : $this->defaultValue;
+    }
+
+    public function checkAutoTranslate()
+    {
+        return $this->isAutoTranslate;
     }
 
     public function isOnlyForm()
@@ -95,7 +143,7 @@ class Field
 
     public function getValueLanguage($postfix)
     {
-        return $this->valueLanguage[$postfix];
+        return $this->valueLanguage->$postfix ?? '';
     }
 
     public function getName()
@@ -105,12 +153,51 @@ class Field
 
     public function getNameField()
     {
+        if ($this->getHasOne()) {
+            return $this->attribute . '_' . $this->getHasOne();
+        }
+
+        return $this->attribute;
+    }
+
+    public function getNameFieldLangTab($definition, $tab)
+    {
+        return $definition->getNameDefinition() . $this->getNameField() . $tab->language;
+    }
+
+    public function getNameFieldWithDefinition($definition)
+    {
+        return $definition->getNameDefinition() . '_'.  $this->getNameField();
+    }
+
+    public function getNameFieldInBd()
+    {
         return $this->attribute;
     }
 
     public function getValueForList($definition)
     {
-        return $this->getValue();
+        //$arrayValue = json_decode($this->getValue());
+        $arrayValue = json_decode($this->getValue() ?? '{}');
+
+        $value = $arrayValue->{$this->locale} ?? $this->getValue();
+
+        if ($this->fastEdit) {
+
+            $idRecord = $this->getId();
+            $field = $this->getNameFieldInBd();
+
+            return view('admin::list.fast_edit.field_base', compact('idRecord', 'value', 'field'));
+        }
+
+        return $value;
+    }
+
+    public function getValueForExel($definition)
+    {
+        $arrayValue = json_decode($this->getValue());
+
+        return $arrayValue->{$this->locale} ?? $this->getValue();
     }
 
     public function isOrder($list)
@@ -125,7 +212,7 @@ class Field
         $filter = session($list->getDefinition()->getSessionKeyFilter());
 
         return $filter && isset($filter['filter'][$this->getNameField()]) ?
-                    $filter['filter'][$this->getNameField()] : '';
+            $filter['filter'][$this->getNameField()] : '';
     }
 
     public function isNull()
@@ -133,9 +220,9 @@ class Field
         return false;
     }
 
-    public function isReadonlyForEdit()
+    public function getReadonlyForEdit()
     {
-        return false;
+        return $this->isReadonlyForEdit;
     }
 
     public function customUpdate()
@@ -145,13 +232,13 @@ class Field
 
     public function filter($type = null)
     {
-       $this->filter = $type ?:$this->getClassNameString();
+        $this->filter = $type ?:$this->getClassNameString();
 
-       if (!view()->exists('admin::new.list.filters.'.$this->filter)) {
-           $this->filter = 'text';
-       }
+        if (!view()->exists('admin::list.filters.'.$this->filter)) {
+            $this->filter = 'text';
+        }
 
-       return $this;
+        return $this;
     }
 
     public function getFilterInput($list)
@@ -161,7 +248,7 @@ class Field
             $filterValue = $this->getFilter($list);
             $definition = $list->getDefinition();
 
-            return view('admin::new.list.filters.' . $this->filter, compact('field', 'filterValue', 'definition'));
+            return view('admin::list.filters.' . $this->filter, compact('field', 'filterValue', 'definition'));
         }
     }
 
@@ -208,21 +295,40 @@ class Field
         return $this;
     }
 
-    public function language()
+    public function saveOnChange(bool $flag = true)
     {
-        $this->language = config('builder.translations.config.languages');
+        $this->isSaveOnChange = $flag;
 
         return $this;
     }
 
-    public function getLanguage() : ?array
+    public function isSaveOnChange()
+    {
+        return $this->isSaveOnChange;
+    }
+
+    public function fastEdit(bool $flag = true)
+    {
+        $this->fastEdit = $flag;
+
+        return $this;
+    }
+
+    public function language()
+    {
+        $this->language = (new Language())->getLanguages();
+
+        return $this;
+    }
+
+    public function getLanguage()
     {
         return $this->language;
     }
 
     public function getLanguageDefault()
     {
-        return array_key_first($this->getLanguage());
+        return defaultLanguage();
     }
 
     public function rules($rules)
@@ -251,7 +357,18 @@ class Field
 
     public function getNullValue()
     {
-        return $this->nullValue;
+        return $this->withTranslatedNullValue ? __cms($this->nullValue) : $this->nullValue;
+    }
+
+    public function withTranslatedNullValue(bool $with = true): Field
+    {
+        $this->withTranslatedNullValue = $with;
+        return $this;
+    }
+
+    public function getWithTranslatedNullValue()
+    {
+        return $this->withTranslatedNullValue;
     }
 
     public function isDisabled()
@@ -261,7 +378,9 @@ class Field
 
     public function readonlyForEdit()
     {
-        return false;
+        $this->isReadonlyForEdit = true;
+
+        return $this;
     }
 
     public function comment(string $comment)
@@ -273,7 +392,7 @@ class Field
 
     public function getComment() : string
     {
-        return $this->commentText;
+        return __cms($this->commentText);
     }
 
     public function getFieldForm($definition)
@@ -285,12 +404,17 @@ class Field
             $nameField .= '_lang';
         }
 
-        return view('admin::new.form.fields.' . $nameField, compact('definition', 'field'))->render();
+        return view('admin::form.fields.' . $nameField, compact('definition', 'field'))->render();
     }
 
     protected function getClassNameString() : string
     {
         return mb_strtolower(class_basename($this));
+    }
+
+    protected function convertQuery($query) : ?string
+    {
+        return mb_convert_case($query, MB_CASE_TITLE, "UTF-8");
     }
 
     public function isManyToMany()
@@ -322,12 +446,38 @@ class Field
         return $this->relationMorphOne;
     }
 
-    public function prepareSave($request)
+    public function prepareSave(array $request)
     {
         $nameField = $this->getNameField();
-
+    
+        if (!array_key_exists($nameField, $request)) {
+            return $this->isNullAble() ? $this->getNullValue() : '';
+        }
+    
         return $request[$nameField];
     }
+
+    public function fastSave($definition, $request)
+    {
+        $model = $definition->model()->find($request['pk']);
+        $model->{$request['ident']} = $request['value'];
+        $model->save();
+
+        $definition->clearCache();
+    }
+
+    public function hide($flag = true)
+    {
+        $this->isHide = $flag;
+
+        return $this;
+    }
+
+    public function isHide()
+    {
+        return $this->isHide;
+    }
+
 
 }
 
