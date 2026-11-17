@@ -1,15 +1,16 @@
+@php $normalizedValue = '/' . ltrim($value, '/'); @endphp
 <li >
     <img class="image-attr-editable"
          data-tbnum="{{$key ?? ""}}"
-         @if (strpos($value, '.svg'))
+         @if (strpos($normalizedValue, '.svg'))
             width = '120'
             height='120'
-            src="/{{$value}}"
+            src="{{$normalizedValue}}"
          @else
-            src="{{glide($value, ['w'=>'120','h'=>'120']) }}"
+            src="{{glide($normalizedValue, ['w'=>'120','h'=>'120']) }}"
          @endif
-         data_src_original= "/{{$value}}"
-         src_original = "/{{$value}}"
+         data_src_original="{{$normalizedValue}}"
+         src_original="{{$normalizedValue}}"
          data-width = '120'
          data-height = '120'
     />
