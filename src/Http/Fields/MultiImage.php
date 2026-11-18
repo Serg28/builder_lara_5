@@ -26,6 +26,9 @@ class MultiImage extends Image
             return $value;
         }
 
-        return json_encode(array_map(fn ($p) => is_string($p) && $p !== '' && !str_contains($p, '://') ? '/'.ltrim($p, '/') : $p, $paths), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $fix = fn ($p) => is_string($p) && $p !== '' && !str_contains($p, '://') && !preg_match('#^//[^/]*\.[^/]*/#', $p)
+            ? '/'.ltrim($p, '/') : $p; // ponytail: "//host.tld/x" и "https://" не трогаем
+
+        return json_encode(array_values(array_unique(array_map($fix, $paths))), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 }
