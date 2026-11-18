@@ -4,10 +4,10 @@
              data-tbident="{{$field->getNameField()}}"
              @if (strpos($field->getValue(), ".svg"))
                 width="200"
-                src="/{{ $field->getValue()}}" src_original="{{$field->getValue()}}"
+                src="{{ "/" . ltrim($field->getValue(), "/") }}" src_original="{{ "/" . ltrim($field->getValue(), "/") }}"
              @else
                  src="{{ glide($field->getValue(), ['w' => 200, 'h' => 200]) }}"
-                 src_original="/{{$field->getValue()}}"
+                 src_original="{{ "/" . ltrim($field->getValue(), "/") }}"
             @endif
 
             style="max-width: 200px"

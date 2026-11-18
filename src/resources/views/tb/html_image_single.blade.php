@@ -1,3 +1,4 @@
+@php $normalizedValue = '/' . ltrim($value, '/'); @endphp
 <div class="{{strpos($value, ".svg") || strpos($value, ".png") || strpos($value, ".gif") ? 'transparent-image' : ''}}" style="position: relative; display: inline-block;" >
     <img class="image-attr-editable"
          data-tbident="{{$name}}"
@@ -9,9 +10,9 @@
          data-height="{{$height}}"
          @if (strpos($value, ".svg"))
             width="{{$width}}"
-            src="/{{ $value}}" src_original="/{{$value}}"
+            src="{{$normalizedValue}}" src_original="{{$normalizedValue}}"
          @else
-           src="{{ glide($value, ['w' => $width, 'h' => $height]) }}" src_original="{{$value}}"
+           src="{{ glide($value, ['w' => $width, 'h' => $height]) }}" src_original="{{$normalizedValue}}"
          @endif
      />
     <div class="tb-btn-delete-wrap">

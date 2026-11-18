@@ -3,7 +3,6 @@
 namespace Vis\Builder\Fields;
 
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\File;
 
 class Image extends Field
 {
@@ -55,18 +54,14 @@ class Image extends Field
         $rawFileName = md5_file($file->getRealPath()).'_'.time();
         $fileName = $rawFileName.'.'.$extension;
 
-        $fullFileName = $this->path . $fileName;
+        $fullFileName = '/'.ltrim($this->path.$fileName, '/');
 
         if ($model && request('page_id')) {
             $infoPage = $model::find(request('page_id'));
             $slugPage = isset($infoPage->title) ? Str::slug($infoPage->t('title')) : request('page_id');
-            $fileName = $slugPage.'.'.$extension;
-            $fullFileName = $this->path . $fileName;
-
-            if (File::exists(public_path($fullFileName))) {
-                $fileName = $slugPage.'_'.time().rand(1, 1000).'.'.$extension;
-                $fullFileName = $this->path . $fileName;
-            }
+            // ponytail: имя по хэшу содержимого, а не File::exists()+rand — параллельные загрузки не затирают друг друга
+            $fileName = $slugPage.'_'.substr(md5_file($file->getRealPath()), 0, 8).'.'.$extension;
+            $fullFileName = '/'.ltrim($this->path.$fileName, '/');
         }
 
         $status = $file->move(public_path($this->path), $fileName);
