@@ -26,6 +26,6 @@ class MultiImage extends Image
             return $value;
         }
 
-        return json_encode(array_map(fn ($p) => is_string($p) && $p !== '' ? '/'.ltrim($p, '/') : $p, $paths), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        return json_encode(array_map(fn ($p) => is_string($p) && $p !== '' && !str_contains($p, '://') ? '/'.ltrim($p, '/') : $p, $paths), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 }
